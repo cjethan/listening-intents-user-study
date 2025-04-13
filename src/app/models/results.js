@@ -12,6 +12,7 @@ const songSchema = new mongoose.Schema({
 }, { _id: false }); // _id: false so Mongo doesn't auto-create _id for subdocuments
 
 const intentSchema = new mongoose.Schema({
+  intent_name: String,
   how_often: String,
   how_imp: String,
   songs: [songSchema],

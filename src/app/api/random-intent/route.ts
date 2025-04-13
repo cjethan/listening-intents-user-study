@@ -4,7 +4,6 @@ import { loadAllIntents } from '@/lib/context/intentData';
 export async function GET() {
   try {
     const allIntents = loadAllIntents();
-    console.log(allIntents);
 
     if (allIntents.length === 0) {
       return NextResponse.json({ error: 'No intents found.' }, { status: 404 });

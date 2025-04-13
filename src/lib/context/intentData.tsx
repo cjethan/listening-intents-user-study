@@ -8,7 +8,6 @@ export function loadAllIntents() {
   const data = JSON.parse(fileContent);
 
   const ids = Object.keys(data.intent_id);
-  console.log(ids);
 
   const allIntents = ids.map((id) => ({
     intent_id: data.intent_id[id],
