@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: black; /* Set default font color to black */
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #333; /* Darker grey color */
+}
+
+/*
+3 boxes, drag and drop and song cards
+*/
+.song-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.song-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+}
+
+.song-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.song-image {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.75rem;
+  object-fit: cover;
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.song-info {
+  flex: 1;
+}
+
+.song-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #111;
+}
+
+.song-artist {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.song-album {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 0;
+}
+
+.drag-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* Add gap between drag items in the container */
+  padding: 2rem;
+  max-width: 100%;
+}
+
+.drop-area {
+  width: 100%;
+  border: 2px dashed #ccc;
+  border-radius: 1rem;
+  padding: 2rem;
+  min-height: 160px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background-color: #f5f5f7;
+  justify-content: flex-start;
+}
+
+.drop-placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.drag-box-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.drag-box {
+  flex: 1;
+  min-width: 250px;
+  background-color: #fff;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.drag-box-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: #222;
+}
+
+.search-bar {
+  color: #333;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.search-input {
+  width: 100%; /* Stretch the input field to fill the search bar */
+  padding: 0.5rem; /* Add padding for better usability */
+  border: 1px solid #ccc; /* Add a border for better visibility */
+  border-radius: 0.5rem; /* Add rounded corners */
+  font-size: 1rem; /* Adjust font size */
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+.drag-item {
+  background: white;
+  border-radius: 1rem;
+  padding: 0.75rem;
+  display: flex;
+  gap: 1rem; /* Increased gap for more padding between items */
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  cursor: grab;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+  user-select: none;
+  margin-bottom: 0.5rem; /* Add margin to create vertical spacing */
+}
+
+.drag-item:hover {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.drag-item-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+
+.drag-item-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.drag-item-info strong {
+  font-size: 1rem;
+  color: #000;
+}
+
+.drag-item-info p {
+  font-size: 0.9rem;
+  color: #444;
+  margin: 0;
+}
+
+.drag-item-info small {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+
+.drag-box-content {
+  max-height: 400px; /* Adjust height as needed */
+  overflow-y: auto;
+}
