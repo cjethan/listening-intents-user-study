@@ -45,8 +45,6 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
     }
 }
 
-
-
 export default function Home() {
 
   // db stuff
@@ -59,16 +57,14 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   //für speichern
-  const { setUserData, resetCounter } = useUserStore();
-  const { userData, counter, incrementCounter } = useUserStore();
+  const { setUserData, resetCounter, counter, incrementCounter } = useUserStore();
+  const { userData } = useUserStore();
 
   const { data: session, status } = useSession();
   const router = useRouter();
 
   const [howOften, setHowOften] = useState<number | null>(null);
   const [howImp, setHowImp] = useState<number | null>(null);
-
-  const [dropAreaSongs, setDropAreaSongs] = useState<Song[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -139,22 +135,25 @@ if (session) {
     console.log("Loaded userData from localStorage:", userData); // Verify persistence
   }, [userData]);
 
+  useEffect(() => {
+    const storedCounter = localStorage.getItem("counter");
+    if (storedCounter) {
+      resetCounter(); // Reset the store counter
+      const parsedCounter = parseInt(storedCounter, 10);
+      for (let i = 0; i < parsedCounter; i++) {
+        incrementCounter(); // Increment the store counter to match the stored value
+      }
+    }
+  }, [resetCounter, incrementCounter]);
+
   if (status === "loading") return <p>Loading...</p>;
 
   if (status === "unauthenticated") return null;
 
   function handleNext() {
-    setUserData({
-      user_id: "00123",
-      name: 'John',
-      age: 25,
-    });
-    incrementCounter(); // Increment the counter
-    console.log("userdata:", userData);
-    console.log("counter:", counter);
-
-    // Reload the page while preserving the counter
-    window.location.reload();
+    const updatedCounter = counter + 1; // Increment the counter
+    localStorage.setItem("counter", updatedCounter.toString()); // Save to localStorage
+    window.location.reload(); // Reload the page
   }
 
   async function handleSaveToDB() {
@@ -163,8 +162,10 @@ if (session) {
       const intentData = {
         how_often: howOften || 0, // Save the selected value for "how often"
         how_imp: howImp || 0, // Save the selected value for "how important"
-        songs: dropAreaSongs, // Save the songs in the drop area
+        songs: userData.chosenSongs || [], // Replace with actual state for chosen songs
       };
+
+      console.log("Intent Data:", intentData); // Debugging output
 
       const dataToSave = {
         user_id: userData.user_id,
@@ -172,9 +173,11 @@ if (session) {
         country: userData.country || "", // Add country if available
         gender: userData.gender || "", // Add gender if available
         intents: {
-          [randomIntent?.intent_id || ""]: intentData,
+          [randomIntent?.intent_name || ""]: intentData,
         },
       };
+
+      console.log("Data to save:", dataToSave); // Debugging output
 
       const response = await fetch('/api/results', {
         method: 'POST',
@@ -191,7 +194,8 @@ if (session) {
       const data = await response.json();
       console.log('Success:', data);
 
-      resetCounter(); // Reset the counter after successful save
+      resetCounter(); // Reset the global counter after successful save
+      localStorage.setItem("counter", "0"); // Reset counter in localStorage
       console.log("Counter reset to 0");
 
       return data;
@@ -213,14 +217,16 @@ if (session) {
       </div>
       
       <h3 className="font-semibold mt-4">Chosen Songs</h3>
-      <DragAndDrop setDropAreaSongs={setDropAreaSongs} />
+      <DragAndDrop />
 
-      <div className="bg-black">
-        <p>{counter}</p>
+      <div className="">
+        <p>
+          {counter}, {userData?.name}, {userData?.age}
+        </p>
       </div>
 
       <div className="fixed bottom-6 right-6 space-x-4">
-        {counter < 3 ? ( // Show "NEXT" button for the first 10 clicks
+        {counter < 3 ? ( // Show "NEXT" button for the first 3 clicks
           <button
             onClick={handleNext}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-600 ease-in-out"
@@ -241,7 +247,7 @@ if (session) {
               />
             </svg>
           </button>
-        ) : ( // Show "SUBMIT" button after 10 clicks
+        ) : ( // Show "SUBMIT" button after 3 clicks
           <button
             onClick={handleSaveToDB}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-full shadow-md hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out"

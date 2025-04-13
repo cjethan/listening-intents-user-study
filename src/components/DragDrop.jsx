@@ -23,7 +23,7 @@ async function fetchAlbumImage(trackId, accessToken) {
   }
 }
 
-export function DragAndDrop({ setDropAreaSongs }) {
+export function DragAndDrop() {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
   const [box2Items, setBox2Items] = useState(initialItemsBox2);
@@ -121,10 +121,6 @@ export function DragAndDrop({ setDropAreaSongs }) {
       setIsSearchResultsReady(false); // Reset if searchResults is empty
     }
   }, [searchResults]);
-
-  useEffect(() => {
-    setDropAreaSongs(dropItems); // Pass the drop area songs to the parent component
-  }, [dropItems, setDropAreaSongs]);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
