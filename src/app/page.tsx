@@ -152,39 +152,66 @@ if (session) {
 
   function handleNext() {
     const updatedCounter = counter + 1; // Increment the counter
-    localStorage.setItem("counter", updatedCounter.toString()); // Save to localStorage
-    window.location.reload(); // Reload the page
+
+    // Ensure intents is initialized as an object
+    const currentIntents = userData.intents || {};
+
+    // Append the current intent data using intent_id as the key
+    const newIntent = {
+      intent_id: randomIntent?.intent_id || "",
+      intent_name: randomIntent?.intent_name || "",
+      how_often: howOften || 0,
+      how_imp: howImp || 0,
+    };
+
+    const updatedUserData = {
+      ...userData,
+      intents: {
+        ...currentIntents,
+        [newIntent.intent_id]: newIntent,
+      },
+    };
+
+    // Save updated user data to localStorage
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+    console.log(updatedUserData);
+
+    // Save updated counter to localStorage
+    localStorage.setItem("counter", updatedCounter.toString());
+
+    // Reload the page
+    window.location.reload();
   }
 
   async function handleSaveToDB() {
+    // Ensure intents is initialized as an object
+    const currentIntents = userData.intents || {};
+
+    // Append the current intent data using intent_id as the key
+    const newIntent = {
+      intent_id: randomIntent?.intent_id || "",
+      intent_name: randomIntent?.intent_name || "",
+      how_often: howOften || 0,
+      how_imp: howImp || 0,
+    };
+
+    const updatedUserData = {
+      ...userData,
+      intents: {
+        ...currentIntents,
+        [newIntent.intent_id]: newIntent,
+      },
+    };
+
+    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
     try {
-      // Collect data to save
-      const intentData = {
-        how_often: howOften || 0, // Save the selected value for "how often"
-        how_imp: howImp || 0, // Save the selected value for "how important"
-        songs: userData.chosenSongs || [], // Replace with actual state for chosen songs
-      };
-
-      console.log("Intent Data:", intentData); // Debugging output
-
-      const dataToSave = {
-        user_id: userData.user_id,
-        age: userData.age,
-        country: userData.country || "", // Add country if available
-        gender: userData.gender || "", // Add gender if available
-        intents: {
-          [randomIntent?.intent_name || ""]: intentData,
-        },
-      };
-
-      console.log("Data to save:", dataToSave); // Debugging output
-
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(dataToSave),
+        body: JSON.stringify(updatedUserData),
       });
 
       if (!response.ok) {
@@ -269,6 +296,28 @@ if (session) {
             </svg>
           </button>
         )}
+      </div>
+
+      <div className="mt-6 p-4 bg-white rounded shadow-md">
+        <button
+          onClick={() => {
+            const debugData = {
+              user_id: "00123",
+              name: "John",
+              age: 25,
+            };
+            localStorage.setItem("userData", JSON.stringify(debugData));
+            setUserData(debugData);
+            console.log("Debug userData set:", debugData);
+          }}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600"
+        >
+          Set Debug User Data
+        </button>
+        <h2 className="text-lg font-bold">Current User Data</h2>
+        <pre className="text-sm bg-gray-100 p-2 rounded overflow-x-auto">
+          {JSON.stringify(userData, null, 2)}
+        </pre>
       </div>
     </div>
   );
