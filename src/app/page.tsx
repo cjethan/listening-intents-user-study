@@ -233,9 +233,9 @@ if (session) {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen space-y-6">
+    <div className="p-6 bg-gray-50 min-h-screen space-y-4">
       <h1 className="text-2xl font-bold">🎵 Intent: {randomIntent?.intent_name}</h1>
-      <div className="p-6">
+      <div className="pl-6">
         <ThreeBlocks
           randomIntent={randomIntent}
           setHowOften={setHowOften}
@@ -243,7 +243,6 @@ if (session) {
         />
       </div>
       
-      <h3 className="font-semibold mt-4">Chosen Songs</h3>
       <DragAndDrop />
 
       <div className="">
