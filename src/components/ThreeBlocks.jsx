@@ -60,8 +60,16 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
       {!isCollapsed && (
         <div className="grid grid-cols-3 gap-4">
           {/* First Block */}
-          <div className="p-4 bg-gray-100 rounded shadow">
+          <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">How often do you listen with this intent?</h3>
+            <div className="absolute top-2 right-2 group">
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+                i
+              </div>
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
+                Aproximate how much you listen to music with this intent.
+              </div>
+            </div>
             {["0 songs/day", "3 songs/day", "9 songs/day", "18 songs/day", "72 songs/day", ">72 songs/day"].map((option, index) => (
               <label key={option} className="block text-gray-600">
                 <input
@@ -77,8 +85,16 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
           </div>
 
           {/* Second Block */}
-          <div className="p-4 bg-gray-100 rounded shadow">
-            <h3 className="font-bold mb-2">How important is the fulfillment of this intent?</h3>
+          <div className="p-4 bg-gray-100 rounded shadow relative">
+            <h3 className="font-bold mb-2">How important is the fulfillment of this intent to you?</h3>
+            <div className="absolute top-2 right-2 group">
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+                i
+              </div>
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
+                When you listen to music with this intent, how important is the fulfillment of this intent to you?
+              </div>
+            </div>
             {[
               "Not important / Never listening with this intent",
               "Little important",
@@ -100,8 +116,16 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
           </div>
 
           {/* Third Block */}
-          <div className="p-4 bg-gray-100 rounded shadow">
+          <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">Additional Information</h3>
+            <div className="absolute top-2 right-2 group">
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+                i
+              </div>
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
+                Additional ideas about how to categorize songs with this intent.
+              </div>
+            </div>
             <p className="italic text-gray-700">
               {randomIntent ? randomIntent.main_listening_function : 'No intent available'}
             </p>
