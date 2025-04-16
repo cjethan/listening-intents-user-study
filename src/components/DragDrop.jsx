@@ -23,12 +23,12 @@ async function fetchAlbumImage(trackId, accessToken) {
   }
 }
 
-export function DragAndDrop() {
+export function DragAndDrop({ setDropItems }) {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
   const [box2Items, setBox2Items] = useState(initialItemsBox2);
   const [box3Items, setBox3Items] = useState([]);
-  const [dropItems, setDropItems] = useState([]);
+  const [localDropItems, setLocalDropItems] = useState([]); // Local state for dropItems
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchResultsReady, setIsSearchResultsReady] = useState(false);
 
@@ -122,6 +122,10 @@ export function DragAndDrop() {
     }
   }, [searchResults]);
 
+  useEffect(() => {
+    setDropItems(localDropItems); // Sync localDropItems with parent state
+  }, [localDropItems, setDropItems]);
+
   const handleDragEnd = (event) => {
     const { active, over } = event;
     setActiveItem(null);
@@ -129,14 +133,14 @@ export function DragAndDrop() {
 
     const itemId = active.id;
 
-    const allItems = [...box1Items, ...box2Items, ...box3Items, ...dropItems, ...searchResults];
+    const allItems = [...box1Items, ...box2Items, ...box3Items, ...localDropItems, ...searchResults];
     const draggedItem = allItems.find((item) => item.id === itemId);
 
     const removeItem = (items) => items.filter((item) => item.id !== itemId);
 
     if (over.id === "dropArea") {
-      if (!dropItems.find((item) => item.id === itemId)) {
-        setDropItems((prev) => [...prev, draggedItem]);
+      if (!localDropItems.find((item) => item.id === itemId)) {
+        setLocalDropItems((prev) => [...prev, draggedItem]);
         setBox1Items(removeItem(box1Items));
         setBox2Items(removeItem(box2Items));
         setBox3Items(removeItem(box3Items));
@@ -145,21 +149,21 @@ export function DragAndDrop() {
     } else if (over.id === "box1") {
       if (!box1Items.find((item) => item.id === itemId)) {
         setBox1Items((prev) => [draggedItem, ...prev]);
-        setDropItems(removeItem(dropItems));
+        setLocalDropItems(removeItem(localDropItems));
         setBox2Items(removeItem(box2Items));
         setBox3Items(removeItem(box3Items));
       }
     } else if (over.id === "box2") {
       if (!box2Items.find((item) => item.id === itemId)) {
         setBox2Items((prev) => [draggedItem, ...prev]);
-        setDropItems(removeItem(dropItems));
+        setLocalDropItems(removeItem(localDropItems));
         setBox1Items(removeItem(box1Items));
         setBox3Items(removeItem(box3Items));
       }
     } else if (over.id === "box3") {
       if (!box3Items.find((item) => item.id === itemId)) {
         setBox3Items((prev) => [draggedItem, ...prev]);
-        setDropItems(removeItem(dropItems));
+        setLocalDropItems(removeItem(localDropItems));
         setBox1Items(removeItem(box1Items));
         setBox2Items(removeItem(box2Items));
       }
@@ -175,9 +179,9 @@ export function DragAndDrop() {
       return;
     }
 
-    const allItems = [...box1Items, ...box2Items, ...box3Items, ...dropItems, ...searchResults];
+    const allItems = [...box1Items, ...box2Items, ...box3Items, ...localDropItems, ...searchResults];
     console.log("All items:", allItems); // Debugging line
-    console.log("dropItems:", dropItems); // Debugging line
+    console.log("dropItems:", localDropItems); // Debugging line
     const draggedItem = allItems.find((item) => item.id === itemId);
 
     if (!draggedItem) {
@@ -191,7 +195,7 @@ export function DragAndDrop() {
   return (
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="drag-container">
-        <DropArea items={dropItems} />
+        <DropArea items={localDropItems} />
         <div className="drag-box-wrapper">
           <DraggableBox
             id="box1"
@@ -237,7 +241,16 @@ function DropArea({ items }) {
   const { setNodeRef } = useDroppable({ id: "dropArea" });
 
   return (
-    <div ref={setNodeRef} className="drop-area">
+    <div ref={setNodeRef} className="drop-area relative">
+      <div className="absolute top-2 right-2 group">
+        <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+          i
+        </div>
+        <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-85">
+          Drag and drop songs here to associate them with the current intent. <br />
+          To remove songs, place them in Box 1.
+        </div>
+      </div>
       {items.length === 0 ? (
         <p className="drop-placeholder">Drop Here</p>
       ) : null}

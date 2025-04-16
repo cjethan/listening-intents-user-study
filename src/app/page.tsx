@@ -12,10 +12,10 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "../store/store";
 
 type Song = {
-  track_id: string;
-  track_name: string;
-  artist_name: string;
-  album_name: string;
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
   image: string;
 };
 
@@ -65,6 +65,8 @@ export default function Home() {
 
   const [howOften, setHowOften] = useState<number | null>(null);
   const [howImp, setHowImp] = useState<number | null>(null);
+
+  const [dropItems, setDropItems] = useState<Song[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -155,6 +157,7 @@ if (session) {
 
     // Ensure intents is initialized as an object
     const currentIntents = userData.intents || {};
+    console.log("dropItems", dropItems);
 
     // Append the current intent data using intent_id as the key
     const newIntent = {
@@ -162,6 +165,13 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
+      songs: dropItems.map((song) => ({
+        track_id: song.id,
+        track_name: song.title,
+        artist_name: song.artist,
+        album_name: song.album,
+        image: song.image,
+      })),
     };
 
     const updatedUserData = {
@@ -186,6 +196,7 @@ if (session) {
   async function handleSaveToDB() {
     // Ensure intents is initialized as an object
     const currentIntents = userData.intents || {};
+    console.log("dropItems", dropItems);
 
     // Append the current intent data using intent_id as the key
     const newIntent = {
@@ -193,6 +204,13 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
+      songs: dropItems.map((song) => ({
+        track_id: song.id,
+        track_name: song.title,
+        artist_name: song.artist,
+        album_name: song.album,
+        image: song.image,
+      })),
     };
 
     const updatedUserData = {
@@ -243,12 +261,13 @@ if (session) {
         />
       </div>
       
-      <DragAndDrop />
+      <DragAndDrop setDropItems={setDropItems} />
 
       <div className="">
         <p>
           {counter}, {userData?.name}, {userData?.age}
         </p>
+        <pre>{JSON.stringify(dropItems, null, 2)}</pre>
       </div>
 
       <div className="fixed bottom-6 right-6 space-x-4">
