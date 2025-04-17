@@ -252,7 +252,12 @@ if (session) {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-4">
-      <h1 className="text-2xl font-bold">🎵 Intent: {randomIntent?.intent_name}</h1>
+      <h1 className="text-center">
+        <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
+        <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
+          {randomIntent?.intent_name}
+        </span>
+      </h1>
       <div className="pl-6">
         <ThreeBlocks
           randomIntent={randomIntent}

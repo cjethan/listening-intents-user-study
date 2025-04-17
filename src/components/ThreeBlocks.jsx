@@ -147,15 +147,16 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
                 ? ">72 min/day"
                 : ">24 songs/day",
             ].map((option, index) => (
-              <label key={option} className="block text-gray-600">
+              <label key={option} className="flex items-center space-x-3 text-gray-600">
                 <input
                   type="radio"
                   name="how-often"
-                  className="mr-2"
+                  className="hidden peer"
                   checked={selectedHowOften === index + 1}
                   onChange={() => handleHowOftenChange(index + 1)} // Save as 1-6
                 />
-                {option}
+                <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
+                <span>{option}</span>
               </label>
             ))}
           </div>
@@ -178,15 +179,16 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               "Somewhat important",
               "Very important",
             ].map((option, index) => (
-              <label key={option} className="block text-gray-600">
+              <label key={option} className="flex items-center space-x-3 text-gray-600">
                 <input
                   type="radio"
                   name="how-imp"
-                  className="mr-2"
+                  className="hidden peer"
                   checked={selectedHowImp === index + 1}
                   onChange={() => handleHowImpChange(index + 1)} // Save as 1-5
                 />
-                {option}
+                <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
+                <span>{option}</span>
               </label>
             ))}
           </div>
