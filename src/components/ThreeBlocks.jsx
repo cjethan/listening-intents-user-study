@@ -7,6 +7,8 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [selectedHowOften, setSelectedHowOften] = useState(null);
   const [selectedHowImp, setSelectedHowImp] = useState(null);
+  const [usePlaceholderLabels1, setUsePlaceholderLabels1] = useState(false);
+  const [usePlaceholderLabels2, setUsePlaceholderLabels2] = useState(false);
 
   const handleHowOftenChange = (value) => {
     setHowOften(value);
@@ -66,11 +68,85 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
               </div>
-              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
-                Aproximate how much you listen to music with this intent.
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
+                Aproximate how much you listen to music with this intent. <br />
+                Choose days/weeks or songs/minutes acording to how it is easier to answer for you.
               </div>
             </div>
-            {["0 songs/day", "3 songs/day", "9 songs/day", "18 songs/day", "72 songs/day", ">72 songs/day"].map((option, index) => (
+            {/* Stylish, smaller switches */}
+            <div className="flex items-center mb-4 space-x-6">
+              <div className="flex items-center">
+                <span className="text-gray-600 text-sm mr-2">Days/Weeks</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={usePlaceholderLabels1}
+                    onChange={() => setUsePlaceholderLabels1(!usePlaceholderLabels1)}
+                  />
+                  <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
+                  <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
+                </label>
+              </div>
+              <div className="flex items-center">
+                <span className="text-gray-600 text-sm mr-2">Songs/Minutes</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only peer"
+                    checked={usePlaceholderLabels2}
+                    onChange={() => setUsePlaceholderLabels2(!usePlaceholderLabels2)}
+                  />
+                  <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
+                  <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
+                </label>
+              </div>
+            </div>
+            {/* Determine labels based on switches */}
+            {[
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? "<63 min/week"
+                : usePlaceholderLabels1
+                ? "<21 songs/week"
+                : usePlaceholderLabels2
+                ? "<9 min/day"
+                : "<3 songs/day",
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? "63 min/week"
+                : usePlaceholderLabels1
+                ? "21 songs/week"
+                : usePlaceholderLabels2
+                ? "9 min/day"
+                : "3 songs/day",
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? "189 min/week"
+                : usePlaceholderLabels1
+                ? "49 songs/week"
+                : usePlaceholderLabels2
+                ? "27 min/day"
+                : "9 songs/day",
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? "378 min/week"
+                : usePlaceholderLabels1
+                ? "126 songs/week"
+                : usePlaceholderLabels2
+                ? "54 min/day"
+                : "18 songs/day",
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? "504 min/week"
+                : usePlaceholderLabels1
+                ? "168 songs/week"
+                : usePlaceholderLabels2
+                ? "72 min/day"
+                : "24 songs/day",
+              usePlaceholderLabels1 && usePlaceholderLabels2
+                ? ">504 min/week"
+                : usePlaceholderLabels1
+                ? ">168 songs/week"
+                : usePlaceholderLabels2
+                ? ">72 min/day"
+                : ">24 songs/day",
+            ].map((option, index) => (
               <label key={option} className="block text-gray-600">
                 <input
                   type="radio"
@@ -91,7 +167,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
               </div>
-              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
                 When you listen to music with this intent, how important is the fulfillment of this intent to you?
               </div>
             </div>
@@ -122,7 +198,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
               </div>
-              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64">
+              <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
                 Additional ideas about how to categorize songs with this intent.
               </div>
             </div>
