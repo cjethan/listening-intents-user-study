@@ -23,6 +23,10 @@ async function fetchAlbumImage(trackId, accessToken) {
   }
 }
 
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
 export function DragAndDrop({ setDropItems }) {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
@@ -99,7 +103,7 @@ export function DragAndDrop({ setDropItems }) {
               return null;
             }).filter(Boolean);
   
-            setBox2Items(topSongs);
+            setBox2Items(shuffleArray(topSongs)); // Shuffle the songs before setting them
           } else {
             console.error("No top songs available.");
             setBox2Items([]);
@@ -200,7 +204,7 @@ export function DragAndDrop({ setDropItems }) {
           <DraggableBox
             id="box1"
             items={box1Items}
-            title="Box 1"
+            title="Random Songs"
             session={session}
             setSearchResults={setSearchResults}
             searchResults={searchResults}
@@ -209,7 +213,7 @@ export function DragAndDrop({ setDropItems }) {
           <DraggableBox
             id="box2"
             items={box2Items}
-            title="Box 2"
+            title="Songs from your Listening History"
             session={session}
             setSearchResults={setSearchResults}
             searchResults={searchResults}
