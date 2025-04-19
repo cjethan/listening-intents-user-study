@@ -67,6 +67,7 @@ export default function Home() {
   const [howImp, setHowImp] = useState<number | null>(null);
 
   const [dropItems, setDropItems] = useState<Song[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -151,6 +152,18 @@ if (session) {
   if (status === "loading") return <p>Loading...</p>;
 
   if (status === "unauthenticated") return null;
+
+  function handleButtonClick(action: () => void) {
+    if (!howOften || !howImp) {
+      setErrorMessage("Please answer both questions before proceeding.");
+      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+    } else if (dropItems.length < 5) {
+      setErrorMessage("Please choose at least 5 songs to proceed.");
+      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+    } else {
+      action();
+    }
+  }
 
   function handleNext() {
     const updatedCounter = counter + 1; // Increment the counter
@@ -278,7 +291,7 @@ if (session) {
       <div className="fixed bottom-6 right-6 space-x-4">
         {counter < 3 ? ( // Show "NEXT" button for the first 3 clicks
           <button
-            onClick={handleNext}
+            onClick={() => handleButtonClick(handleNext)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-600 ease-in-out"
           >
             NEXT
@@ -299,7 +312,7 @@ if (session) {
           </button>
         ) : ( // Show "SUBMIT" button after 3 clicks
           <button
-            onClick={handleSaveToDB}
+            onClick={() => handleButtonClick(handleSaveToDB)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-full shadow-md hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out"
           >
             SUBMIT
@@ -320,6 +333,11 @@ if (session) {
           </button>
         )}
       </div>
+      {errorMessage && (
+        <div className="fixed bottom-20 right-6 bg-red-500 text-white px-4 py-2 rounded shadow-md">
+          {errorMessage}
+        </div>
+      )}
 
       <div className="mt-6 p-4 bg-white rounded shadow-md">
         <button

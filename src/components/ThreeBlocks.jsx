@@ -12,7 +12,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
 
   const handleHowOftenChange = (value) => {
     setHowOften(value);
-    setHowOftenSelected(true);
+    setHowOftenSelected(true); // Mark question as answered
     setSelectedHowOften(value);
     setShowAlert(false);
     console.log("How often changed to:", value);
@@ -20,7 +20,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
 
   const handleHowImpChange = (value) => {
     setHowImp(value);
-    setHowImpSelected(true);
+    setHowImpSelected(true); // Mark question as answered
     setSelectedHowImp(value);
     setShowAlert(false);
     console.log("How important changed to:", value);
@@ -176,7 +176,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               "Not important / Never listening with this intent",
               "Little important",
               "Medium important",
-              "Somewhat important",
+              "Realatively important",
               "Very important",
             ].map((option, index) => (
               <label key={option} className="flex items-center space-x-3 text-gray-600">
