@@ -31,10 +31,12 @@ export function DragAndDrop({ setDropItems }) {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
   const [box2Items, setBox2Items] = useState(initialItemsBox2);
+  const [filteredBox2Items, setFilteredBox2Items] = useState([]); // Filtered items for box2
   const [box3Items, setBox3Items] = useState([]);
-  const [localDropItems, setLocalDropItems] = useState([]); // Local state for dropItems
+  const [localDropItems, setLocalDropItems] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchResultsReady, setIsSearchResultsReady] = useState(false);
+  const [box2SearchQuery, setBox2SearchQuery] = useState(""); // Search query for box2
 
   const { data: session } = useSession();
 
@@ -78,13 +80,13 @@ export function DragAndDrop({ setDropItems }) {
           console.error("No access token available.");
           return;
         }
-  
+
         try {
           const response = await fetch('https://api.spotify.com/v1/me/top/tracks?limit=50', {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           const data = await response.json();
-  
+
           if (Array.isArray(data.items) && data.items.length > 0) {
             const uniqueSongs = new Map();
             const topSongs = data.items.map((item) => {
@@ -102,21 +104,39 @@ export function DragAndDrop({ setDropItems }) {
               }
               return null;
             }).filter(Boolean);
-  
-            setBox2Items(shuffleArray(topSongs)); // Shuffle the songs before setting them
+
+            const shuffledSongs = shuffleArray(topSongs);
+            setBox2Items(shuffledSongs);
+            setFilteredBox2Items(shuffledSongs); // Initialize filtered items
           } else {
             console.error("No top songs available.");
             setBox2Items([]);
+            setFilteredBox2Items([]);
           }
         } catch (error) {
           console.error("Error fetching top songs:", error);
           setBox2Items([]);
+          setFilteredBox2Items([]);
         }
       };
-  
+
       fetchTopSongs();
     }
   }, [session]);
+
+  useEffect(() => {
+    // Filter box2 items based on the search query
+    if (box2SearchQuery.trim()) {
+      setFilteredBox2Items(
+        box2Items.filter((item) =>
+          item.title.toLowerCase().includes(box2SearchQuery.toLowerCase()) ||
+          item.artist.toLowerCase().includes(box2SearchQuery.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredBox2Items(box2Items); // Reset to original items if query is empty
+    }
+  }, [box2SearchQuery, box2Items]);
 
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -147,19 +167,22 @@ export function DragAndDrop({ setDropItems }) {
         setLocalDropItems((prev) => [...prev, draggedItem]);
         setBox1Items(removeItem(box1Items));
         setBox2Items(removeItem(box2Items));
+        setFilteredBox2Items(removeItem(filteredBox2Items)); // Update filtered items
         setBox3Items(removeItem(box3Items));
-        setSearchResults(removeItem(searchResults)); // Remove from search results
+        setSearchResults(removeItem(searchResults));
       }
     } else if (over.id === "box1") {
       if (!box1Items.find((item) => item.id === itemId)) {
         setBox1Items((prev) => [draggedItem, ...prev]);
         setLocalDropItems(removeItem(localDropItems));
         setBox2Items(removeItem(box2Items));
+        setFilteredBox2Items(removeItem(filteredBox2Items)); // Update filtered items
         setBox3Items(removeItem(box3Items));
       }
     } else if (over.id === "box2") {
       if (!box2Items.find((item) => item.id === itemId)) {
         setBox2Items((prev) => [draggedItem, ...prev]);
+        setFilteredBox2Items((prev) => [draggedItem, ...prev]); // Update filtered items
         setLocalDropItems(removeItem(localDropItems));
         setBox1Items(removeItem(box1Items));
         setBox3Items(removeItem(box3Items));
@@ -170,6 +193,7 @@ export function DragAndDrop({ setDropItems }) {
         setLocalDropItems(removeItem(localDropItems));
         setBox1Items(removeItem(box1Items));
         setBox2Items(removeItem(box2Items));
+        setFilteredBox2Items(removeItem(filteredBox2Items)); // Update filtered items
       }
     }
   };
@@ -212,12 +236,14 @@ export function DragAndDrop({ setDropItems }) {
           />
           <DraggableBox
             id="box2"
-            items={box2Items}
+            items={filteredBox2Items} // Use filtered items
             title="Songs from your Listening History"
             session={session}
             setSearchResults={setSearchResults}
             searchResults={searchResults}
             isSearchResultsReady={isSearchResultsReady}
+            searchQuery={box2SearchQuery} // Pass search query
+            setSearchQuery={setBox2SearchQuery} // Pass search query setter
           />
           <DraggableBox
             id="box3"
@@ -269,9 +295,9 @@ function DropArea({ items }) {
   );
 }
 
-function DraggableBox({ id, items, title, session, setSearchResults, searchResults, isSearchResultsReady }) {
+function DraggableBox({ id, items, title, session, setSearchResults, searchResults, isSearchResultsReady, searchQuery, setSearchQuery }) {
   const { setNodeRef } = useDroppable({ id });
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueryBox3, setSearchQueryBox3] = useState("");
   const [isSearchResultsUpdated, setIsSearchResultsUpdated] = useState(false);
   const [page, setPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -279,7 +305,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   const [noResults, setNoResults] = useState(false);
 
   const handleSearch = async (query, page = 1) => {
-    setSearchQuery(query);
+    setSearchQueryBox3(query);
     if (id === "box3" && query.trim()) {
       try {
         const response = await fetch("/api/search", {
@@ -326,11 +352,22 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   return (
     <div ref={setNodeRef} className="drag-box">
       <p className="drag-box-title">{title}</p>
-      {id === "box3" && (
+      {id === "box2" && (
         <div className="search-bar">
           <input
             type="text"
             value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search in Box 2..."
+            className="search-input"
+          />
+        </div>
+      )}
+      {id === "box3" && (
+        <div className="search-bar">
+          <input
+            type="text"
+            value={searchQueryBox3}
             onChange={(e) => {
               setPage(1);
               handleSearch(e.target.value);
@@ -344,7 +381,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
         className="drag-box-content"
         style={{ maxHeight: "300px", overflowY: "auto" }}
       >
-        {(id === "box3" && searchQuery.trim() ? searchResults : items).map((item) => (
+        {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
           <DraggableItem key={item.id} item={item} />
         ))}
         {isLoadingMore && !allSongsLoaded && <p>Loading more...</p>}
