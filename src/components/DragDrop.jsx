@@ -74,6 +74,10 @@ export function DragAndDrop({ setDropItems }) {
                 artist: song.artist_name,
                 album: song.album_name,
                 image: await fetchAlbumImage(song.track_id, accessToken),
+                track_uri: song.track_uri,
+                artist_uri: song.artist_uri,
+                album_uri: song.album_uri,
+                duration_ms: song.duration_ms,
               }))
             );
             setBox1Items(songsWithImages);
@@ -121,6 +125,10 @@ export function DragAndDrop({ setDropItems }) {
                   artist: trackArtists,
                   album: item.album.name,
                   image: item.album.images?.[0]?.url || "default-image.jpg",
+                  track_uri: item.uri,
+                  artist_uri: item.artists?.[0]?.uri || null,
+                  album_uri: item.album.uri,
+                  duration_ms: item.duration_ms,
                 };
               }
               return null;
@@ -449,4 +457,3 @@ function DraggableItem({ item, isOverlay = false }) {
     </div>
   );
 }
-
