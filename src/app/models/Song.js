@@ -9,6 +9,7 @@ const SongSchema = new mongoose.Schema({
   album_uri: String,
   duration_ms: Number,
   album_name: String,
-});
+}, { versionKey: false }
+);
 
 export default mongoose.models.Song || mongoose.model("Song", SongSchema);

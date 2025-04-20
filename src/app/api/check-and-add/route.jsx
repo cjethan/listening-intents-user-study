@@ -33,9 +33,14 @@ export async function POST(req) {
           track_id: song.id,
           track_name: song.title,
           artist_name: song.artist,
+          track_uri: song.track_uri,
+          artist_uri: song.artist_uri,
+          album_uri: song.album_uri,
+          duration_ms: song.duration_ms,
           album_name: song.album,
           image: song.image,
-        }))
+        })),
+        { strict: false } // Ensure no __v field is added
       );
     }
 
