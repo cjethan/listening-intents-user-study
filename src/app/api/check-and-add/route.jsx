@@ -1,0 +1,47 @@
+import { NextResponse } from "next/server";
+import mongoose from "mongoose";
+import Song from "@/app/models/Song";
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) return;
+  await mongoose.connect(MONGODB_URI, {});
+}
+
+export async function POST(req) {
+  try {
+    await connectDB();
+    const { songs } = await req.json();
+
+    if (!Array.isArray(songs)) {
+      return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
+    }
+
+    const existingSongs = await Song.find(
+      { track_id: { $in: songs.map((song) => song.id) } },
+      { track_id: 1 }
+    );
+
+    const existingSongIds = new Set(existingSongs.map((song) => song.track_id));
+
+    const newSongs = songs.filter((song) => !existingSongIds.has(song.id));
+
+    if (newSongs.length > 0) {
+      await Song.insertMany(
+        newSongs.map((song) => ({
+          track_id: song.id,
+          track_name: song.title,
+          artist_name: song.artist,
+          album_name: song.album,
+          image: song.image,
+        }))
+      );
+    }
+
+    return NextResponse.json({ message: "Songs checked and added successfully" });
+  } catch (error) {
+    console.error("Error in check-and-add API:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
