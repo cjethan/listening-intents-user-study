@@ -23,6 +23,24 @@ async function fetchAlbumImage(trackId, accessToken) {
   }
 }
 
+async function checkAndAddToDatabase(songs) {
+  try {
+    const response = await fetch("/api/check-and-add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ songs }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to check/add songs to the database: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Error checking/adding songs to the database:", error);
+  }
+}
+
 function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
 }
@@ -59,6 +77,9 @@ export function DragAndDrop({ setDropItems }) {
               }))
             );
             setBox1Items(songsWithImages);
+
+            // Check and add songs to the database
+            await checkAndAddToDatabase(songsWithImages);
           } else {
             console.error("Unexpected API response:", data);
             setBox1Items([]);
@@ -108,6 +129,9 @@ export function DragAndDrop({ setDropItems }) {
             const shuffledSongs = shuffleArray(topSongs);
             setBox2Items(shuffledSongs);
             setFilteredBox2Items(shuffledSongs); // Initialize filtered items
+
+            // Check and add songs to the database
+            await checkAndAddToDatabase(shuffledSongs);
           } else {
             console.error("No top songs available.");
             setBox2Items([]);
