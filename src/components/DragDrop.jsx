@@ -45,6 +45,40 @@ function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
 }
 
+async function fetchRandomSongsByGenre(genre, accessToken) {
+  try {
+    const response = await fetch(`/api/songs?genre=${encodeURIComponent(genre)}`);
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      const songsWithGenres = data.filter((song) => song.genres && song.genres.includes(genre));
+      const randomSongs = shuffleArray(songsWithGenres).slice(0, 10);
+
+      const songsWithImages = await Promise.all(
+        randomSongs.map(async (song) => ({
+          id: song.track_id,
+          title: song.track_name,
+          artist: song.artist_name,
+          album: song.album_name,
+          image: await fetchAlbumImage(song.track_id, accessToken),
+          track_uri: song.track_uri,
+          artist_uri: song.artist_uri,
+          album_uri: song.album_uri,
+          duration_ms: song.duration_ms,
+        }))
+      );
+
+      return songsWithImages;
+    } else {
+      console.error("Unexpected API response:", data);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching songs by genre:", error);
+    return [];
+  }
+}
+
 export function DragAndDrop({ setDropItems }) {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
@@ -62,32 +96,19 @@ export function DragAndDrop({ setDropItems }) {
     if (session) {
       const fetchSongs = async () => {
         try {
-          const response = await fetch("/api/songs");
-          const data = await response.json();
+          console.log("Fetching songs for Box 1...");
+          const accessToken = session?.accessToken;
+          const genre = "drum and bass"; // Replace with the desired genre
+          console.log(`Selected genre: ${genre}`);
+          const songsByGenre = await fetchRandomSongsByGenre(genre, accessToken);
 
-          if (Array.isArray(data)) {
-            const accessToken = session?.accessToken;
-            const songsWithImages = await Promise.all(
-              data.map(async (song) => ({
-                id: song.track_id,
-                title: song.track_name,
-                artist: song.artist_name,
-                album: song.album_name,
-                image: await fetchAlbumImage(song.track_id, accessToken),
-                track_uri: song.track_uri,
-                artist_uri: song.artist_uri,
-                album_uri: song.album_uri,
-                duration_ms: song.duration_ms,
-              }))
-            );
-            setBox1Items(songsWithImages);
+          console.log(`Fetched ${songsByGenre.length} songs for genre: ${genre}`);
+          setBox1Items(songsByGenre);
 
-            // Check and add songs to the database
-            await checkAndAddToDatabase(songsWithImages);
-          } else {
-            console.error("Unexpected API response:", data);
-            setBox1Items([]);
-          }
+          // Check and add songs to the database
+          console.log("Checking and adding songs to the database...");
+          await checkAndAddToDatabase(songsByGenre);
+          console.log("Songs successfully checked and added to the database.");
         } catch (error) {
           console.error("Error fetching songs:", error);
           setBox1Items([]);
