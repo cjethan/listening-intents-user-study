@@ -98,16 +98,26 @@ export function DragAndDrop({ setDropItems }) {
         try {
           console.log("Fetching songs for Box 1...");
           const accessToken = session?.accessToken;
-          const genre = "drum and bass"; // Replace with the desired genre
-          console.log(`Selected genre: ${genre}`);
-          const songsByGenre = await fetchRandomSongsByGenre(genre, accessToken);
 
-          console.log(`Fetched ${songsByGenre.length} songs for genre: ${genre}`);
-          setBox1Items(songsByGenre);
+          // Retrieve genres from localStorage
+          const userData = JSON.parse(localStorage.getItem("userData"));
+          const genres = userData?.genres || [];
+          console.log(`Retrieved genres from localStorage: ${genres}`);
+
+          let allSongs = [];
+          for (const genre of genres) {
+            console.log(`Fetching songs for genre: ${genre}`);
+            const songsByGenre = await fetchRandomSongsByGenre(genre, accessToken);
+            console.log(`Fetched ${songsByGenre.length} songs for genre: ${genre}`);
+            allSongs = [...allSongs, ...songsByGenre];
+          }
+
+          // Display all fetched songs without shuffling
+          setBox1Items(allSongs);
 
           // Check and add songs to the database
           console.log("Checking and adding songs to the database...");
-          await checkAndAddToDatabase(songsByGenre);
+          await checkAndAddToDatabase(allSongs);
           console.log("Songs successfully checked and added to the database.");
         } catch (error) {
           console.error("Error fetching songs:", error);

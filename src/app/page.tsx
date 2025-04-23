@@ -346,6 +346,7 @@ if (session) {
               user_id: "00123",
               name: "John",
               age: 25,
+              genres: ["pop", "rock", "drum and bass"],
             };
             localStorage.setItem("userData", JSON.stringify(debugData));
             setUserData(debugData);
