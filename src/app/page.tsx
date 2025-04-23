@@ -74,7 +74,7 @@ export default function Home() {
       router.push("/login");
     } else if (status === "authenticated") {
       const storedUserData = localStorage.getItem("userData");
-      if (!storedUserData) {
+      if (!storedUserData || storedUserData === "null") {
         router.push("/user-info");
       } else {
         setUserData(JSON.parse(storedUserData)); // Load persisted user data
@@ -342,12 +342,7 @@ if (session) {
       <div className="mt-6 p-4 bg-white rounded shadow-md">
         <button
           onClick={() => {
-            const debugData = {
-              user_id: "00123",
-              name: "John",
-              age: 25,
-              genres: ["pop", "rock", "drum and bass"],
-            };
+            const debugData = null;
             localStorage.setItem("userData", JSON.stringify(debugData));
             setUserData(debugData);
             console.log("Debug userData set:", debugData);
