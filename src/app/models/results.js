@@ -23,6 +23,7 @@ const userResultSchema = new mongoose.Schema({
   age: Number,
   country: String,
   gender: String,
+  genres: [String],
   intents: { type: Map, of: intentSchema },
 });
 
