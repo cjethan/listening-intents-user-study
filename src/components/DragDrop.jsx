@@ -291,7 +291,7 @@ export function DragAndDrop({ setDropItems }) {
           <DraggableBox
             id="box1"
             items={box1Items}
-            title="Random Songs"
+            title="Random Songs from your Genres"
             session={session}
             setSearchResults={setSearchResults}
             searchResults={searchResults}
