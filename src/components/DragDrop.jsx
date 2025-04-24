@@ -451,7 +451,60 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
           <DraggableItem key={item.id} item={item} />
         ))}
         {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && (
-          <p className="text-gray-500 text-center mt-4">No results found. Try a different search query.</p>
+          <div className="text-center mt-4">
+            <p className="text-gray-500">No results found. You can add a new song:</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const title = formData.get("title")?.trim();
+                const artist = formData.get("artist")?.trim();
+
+                if (!title || !artist) {
+                  alert("Song Name and Artist Name are required.");
+                  return;
+                }
+
+                const newSong = {
+                  id: `custom-${Date.now()}`,
+                  title,
+                  artist,
+                  album: formData.get("album")?.trim() || "Unknown Album",
+                  image: "/default-cover.png",
+                };
+                setSearchResults((prev) => [...prev, newSong]);
+                e.target.reset(); // Clear the form
+              }}
+              className="mt-2 space-y-2"
+            >
+              <input
+                type="text"
+                name="title"
+                placeholder="Song Name"
+                required
+                className="w-full px-3 py-2 border rounded"
+              />
+              <input
+                type="text"
+                name="artist"
+                placeholder="Artist Name"
+                required
+                className="w-full px-3 py-2 border rounded"
+              />
+              <input
+                type="text"
+                name="album"
+                placeholder="Album Name (Optional)"
+                className="w-full px-3 py-2 border rounded"
+              />
+              <button
+                type="submit"
+                className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600"
+              >
+                Add Song
+              </button>
+            </form>
+          </div>
         )}
         {isLoadingMore && !allSongsLoaded && <p>Loading more...</p>}
         {allSongsLoaded && <p>All songs are displayed.</p>}
