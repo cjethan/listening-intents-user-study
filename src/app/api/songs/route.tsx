@@ -25,7 +25,7 @@ export async function GET(req) {
 
     const songs = await Song.aggregate([
       { $match: query }, // Apply genre filter if provided
-      { $sample: { size: 20 } }, // Fetch random songs
+      { $sample: { size: 10 } }, // Fetch a smaller random sample (10 songs)
     ]);
 
     console.log(`Fetched ${songs.length} songs${genre ? ` for genre: ${genre}` : ""}`);
