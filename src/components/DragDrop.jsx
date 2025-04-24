@@ -82,6 +82,7 @@ async function fetchRandomSongsByGenre(genre, accessToken) {
 export function DragAndDrop({ setDropItems }) {
   const [activeItem, setActiveItem] = useState(null);
   const [box1Items, setBox1Items] = useState([]);
+  const [box1Loading, setBox1Loading] = useState(true); // Loading state for Box 1
   const [box2Items, setBox2Items] = useState(initialItemsBox2);
   const [filteredBox2Items, setFilteredBox2Items] = useState([]); // Filtered items for box2
   const [box3Items, setBox3Items] = useState([]);
@@ -96,6 +97,7 @@ export function DragAndDrop({ setDropItems }) {
     if (session) {
       const fetchSongs = async () => {
         try {
+          setBox1Loading(true); // Start loading
           console.log("Fetching songs for Box 1...");
           const accessToken = session?.accessToken;
 
@@ -104,13 +106,15 @@ export function DragAndDrop({ setDropItems }) {
           const genres = userData?.genres || [];
           console.log(`Retrieved genres from localStorage: ${genres}`);
 
-          let allSongs = [];
-          for (const genre of genres) {
-            console.log(`Fetching songs for genre: ${genre}`);
-            const songsByGenre = await fetchRandomSongsByGenre(genre, accessToken);
-            console.log(`Fetched ${songsByGenre.length} songs for genre: ${genre}`);
-            allSongs = [...allSongs, ...songsByGenre];
-          }
+          // Fetch songs for all genres in parallel
+          const genrePromises = genres.map((genre) =>
+            fetchRandomSongsByGenre(genre, accessToken)
+          );
+          const songsByGenre = await Promise.all(genrePromises);
+
+          // Flatten and limit the total number of songs
+          const allSongs = songsByGenre.flat().slice(0, 50); // Limit to 50 songs
+          console.log(`Fetched ${allSongs.length} songs in total.`);
 
           // Display all fetched songs without shuffling
           setBox1Items(allSongs);
@@ -122,6 +126,8 @@ export function DragAndDrop({ setDropItems }) {
         } catch (error) {
           console.error("Error fetching songs:", error);
           setBox1Items([]);
+        } finally {
+          setBox1Loading(false); // End loading
         }
       };
       fetchSongs();
@@ -288,15 +294,22 @@ export function DragAndDrop({ setDropItems }) {
       <div className="drag-container">
         <DropArea items={localDropItems} />
         <div className="drag-box-wrapper">
-          <DraggableBox
-            id="box1"
-            items={box1Items}
-            title="Random Songs from your Genres"
-            session={session}
-            setSearchResults={setSearchResults}
-            searchResults={searchResults}
-            isSearchResultsReady={isSearchResultsReady}
-          />
+          <div className="relative">
+            <DraggableBox
+              id="box1"
+              items={box1Items}
+              title="Random Songs from your Genres"
+              session={session}
+              setSearchResults={setSearchResults}
+              searchResults={searchResults}
+              isSearchResultsReady={isSearchResultsReady}
+            />
+            {box1Loading && ( // Show overlay if Box 1 is still loading
+              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                <p className="text-gray-700 font-semibold">Loading songs... Please wait.</p>
+              </div>
+            )}
+          </div>
           <DraggableBox
             id="box2"
             items={filteredBox2Items} // Use filtered items
