@@ -318,13 +318,13 @@ export function DragAndDrop({ setDropItems }) {
             setSearchResults={setSearchResults}
             searchResults={searchResults}
             isSearchResultsReady={isSearchResultsReady}
-            searchQuery={box2SearchQuery} // Pass search query
-            setSearchQuery={setBox2SearchQuery} // Pass search query setter
+            // searchQuery={box2SearchQuery} // Pass search query
+            // setSearchQuery={setBox2SearchQuery} // Pass search query setter
           />
           <DraggableBox
             id="box3"
             items={box3Items}
-            title="Box 3"
+            title="Search for Song, Artist, or Album"
             session={session}
             setSearchResults={setSearchResults}
             searchResults={searchResults}
@@ -428,17 +428,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   return (
     <div ref={setNodeRef} className="drag-box">
       <p className="drag-box-title">{title}</p>
-      {id === "box2" && (
-        <div className="search-bar">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search in Box 2..."
-            className="search-input"
-          />
-        </div>
-      )}
+      {id === "box2" }
       {id === "box3" && (
         <div className="search-bar">
           <input
@@ -455,11 +445,14 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
       )}
       <div
         className="drag-box-content"
-        style={{ maxHeight: "300px", overflowY: "auto" }}
+        style={{ maxHeight: "500px", overflowY: "auto" }}
       >
         {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
           <DraggableItem key={item.id} item={item} />
         ))}
+        {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && (
+          <p className="text-gray-500 text-center mt-4">No results found. Try a different search query.</p>
+        )}
         {isLoadingMore && !allSongsLoaded && <p>Loading more...</p>}
         {allSongsLoaded && <p>All songs are displayed.</p>}
         {noResults && <p>No results found for your search.</p>}
