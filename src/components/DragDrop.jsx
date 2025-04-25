@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { useSession } from "next-auth/react";
+import { checkSongsAndExtractGenres } from "../utils/databaseUtils"; // Import the new utility function
 
 const initialItemsBox2 = [
   { id: "item3", title: "Track Three", artist: "Artist C", album: "Album Z" },
@@ -40,6 +41,17 @@ async function checkAndAddToDatabase(songs) {
     console.error("Error checking/adding songs to the database:", error);
   }
 }
+
+async function checkGenresForBox2Songs(box2Items) {
+  console.log("Checking genres for songs in Box 2...");
+  try {
+    const genres = await checkSongsAndExtractGenres(box2Items);
+    console.log("Extracted genres from Box 2 songs:", genres);
+    // You can now use the extracted genres as needed
+  } catch (error) {
+    console.error("Error checking genres for Box 2 songs:", error);
+  }
+};
 
 function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -120,9 +132,9 @@ export function DragAndDrop({ setDropItems }) {
           setBox1Items(allSongs);
 
           // Check and add songs to the database
-          console.log("Checking and adding songs to the database...");
-          await checkAndAddToDatabase(allSongs);
-          console.log("Songs successfully checked and added to the database.");
+          //console.log("Checking and adding songs to the database...");
+          //await checkAndAddToDatabase(allSongs);
+          //console.log("Songs successfully checked and added to the database.");
         } catch (error) {
           console.error("Error fetching songs:", error);
           setBox1Items([]);
@@ -177,6 +189,10 @@ export function DragAndDrop({ setDropItems }) {
 
             // Check and add songs to the database
             await checkAndAddToDatabase(shuffledSongs);
+            console.log("Songs successfully checked and added to the database.");
+            console.log("now checking genres for box2 songs...");
+            await checkGenresForBox2Songs(shuffledSongs);
+            console.log("Genres checked for Box 2 songs.");
           } else {
             console.error("No top songs available.");
             setBox2Items([]);
@@ -218,6 +234,25 @@ export function DragAndDrop({ setDropItems }) {
   useEffect(() => {
     setDropItems(localDropItems); // Sync localDropItems with parent state
   }, [localDropItems, setDropItems]);
+
+  useEffect(() => {
+    const checkGenresForBox2Songs = async () => {
+      console.debug("Checking genres for songs in Box 2...");
+      try {
+        const genres = await checkSongsAndExtractGenres(box2Items);
+        console.debug("Extracted genres from Box 2 songs:", genres);
+        // You can now use the extracted genres as needed
+      } catch (error) {
+        console.error("Error checking genres for Box 2 songs:", error);
+      }
+    };
+
+    if (box2Items.length > 0) {
+      checkGenresForBox2Songs();
+    } else {
+      console.log("box2 length", box2Items.length);
+    }
+  }, [box2Items]);
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
