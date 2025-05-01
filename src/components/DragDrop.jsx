@@ -25,6 +25,7 @@ async function fetchAlbumImage(trackId, accessToken) {
 }
 
 async function checkAndAddToDatabase(songs) {
+  console.log("Checking and adding songs to the database...");
   try {
     const response = await fetch("/api/check-and-add", {
       method: "POST",
@@ -34,9 +35,8 @@ async function checkAndAddToDatabase(songs) {
       body: JSON.stringify({ songs }),
     });
 
-    if (!response.ok) {
-      throw new Error(`Failed to check/add songs to the database: ${response.statusText}`);
-    }
+    const responseData = await response.json(); // Parse the response as JSON
+    console.log("Response from check-and-add API:", responseData);
   } catch (error) {
     console.error("Error checking/adding songs to the database:", error);
   }
@@ -384,7 +384,7 @@ function DropArea({ items }) {
   return (
     <div>
       <p className="text-gray-500 text-sm italic mb-2">
-        Drag and drop songs here to associate them with the current intent. To remove items, place them in any box below.
+        Drag and drop songs here to associate them with the current intent. To remove items, place them in any box below. The more songs, the better.
       </p>
       <div ref={setNodeRef} className="drop-area relative">
         <div className="absolute top-2 right-2 group">
