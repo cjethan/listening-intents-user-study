@@ -65,7 +65,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
           <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">Additional Information about the Intent</h3>
             <div className="absolute top-2 right-2 group">
-              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
                 i
               </div>
               <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">

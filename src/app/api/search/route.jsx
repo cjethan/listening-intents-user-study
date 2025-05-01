@@ -20,13 +20,18 @@ export async function POST(req) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
+    // Split query into individual words
+    const queryWords = query.split(/\s+/).map((word) => ({
+      $or: [
+        { track_name: { $regex: word, $options: "i" } },
+        { artist_name: { $regex: word, $options: "i" } },
+        { album_name: { $regex: word, $options: "i" } },
+      ],
+    }));
+
     const results = await Song.find(
       {
-        $or: [
-          { track_name: { $regex: query, $options: "i" } },
-          { artist_name: { $regex: query, $options: "i" } },
-          { album_name: { $regex: query, $options: "i" } },
-        ],
+        $and: queryWords, // Ensure all words match
       },
       {
         track_id: 1,
