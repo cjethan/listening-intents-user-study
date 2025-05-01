@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 import { useSession } from "next-auth/react";
 import { checkSongsAndExtractGenres } from "../utils/databaseUtils"; // Import the new utility function
@@ -421,75 +421,89 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   const [noResults, setNoResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false); // State for loading spinner
 
+  const debounceTimer = useRef(null); // Add a ref to store the debounce timer
+
   const handleSearch = async (query, page = 1) => {
     setSearchQueryBox3(query);
     if (id === "box3" && query.trim()) {
       setIsSearching(true); // Start loading spinner
-      try {
-        const response = await fetch("/api/search", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ query, page }),
-        });
 
-        if (!response.ok) {
-          throw new Error(`Error: ${response.status}`);
-        }
+      // Clear any existing debounce timer
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
 
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          const accessToken = session?.accessToken;
-          const resultsWithImages = await Promise.all(
-            data.map(async (item) => ({
+      // Set a new debounce timer
+      debounceTimer.current = setTimeout(async () => {
+        try {
+          const response = await fetch("/api/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query, page }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            const queryWords = query.toLowerCase().split(/\s+/);
+
+            const filteredResults = data.map((item) => ({
               id: item.track_id,
               title: item.track_name,
               artist: item.artist_name,
               album: item.album_name,
-              image: await fetchAlbumImage(item.track_id, accessToken),
-            }))
-          );
+            })).filter((item) =>
+              queryWords.some(
+                (word) =>
+                  item.title.toLowerCase().includes(word) ||
+                  item.artist.toLowerCase().includes(word) ||
+                  item.album.toLowerCase().includes(word)
+              )
+            );
 
-          const queryWords = query.toLowerCase().split(/\s+/);
+            const prioritizedResults = filteredResults.sort((a, b) => {
+              const aMatchCount = queryWords.filter(
+                (word) =>
+                  a.title.toLowerCase().includes(word) ||
+                  a.artist.toLowerCase().includes(word) ||
+                  a.album.toLowerCase().includes(word)
+              ).length;
+              const bMatchCount = queryWords.filter(
+                (word) =>
+                  b.title.toLowerCase().includes(word) ||
+                  b.artist.toLowerCase().includes(word) ||
+                  b.album.toLowerCase().includes(word)
+              ).length;
+              return bMatchCount - aMatchCount;
+            });
 
-          const filteredResults = resultsWithImages.filter((item) =>
-            queryWords.some(
-              (word) =>
-                item.title.toLowerCase().includes(word) ||
-                item.artist.toLowerCase().includes(word) ||
-                item.album.toLowerCase().includes(word)
-            )
-          );
+            // Fetch album images after prioritizing results
+            const accessToken = session?.accessToken;
+            const resultsWithImages = await Promise.all(
+              prioritizedResults.map(async (item) => ({
+                ...item,
+                image: await fetchAlbumImage(item.id, accessToken),
+              }))
+            );
 
-          const prioritizedResults = filteredResults.sort((a, b) => {
-            const aMatchCount = queryWords.filter(
-              (word) =>
-                a.title.toLowerCase().includes(word) ||
-                a.artist.toLowerCase().includes(word) ||
-                a.album.toLowerCase().includes(word)
-            ).length;
-            const bMatchCount = queryWords.filter(
-              (word) =>
-                b.title.toLowerCase().includes(word) ||
-                b.artist.toLowerCase().includes(word) ||
-                b.album.toLowerCase().includes(word)
-            ).length;
-            return bMatchCount - aMatchCount;
-          });
-
-          setSearchResults(prioritizedResults);
-          setIsSearchResultsUpdated(true);
-        } else {
-          console.error("Unexpected search API response:", data);
+            setSearchResults(resultsWithImages);
+            setIsSearchResultsUpdated(true);
+          } else {
+            console.error("Unexpected search API response:", data);
+            if (page === 1) setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Error searching database:", error);
           if (page === 1) setSearchResults([]);
+        } finally {
+          setIsSearching(false); // Stop loading spinner
         }
-      } catch (error) {
-        console.error("Error searching database:", error);
-        if (page === 1) setSearchResults([]);
-      } finally {
-        setIsSearching(false); // Stop loading spinner
-      }
+      }, 500); // Delay of 500ms
     } else {
       setSearchResults([]);
     }
