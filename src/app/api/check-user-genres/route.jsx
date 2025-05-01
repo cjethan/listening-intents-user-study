@@ -1,3 +1,6 @@
+/*
+* Get genres from the user's songs.
+*/
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Song from "@/app/models/Song";

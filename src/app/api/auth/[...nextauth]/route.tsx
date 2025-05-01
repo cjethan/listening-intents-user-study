@@ -1,35 +1,6 @@
-/*import { NextResponse } from "next/server";
-import querystring from "querystring";
-
-const client_id = process.env.SPOTIFY_CLIENT_ID || ""; // Spotify Client ID
-//const redirect_uri = process.env.SPOTIFY_REDIRECT_URI || ""; // Redirect URI
-const redirect_uri = 'http://127.0.0.1:3000/callback'
-
-function generateRandomString(length: number) {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-export async function GET() {
-  const state = generateRandomString(16);
-  const scope = "user-top-read user-read-recently-played";
-
-  const spotifyAuthUrl =
-    "https://accounts.spotify.com/authorize?" +
-    querystring.stringify({
-      response_type: "code",
-      client_id,
-      scope,
-      redirect_uri,
-      state,
-    });
-
-  return NextResponse.redirect(spotifyAuthUrl);
-}*/
+/*
+* Spotify Authentication Handeling
+*/
 import NextAuth from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 
@@ -87,16 +58,14 @@ const handler = NextAuth({
         async jwt({ token, account }) {
             if (account) {
                 token.accessToken = account.access_token;
-                token.accessTokenExpires = Date.now() + account.expires_in * 1000; // 1 hour
-                token.refreshToken = account.refresh_token; // Store the refresh token
+                token.accessTokenExpires = Date.now() + account.expires_in * 1000;
+                token.refreshToken = account.refresh_token;
             }
 
-            // Return previous token if the access token has not expired yet
             if (Date.now() < token.accessTokenExpires) {
                 return token;
             }
 
-            // Access token has expired, try to update it
             return await refreshAccessToken(token);
         },
         async session({ session, token }) {

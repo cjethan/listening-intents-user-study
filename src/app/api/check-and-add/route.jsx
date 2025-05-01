@@ -1,3 +1,6 @@
+/*
+* Check if the user's songs (top songs, most recent songs) are already in the database, if not, add them.
+*/
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Song from "@/app/models/Song";
@@ -13,6 +16,7 @@ export async function POST(req) {
   try {
     await connectDB();
     const { songs } = await req.json();
+    console.log("Received songs:", songs);
 
     if (!Array.isArray(songs)) {
       return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
@@ -27,6 +31,8 @@ export async function POST(req) {
 
     const newSongs = songs.filter((song) => !existingSongIds.has(song.id));
 
+    console.log("New songs to be added:", newSongs);
+
     if (newSongs.length > 0) {
       await Song.insertMany(
         newSongs.map((song) => ({
@@ -39,12 +45,13 @@ export async function POST(req) {
           duration_ms: song.duration_ms,
           album_name: song.album,
           image: song.image,
+          added_by_User: 1
         })),
         { strict: false } // Ensure no __v field is added
       );
     }
 
-    return NextResponse.json({ message: "Songs checked and added successfully" });
+    return NextResponse.json({ message: "Songs checked and added successfully", newSongs });
   } catch (error) {
     console.error("Error in check-and-add API:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

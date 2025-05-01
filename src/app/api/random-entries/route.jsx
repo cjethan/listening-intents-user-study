@@ -13,8 +13,8 @@ export default async function handler(req, res) {
   const limit = parseInt(req.query.limit, 10) || 10;
 
   try {
-    await connectDB(); // Establish the database connection
-    const db = mongoose.connection.db; // Access the database instance
+    await connectDB();
+    const db = mongoose.connection.db;
     const randomEntries = await db.collection("songs").aggregate([{ $sample: { size: limit } }]).toArray();
 
     res.status(200).json(randomEntries);
