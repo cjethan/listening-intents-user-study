@@ -207,3 +207,14 @@ h1, h2, h3, h4, h5, h6 {
   max-height: 400px; /* Adjust height as needed */
   overflow-y: auto;
 }
+
+.group .w-6.h-6 {
+  background-color: #deedff; /* Light blue background */
+  color: #1e40af; /* Dark blue text */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.group:hover .w-6.h-6 {
+  background-color: #3b82f6; /* Blue background */
+  color: #ffffff; /* White text */
+}

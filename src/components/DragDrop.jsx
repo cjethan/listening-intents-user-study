@@ -382,26 +382,31 @@ function DropArea({ items }) {
   const { setNodeRef } = useDroppable({ id: "dropArea" });
 
   return (
-    <div ref={setNodeRef} className="drop-area relative">
-      <div className="absolute top-2 right-2 group">
-        <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
-          i
+    <div>
+      <p className="text-gray-500 text-sm italic mb-2">
+        Drag and drop songs here to associate them with the current intent. To remove items, place them in any box below.
+      </p>
+      <div ref={setNodeRef} className="drop-area relative">
+        <div className="absolute top-2 right-2 group">
+          <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
+            i
+          </div>
+          <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-85">
+            Drag and drop songs here to associate them with the current intent. Choose at least 5 songs, the more the better.<br />
+            To remove items, place them in any box below.
+          </div>
         </div>
-        <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-85">
-          Drag and drop songs here to associate them with the current intent. <br />
-          To remove songs, place them in Box 1.
-        </div>
+        {items.length === 0 ? (
+          <p className="drop-placeholder">Drop songs here</p>
+        ) : null}
+        {items.map((item) => {
+          if (!item || !item.id) {
+            console.error("Invalid item in DropArea:", item);
+            return null; // Safeguard to prevent crashes
+          }
+          return <DraggableItem key={item.id} item={item} />;
+        })}
       </div>
-      {items.length === 0 ? (
-        <p className="drop-placeholder">Drop Here</p>
-      ) : null}
-      {items.map((item) => {
-        if (!item || !item.id) {
-          console.error("Invalid item in DropArea:", item);
-          return null; // Safeguard to prevent crashes
-        }
-        return <DraggableItem key={item.id} item={item} />;
-      })}
     </div>
   );
 }
@@ -414,10 +419,12 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [allSongsLoaded, setAllSongsLoaded] = useState(false);
   const [noResults, setNoResults] = useState(false);
+  const [isSearching, setIsSearching] = useState(false); // State for loading spinner
 
   const handleSearch = async (query, page = 1) => {
     setSearchQueryBox3(query);
     if (id === "box3" && query.trim()) {
+      setIsSearching(true); // Start loading spinner
       try {
         const response = await fetch("/api/search", {
           method: "POST",
@@ -443,7 +450,35 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
               image: await fetchAlbumImage(item.track_id, accessToken),
             }))
           );
-          setSearchResults(resultsWithImages);
+
+          const queryWords = query.toLowerCase().split(/\s+/);
+
+          const filteredResults = resultsWithImages.filter((item) =>
+            queryWords.some(
+              (word) =>
+                item.title.toLowerCase().includes(word) ||
+                item.artist.toLowerCase().includes(word) ||
+                item.album.toLowerCase().includes(word)
+            )
+          );
+
+          const prioritizedResults = filteredResults.sort((a, b) => {
+            const aMatchCount = queryWords.filter(
+              (word) =>
+                a.title.toLowerCase().includes(word) ||
+                a.artist.toLowerCase().includes(word) ||
+                a.album.toLowerCase().includes(word)
+            ).length;
+            const bMatchCount = queryWords.filter(
+              (word) =>
+                b.title.toLowerCase().includes(word) ||
+                b.artist.toLowerCase().includes(word) ||
+                b.album.toLowerCase().includes(word)
+            ).length;
+            return bMatchCount - aMatchCount;
+          });
+
+          setSearchResults(prioritizedResults);
           setIsSearchResultsUpdated(true);
         } else {
           console.error("Unexpected search API response:", data);
@@ -453,7 +488,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
         console.error("Error searching database:", error);
         if (page === 1) setSearchResults([]);
       } finally {
-        setIsLoadingMore(false);
+        setIsSearching(false); // Stop loading spinner
       }
     } else {
       setSearchResults([]);
@@ -476,6 +511,11 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
             placeholder="Search..."
             className="search-input"
           />
+          {isSearching && (
+            <div className="loading-spinner">
+              <div className="spinner-circle"></div>
+            </div>
+          )}
         </div>
       )}
       <div
@@ -485,7 +525,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
         {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
           <DraggableItem key={item.id} item={item} />
         ))}
-        {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && (
+        {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && !isSearching && (
           <div className="text-center mt-4">
             <p className="text-gray-500">No results found. You can add a new song:</p>
             <form
@@ -548,6 +588,32 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
     </div>
   );
 }
+
+// Add CSS for the loading spinner
+<style jsx>{`
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+  }
+  .spinner-circle {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(0, 0, 0, 0.2);
+    border-top: 3px solid #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`}</style>
 
 function DraggableItem({ item, isOverlay = false }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
