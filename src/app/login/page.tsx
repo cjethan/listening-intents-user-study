@@ -1,7 +1,10 @@
 "use client";
 
+/*
+* todo Spotify login page
+*/
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation"; // Updated import
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function LoginPage() {
@@ -10,11 +13,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/"); // Use replace to avoid adding to history stack
+      router.replace("/"); 
     }
   }, [status, router]);
 
-  if (status === "authenticated") return null; // Prevent rendering if already logged in
+  if (status === "authenticated") return null; 
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">

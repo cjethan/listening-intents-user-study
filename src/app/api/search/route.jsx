@@ -1,3 +1,6 @@
+/*
+* Search the database for songs, artists, albums, also in combination.
+*/
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Song from "@/app/models/Song";
@@ -20,7 +23,6 @@ export async function POST(req) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
-    // Split query into individual words
     const queryWords = query.split(/\s+/).map((word) => ({
       $or: [
         { track_name: { $regex: word, $options: "i" } },
@@ -31,7 +33,7 @@ export async function POST(req) {
 
     const results = await Song.find(
       {
-        $and: queryWords, // Ensure all words match
+        $and: queryWords,
       },
       {
         track_id: 1,

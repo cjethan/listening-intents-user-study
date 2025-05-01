@@ -1,3 +1,6 @@
+/* 
+* Get a sample of songs by genre.
+*/
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Song from "@/app/models/Song";
@@ -19,7 +22,7 @@ export async function GET(req) {
 
     let query = {};
     if (genre) {
-      query = { genres: { $in: [genre] } }; // Filter by genre in the genres array
+      query = { genres: { $in: [genre] } };
       console.log(`Filtering songs by genre: ${genre}`);
     }
 

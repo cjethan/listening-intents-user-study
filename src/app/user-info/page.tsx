@@ -1,4 +1,7 @@
 'use client';
+/*
+* todo Page to collect user information
+*/
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
