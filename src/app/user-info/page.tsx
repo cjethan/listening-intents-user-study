@@ -66,25 +66,61 @@ export default function UserInfo() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (selectedGenres.length < 3) {
-      setError('Please select at least 3 genres.');
-      return;
+
+    // Validation for required fields
+    if (!prolificId.trim()) {
+        setError('Prolific ID is required.');
+        return;
     }
+    if (selectedGenres.length < 3) {
+        setError('Please select at least 3 genres.');
+        return;
+    }
+    if (!playsInstrument) {
+        setError('Please specify if you play a musical instrument.');
+        return;
+    }
+    if (
+        (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
+        instrumentsPlayed.length === 0 &&
+        !otherInstrument.trim()
+    ) {
+        setError('Please specify at least one instrument you play or played.');
+        return;
+    }
+    if (
+        (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
+        !yearsPlayed
+    ) {
+        setError('Please specify how many years you have played music.');
+        return;
+    }
+    if (!formalEducation) {
+        setError('Please specify your formal music education status.');
+        return;
+    }
+    if (!musicProduction) {
+        setError('Please specify if you compose, produce, or record music.');
+        return;
+    }
+
+    // Prepare user data according to the model
     const userData = {
-      prolific_id: prolificId,
-      user_id: userId,
-      genres: selectedGenres,
-      musicExperience,
-      playsInstrument,
-      instrumentsPlayed: [...instrumentsPlayed, otherInstrument].filter(Boolean),
-      yearsPlayed,
-      formalEducation,
-      musicProduction,
-      musicHours,
+        user_id: userId,
+        prolific_id: prolificId,
+        genres: selectedGenres,
+        play_instrument: playsInstrument.toLowerCase(),
+        instruments_played: [...instrumentsPlayed, otherInstrument].filter(Boolean),
+        instruments_played_years: [yearsPlayed],
+        formal_education: formalEducation.toLowerCase(),
+        compose_music: musicProduction.toLowerCase(),
+        hours_listening_weekly: musicHours,
+        intents: {}, // Placeholder for intents
     };
+
     setUserData(userData);
-    localStorage.setItem("userData", JSON.stringify(userData)); // Persist user data
-    router.push('/'); // Redirect to the main page
+    localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+    router.push('/consent'); // Redirect to consent form
   }
 
   return (
@@ -204,9 +240,9 @@ export default function UserInfo() {
                 <option value="" disabled>Select duration</option>
                 {[
                   'Less than 1 year',
-                  '1–2 years',
-                  '3–5 years',
-                  '6–10 years',
+                  '1-2 years',
+                  '3-5 years',
+                  '6-10 years',
                   'More than 10 years',
                 ].map((option) => (
                   <option key={option} value={option}>{option}</option>
@@ -257,22 +293,64 @@ export default function UserInfo() {
             <input
               type="range"
               min="5"
-              max="41"
+              max="36"
               step="1"
               value={musicHours}
               onChange={(e) => setMusicHours(Number(e.target.value))}
               className="w-full h-2 bg-gray-300 rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-gray-800"
               style={{
-                background: `linear-gradient(to right, #1f2937 ${(musicHours - 5) / 36 * 100}%, #d1d5db ${(musicHours - 5) / 36 * 100}%)`,
+                background: `linear-gradient(to right, #1f2937 ${(musicHours - 5) / 31 * 100}%, #d1d5db ${(musicHours - 5) / 31 * 100}%)`,
               }}
             />
+            <style jsx>{`
+              input[type='range']::-webkit-slider-thumb {
+                appearance: none;
+                width: 20px;
+                height: 20px;
+                background: #1f2937;
+                border: 2px solid #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+                transition: transform 0.2s ease-in-out;
+              }
+              input[type='range']::-webkit-slider-thumb:hover {
+                transform: scale(1.2);
+              }
+              input[type='range']::-moz-range-thumb {
+                width: 20px;
+                height: 20px;
+                background: #1f2937;
+                border: 2px solid #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+                transition: transform 0.2s ease-in-out;
+              }
+              input[type='range']::-moz-range-thumb:hover {
+                transform: scale(1.2);
+              }
+              input[type='range']::-ms-thumb {
+                width: 20px;
+                height: 20px;
+                background: #1f2937;
+                border: 2px solid #ffffff;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+                transition: transform 0.2s ease-in-out;
+              }
+              input[type='range']::-ms-thumb:hover {
+                transform: scale(1.2);
+              }
+            `}</style>
             <div
               className="absolute -top-10 left-0 transform -translate-x-1/2 text-sm font-medium text-gray-800 bg-white px-3 py-1 rounded-full shadow-md"
               style={{
                 left: `${((musicHours - 5) / 36) * 100}%`, // Calculate position based on slider value
               }}
             >
-              {musicHours === 5 ? '< 5 hours' : musicHours === 41 ? '> 40 hours' : `${musicHours} hours`}
+              {musicHours === 5 ? '< 5 hours' : musicHours === 36 ? '> 35 hours' : `${musicHours} hours`}
             </div>
           </div>
           <div className="text-sm text-gray-500 mt-4 text-center">
