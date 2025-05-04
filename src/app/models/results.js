@@ -20,10 +20,14 @@ const intentSchema = new mongoose.Schema({
 
 const userResultSchema = new mongoose.Schema({
   user_id: { type: String, required: true },
-  age: Number,
-  country: String,
-  gender: String,
+  prolific_id: { type: String, required: true },
   genres: [String],
+  play_instrument: { type: String, enum: ['yes', 'ongoing', 'no'], required: true },
+  instruments_played: { type: [String], required: true },
+  instruments_played_years: { type: ['<1 year', '1-2 years', '3-5 years', '5-10 years', '>10 years'], required: true },
+  formal_education: { type: String, enum: ['yes', 'ongoing', 'no'], required: true },
+  compose_music: { type: String, enum: ['yes', 'no', 'occasionally'], required: true },
+  hours_listening_weekly: { type: Number, default: 0 },
   intents: { type: Map, of: intentSchema },
 });
 

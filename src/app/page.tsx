@@ -70,12 +70,16 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
-    } else if (status === "authenticated") {
-      const storedUserData = localStorage.getItem("userData");
-      if (!storedUserData || storedUserData === "null") {
-        router.push("/user-info");
+    if (status === 'unauthenticated') {
+      router.push('/login'); // Redirect to Spotify login
+    } else if (status === 'authenticated') {
+      const storedUserData = localStorage.getItem('userData');
+      const consentGiven = localStorage.getItem('consentGiven');
+
+      if (!storedUserData || storedUserData === 'null') {
+        router.push('/user-info'); // Redirect to user info page
+      } else if (!consentGiven) {
+        router.push('/consent'); // Redirect to consent form
       } else {
         setUserData(JSON.parse(storedUserData)); // Load persisted user data
       }
@@ -283,7 +287,7 @@ if (session) {
 
       <div className="">
         <p>
-          {counter}, {userData?.name}, {userData?.age}
+          {counter}, , {JSON.stringify(userData, null, 2)}
         </p>
         <pre>{JSON.stringify(dropItems, null, 2)}</pre>
       </div>
