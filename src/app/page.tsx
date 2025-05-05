@@ -69,6 +69,8 @@ export default function Home() {
   const [dropItems, setDropItems] = useState<Song[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const [adjectives, setAdjectives] = useState([]);
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login'); // Redirect to Spotify login
@@ -164,6 +166,9 @@ if (session) {
     } else if (dropItems.length < 5) {
       setErrorMessage("Please choose at least 5 songs to proceed.");
       setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+    } else if (adjectives.length === 0) {
+      setErrorMessage("Please select at least one adjective before proceeding.");
+      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
     } else {
       action();
     }
@@ -182,6 +187,7 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
+      adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
         track_id: song.id,
         track_name: song.title,
@@ -221,6 +227,7 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
+      adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
         track_id: song.id,
         track_name: song.title,
@@ -275,11 +282,38 @@ if (session) {
           {randomIntent?.intent_name}
         </span>
       </h1>
+
+      {/* Centered Additional Information about the Intent */}
+      <div className="p-4 bg-gray-100 rounded shadow relative max-w-2xl mx-auto">
+        <h3 className="font-bold mb-2">Additional Information about the Intent</h3>
+        <div className="absolute top-2 right-2 group">
+          <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
+            i
+          </div>
+          <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
+            Additional ideas about how to categorize songs with this intent.
+          </div>
+        </div>
+        <p className="italic text-gray-700">
+          {randomIntent ? randomIntent.main_listening_function : 'No intent available'}
+        </p>
+        <p className="text-gray-700">
+          {randomIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
+            functionName && functionName !== randomIntent.main_listening_function ? (
+              <React.Fragment key={index}>
+                {functionName}<br />
+              </React.Fragment>
+            ) : null
+          ))}
+        </p>
+      </div>
+
       <div className="pl-6">
         <ThreeBlocks
           randomIntent={randomIntent}
           setHowOften={setHowOften}
           setHowImp={setHowImp}
+          setAdjectives={setAdjectives} // Pass setAdjectives function
         />
       </div>
       

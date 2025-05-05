@@ -20,6 +20,11 @@ export async function POST(request) {
     const body = await request.json();
     console.log("Request body:", body);
 
+    // Map "yes, ongoing" to "ongoing" for formal_education
+    if (body.formal_education === "yes, ongoing") {
+      body.formal_education = "ongoing";
+    }
+
     const newUser = new userResult(body);
     console.log("New user document:", newUser);
 
