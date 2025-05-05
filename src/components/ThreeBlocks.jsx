@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import CreatableSelect from 'react-select/creatable';
 
-const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
+const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [howOftenSelected, setHowOftenSelected] = useState(false);
   const [howImpSelected, setHowImpSelected] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [selectedHowOften, setSelectedHowOften] = useState(null);
   const [selectedHowImp, setSelectedHowImp] = useState(null);
-  const [usePlaceholderLabels1, setUsePlaceholderLabels1] = useState(false);
   const [usePlaceholderLabels2, setUsePlaceholderLabels2] = useState(false);
+  const [adjectives, setAdjectivesState] = useState([]);
 
   const handleHowOftenChange = (value) => {
     setHowOften(value);
@@ -26,8 +27,14 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
     console.log("How important changed to:", value);
   };
 
+  const handleAdjectivesChange = (newValue) => {
+    setAdjectivesState(newValue);
+    setAdjectives(newValue); // Update parent state
+    setShowAlert(false);
+  };
+
   const toggleCollapse = () => {
-    if (howOftenSelected && howImpSelected) {
+    if (howOftenSelected && howImpSelected && adjectives.length > 0) {
       setIsCollapsed(!isCollapsed);
     } else {
       setShowAlert(true);
@@ -55,36 +62,38 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
         </div>
         {showAlert && (
           <p className="text-red-500 text-sm ml-4">
-            Please select an option for both questions before collapsing.
+            Please select an option for both questions and at least one adjective before collapsing.
           </p>
         )}
       </div>
       {!isCollapsed && (
         <div className="grid grid-cols-3 gap-4">
-          {/* Third Block */}
+          {/* Multi-select Autocomplete for Adjectives */}
           <div className="p-4 bg-gray-100 rounded shadow relative">
-            <h3 className="font-bold mb-2">Additional Information about the Intent</h3>
+            <h3 className="font-bold mb-2">Adjectives for Songs in this Intent</h3>
             <div className="absolute top-2 right-2 group">
-              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer hover:bg-blue-500 hover:text-white transition-colors">
+              <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
               </div>
               <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
-                Additional ideas about how to categorize songs with this intent.
+                Select or add adjectives that describe the songs you will classify for this intent.
               </div>
             </div>
-            <p className="italic text-gray-700">
-              {randomIntent ? randomIntent.main_listening_function : 'No intent available'}
-            </p>
-            <p className="text-gray-700">
-              {randomIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
-                functionName && functionName !== randomIntent.main_listening_function ? (
-                  <React.Fragment key={index}>
-                    {functionName}<br />
-                  </React.Fragment>
-                ) : null
-              ))}
-            </p>
+            <CreatableSelect
+              isMulti
+              options={[
+                { value: 'happy', label: 'Happy' },
+                { value: 'sad', label: 'Sad' },
+                { value: 'melancholic', label: 'Melancholic' },
+              ]}
+              value={adjectives}
+              onChange={handleAdjectivesChange}
+              placeholder="Type or select adjectives..."
+              className="react-select-container"
+              classNamePrefix="react-select"
+            />
           </div>
+
           {/* First Block */}
           <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">How often do you listen with this intent?</h3>
@@ -94,7 +103,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
               </div>
               <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
                 Approximate how much you listen to music with this intent. <br />
-                Choose weeks or songs/minutes according to how it is easier to answer for you.
+                Choose songs/minutes according to how it is easier to answer for you.
               </div>
             </div>
             <div className="flex items-center mb-4 space-x-6">
@@ -112,7 +121,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp }) => {
                 </label>
               </div>
             </div>
-            { [
+            {[
               usePlaceholderLabels2 ? "<9 min/week" : "<3 songs/week",
               usePlaceholderLabels2 ? "9 min/week" : "3 songs/week",
               usePlaceholderLabels2 ? "27 min/week" : "9 songs/week",

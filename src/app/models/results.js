@@ -15,20 +15,21 @@ const intentSchema = new mongoose.Schema({
   intent_name: String,
   how_often: String,
   how_imp: String,
+  adjectives: [String], // Add adjectives field
   songs: [songSchema],
 }, { _id: false });
 
 const userResultSchema = new mongoose.Schema({
   user_id: { type: String, required: true },
   prolific_id: { type: String, required: true },
-  genres: [String],
+  genres: { type: [String], default: [] },
   play_instrument: { type: String, enum: ['yes', 'ongoing', 'no'], required: true },
-  instruments_played: { type: [String], required: true },
-  instruments_played_years: { type: ['<1 year', '1-2 years', '3-5 years', '5-10 years', '>10 years'], required: true },
-  formal_education: { type: String, enum: ['yes', 'ongoing', 'no'], required: true },
+  instruments_played: { type: [String], default: [] },
+  instruments_played_years: { type: [String], default: [] },
+  formal_education: { type: String, enum: ['yes', 'ongoing', 'no'], required: true }, // Added 'yes, ongoing'
   compose_music: { type: String, enum: ['yes', 'no', 'occasionally'], required: true },
   hours_listening_weekly: { type: Number, default: 0 },
-  intents: { type: Map, of: intentSchema },
+  intents: { type: Map, of: intentSchema, default: {} },
 });
 
 export const userResult = mongoose.models.userResult || mongoose.model('userResult', userResultSchema);
