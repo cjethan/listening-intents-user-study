@@ -1,0 +1,18 @@
+# docker-compose.yml
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres_songsdb
+    restart: always
+    environment:
+      POSTGRES_USER: intent
+      POSTGRES_PASSWORD: Kf6$!5#m952Ku
+      POSTGRES_DB: intentdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

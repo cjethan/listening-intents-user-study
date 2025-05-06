@@ -1,0 +1,51 @@
+model Song {
+  id              Int     @id @default(autoincrement())
+  trackId         String
+  artistName      String
+  trackUri        String
+  artistUri       String
+  trackName       String
+  albumUri        String
+  durationMs      Int
+  albumName       String
+  addedByUserdata Boolean? // nullable, equivalent to optional field in Mongo
+}
+
+model UserResult {
+  id                     Int           @id @default(autoincrement())
+  userId                 String
+  prolificId             String
+  genres                 String[]      // PostgreSQL `text[]`
+  playInstrument         String        // enum could be used, or keep as String
+  instrumentsPlayed      String[]
+  instrumentsPlayedYears String[]
+  formalEducation        String
+  composeMusic           String
+  hoursListeningWeekly   Int
+  intents                Intent[]      // 1-to-many relationship
+}
+
+model Intent {
+  id             Int           @id @default(autoincrement())
+  intentName     String
+  howOften       String
+  howImp         String
+  adjectives     String[]      // PostgreSQL `text[]`
+  userResultId   Int
+  userResult     UserResult    @relation(fields: [userResultId], references: [id])
+  intentSongs    IntentSong[]  // join table
+}
+
+model IntentSong {
+  id         Int      @id @default(autoincrement())
+  trackId    String
+  artistName String
+  trackUri   String
+  artistUri  String
+  trackName  String
+  albumUri   String
+  durationMs Int
+  albumName  String
+  intent     Intent   @relation(fields: [intentId], references: [id])
+  intentId   Int
+}
