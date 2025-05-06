@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { adjectiveOptions } from '../data/adjectiveOptions'; // Import the options
+import { adjectiveOptions } from '../lib/select_options/adjectiveOptions'; // Import the options
 
 const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
