@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
+import { adjectiveOptions } from '../data/adjectiveOptions'; // Import the options
 
 const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -81,11 +82,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
             </div>
             <CreatableSelect
               isMulti
-              options={[
-                { value: 'happy', label: 'Happy' },
-                { value: 'sad', label: 'Sad' },
-                { value: 'melancholic', label: 'Melancholic' },
-              ]}
+              options={adjectiveOptions} // Use the imported options
               value={adjectives}
               onChange={handleAdjectivesChange}
               placeholder="Type or select adjectives..."
