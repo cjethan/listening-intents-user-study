@@ -13,7 +13,7 @@ const Song = sequelize.define("Song", {
   added_by_Userdata: DataTypes.INTEGER, // Optional field
   genres: { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] }, // Array of genre names, can be empty
 }, {
-  tableName: "Songs", // Ensure the table name matches
+  tableName: "songs", // Ensure the table name matches the database
   timestamps: false,
 });
 

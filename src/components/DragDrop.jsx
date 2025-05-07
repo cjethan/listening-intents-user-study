@@ -45,13 +45,13 @@ async function checkAndAddToDatabase(songs) {
 async function checkGenresForBox2Songs(box2Items) {
   console.log("Checking genres for songs in Box 2...");
   try {
-    //const genres = await checkSongsAndExtractGenres(box2Items);
+    const genres = await checkSongsAndExtractGenres(box2Items); // Ensure this function is correctly implemented
     console.log("Extracted genres from Box 2 songs:", genres);
     // You can now use the extracted genres as needed
   } catch (error) {
     console.error("Error checking genres for Box 2 songs:", error);
   }
-};
+}
 
 function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -236,21 +236,10 @@ export function DragAndDrop({ setDropItems }) {
   }, [localDropItems, setDropItems]);
 
   useEffect(() => {
-    const checkGenresForBox2Songs = async () => {
-      console.debug("Checking genres for songs in Box 2...");
-      try {
-        //const genres = await checkSongsAndExtractGenres(box2Items);
-        console.debug("Extracted genres from Box 2 songs:", genres);
-        // You can now use the extracted genres as needed
-      } catch (error) {
-        console.error("Error checking genres for Box 2 songs:", error);
-      }
-    };
-
     if (box2Items.length > 0) {
-      checkGenresForBox2Songs();
+      checkGenresForBox2Songs(box2Items);
     } else {
-      console.log("box2 length", box2Items.length);
+      console.log("Box 2 is empty, skipping genre check.");
     }
   }, [box2Items]);
 
