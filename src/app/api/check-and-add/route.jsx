@@ -7,7 +7,6 @@ import sequelize from "@/app/utils/database";
 export async function POST(req) {
   try {
     const { songs } = await req.json();
-    //console.log("Received songs:", songs);
 
     if (!Array.isArray(songs)) {
       return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
@@ -20,7 +19,6 @@ export async function POST(req) {
         `SELECT track_id FROM songs WHERE track_id = $1 LIMIT 1`, // Changed table name to lowercase
         { bind: [song.id], type: sequelize.QueryTypes.SELECT }
       );
-      console.log("Checking song:", song.id, existingSong ? "exists" : "does not exist");
 
       if (!existingSong) {
         // Add the song to the database if it does not exist

@@ -9,11 +9,16 @@ import sequelize from "@/app/utils/database";
 export async function GET(req) {
   try {
     const url = new URL(req.url);
-    const genre = url.searchParams.get("genres");
+    console.log("URL:", url);
+    const genre = url.searchParams.get("genre");
+    console.log("Genre:", genre);
 
     let whereClause = {};
     if (genre) {
-      whereClause = { genres: { [Op.contains]: [genre] } };
+      whereClause = sequelize.where(
+        sequelize.cast(sequelize.col("genres"), "text[]"),
+        { [Op.contains]: [genre] }
+      );
     }
 
     const songs = await Song.findAll({
@@ -21,6 +26,7 @@ export async function GET(req) {
       order: sequelize.random(),
       limit: 10,
     });
+    //console.log("Fetched songs:", songs);
 
     return NextResponse.json(songs);
   } catch (error) {
