@@ -2,19 +2,14 @@
 * Get genres from the user's songs.
 */
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
-import Song from "@/app/models/Song";
+import { Pool } from "pg";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
-  await mongoose.connect(MONGODB_URI, {});
-}
+const pool = new Pool({
+  connectionString: process.env.POSTGRESQL_URI,
+});
 
 export async function POST(req) {
   try {
-    await connectDB();
     const { songs } = await req.json();
 
     if (!Array.isArray(songs) || songs.length === 0) {
@@ -22,10 +17,12 @@ export async function POST(req) {
     }
 
     const songIds = songs.map((song) => song.id);
-    const results = await Song.find(
-      { track_id: { $in: songIds } },
-      { track_id: 1, genres: 1, _id: 0 }
-    );
+    const query = `
+      SELECT track_id, genres
+      FROM songs
+      WHERE track_id = ANY($1::text[])
+    `;
+    const { rows: results } = await pool.query(query, [songIds]);
 
     return NextResponse.json(results);
   } catch (error) {
