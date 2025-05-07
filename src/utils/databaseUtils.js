@@ -24,12 +24,12 @@ export async function checkSongsAndExtractGenres(songs) {
 
     // Calculate the most frequent genres
     const genreFrequency = genres.reduce((acc, genre) => {
-        acc[genre] = (acc[genre] || 0) + 1;
-        return acc;
-      }, {});
-      const sortedGenres = Object.entries(genreFrequency).sort((a, b) => b[1] - a[1]);
-      const mostFrequentGenres = sortedGenres.map(([genre]) => genre);
-      console.log("Most frequent genres:", mostFrequentGenres);
+      acc[genre] = (acc[genre] || 0) + 1;
+      return acc;
+    }, {});
+    const sortedGenres = Object.entries(genreFrequency).sort((a, b) => b[1] - a[1]);
+    const mostFrequentGenres = sortedGenres.map(([genre]) => genre);
+    console.log("Most frequent genres:", mostFrequentGenres);
 
     // Filter for unique genres
     const uniqueGenres = [...new Set(genres)];
