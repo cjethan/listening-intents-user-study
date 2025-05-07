@@ -2,49 +2,33 @@
 * Search the database for songs, artists, albums, also in combination.
 */
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
+import { Op } from "sequelize";
 import Song from "@/app/models/Song";
-
-const MONGODB_URI = process.env.MONGODB_URI;
-
-async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
-  await mongoose.connect(MONGODB_URI, {});
-}
 
 export async function POST(req) {
   try {
-    await connectDB();
     const { query, page = 1 } = await req.json();
     const limit = 10;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
     const queryWords = query.split(/\s+/).map((word) => ({
-      $or: [
-        { track_name: { $regex: word, $options: "i" } },
-        { artist_name: { $regex: word, $options: "i" } },
-        { album_name: { $regex: word, $options: "i" } },
+      [Op.or]: [
+        { track_name: { [Op.iLike]: `%${word}%` } },
+        { artist_name: { [Op.iLike]: `%${word}%` } },
+        { album_name: { [Op.iLike]: `%${word}%` } },
       ],
     }));
 
-    const results = await Song.find(
-      {
-        $and: queryWords,
-      },
-      {
-        track_id: 1,
-        track_name: 1,
-        artist_name: 1,
-        album_name: 1,
-        _id: 0,
-      }
-    )
-      .skip(skip)
-      .limit(limit);
+    const results = await Song.findAll({
+      where: { [Op.and]: queryWords },
+      attributes: ["track_id", "track_name", "artist_name", "album_name"],
+      offset,
+      limit,
+    });
 
     return NextResponse.json(results);
   } catch (error) {

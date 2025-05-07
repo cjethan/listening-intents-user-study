@@ -1,16 +1,20 @@
-import mongoose from "mongoose";
+import { DataTypes } from "sequelize";
+import sequelize from "@/app/utils/database";
 
-const SongSchema = new mongoose.Schema({
-  track_id: String,
-  artist_name: String,
-  track_uri: String,
-  artist_uri: String,
-  track_name: String,
-  album_uri: String,
-  duration_ms: Number,
-  album_name: String,
-  added_by_Userdata: Number, //optional field to track who added the song, 1 if added using user data
-}, { versionKey: false }
-);
+const Song = sequelize.define("Song", {
+  track_id: { type: DataTypes.STRING, primaryKey: true },
+  artist_name: DataTypes.STRING,
+  track_uri: DataTypes.STRING,
+  artist_uri: DataTypes.STRING,
+  track_name: DataTypes.STRING,
+  album_uri: DataTypes.STRING,
+  duration_ms: DataTypes.INTEGER,
+  album_name: DataTypes.STRING,
+  added_by_Userdata: DataTypes.INTEGER, // Optional field
+  genres: { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] }, // Array of genre names, can be empty
+}, {
+  tableName: "Songs", // Ensure the table name matches
+  timestamps: false,
+});
 
-export default mongoose.models.Song || mongoose.model("Song", SongSchema);
+export default Song;

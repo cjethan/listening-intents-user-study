@@ -45,7 +45,7 @@ async function checkAndAddToDatabase(songs) {
 async function checkGenresForBox2Songs(box2Items) {
   console.log("Checking genres for songs in Box 2...");
   try {
-    const genres = await checkSongsAndExtractGenres(box2Items);
+    //const genres = await checkSongsAndExtractGenres(box2Items);
     console.log("Extracted genres from Box 2 songs:", genres);
     // You can now use the extracted genres as needed
   } catch (error) {
@@ -239,7 +239,7 @@ export function DragAndDrop({ setDropItems }) {
     const checkGenresForBox2Songs = async () => {
       console.debug("Checking genres for songs in Box 2...");
       try {
-        const genres = await checkSongsAndExtractGenres(box2Items);
+        //const genres = await checkSongsAndExtractGenres(box2Items);
         console.debug("Extracted genres from Box 2 songs:", genres);
         // You can now use the extracted genres as needed
       } catch (error) {

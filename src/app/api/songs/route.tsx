@@ -2,36 +2,26 @@
 * Get a sample of songs by genre.
 */
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import Song from "@/app/models/Song";
-
-const MONGODB_URI = process.env.MONGODB_URI;
-
-async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
-  await mongoose.connect(MONGODB_URI, {
-  });
-}
+import { Op } from "sequelize";
+import sequelize from "@/app/utils/database";
 
 export async function GET(req) {
   try {
-    await connectDB();
-
     const url = new URL(req.url);
-    const genre = url.searchParams.get("genre");
+    const genre = url.searchParams.get("genres");
 
-    let query = {};
+    let whereClause = {};
     if (genre) {
-      query = { genres: { $in: [genre] } };
-      console.log(`Filtering songs by genre: ${genre}`);
+      whereClause = { genres: { [Op.contains]: [genre] } };
     }
 
-    const songs = await Song.aggregate([
-      { $match: query }, // Apply genre filter if provided
-      { $sample: { size: 10 } }, // Fetch a smaller random sample (10 songs)
-    ]);
+    const songs = await Song.findAll({
+      where: whereClause,
+      order: sequelize.random(),
+      limit: 10,
+    });
 
-    console.log(`Fetched ${songs.length} songs${genre ? ` for genre: ${genre}` : ""}`);
     return NextResponse.json(songs);
   } catch (error) {
     console.error("Error fetching songs:", error);
