@@ -8,7 +8,7 @@ import Song from "@/app/models/Song";
 export async function POST(req) {
   try {
     const { query, page = 1 } = await req.json();
-    const limit = 10;
+    const limit = 15;
     const offset = (page - 1) * limit;
 
     if (!query) {
