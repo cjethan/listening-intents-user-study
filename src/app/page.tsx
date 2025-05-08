@@ -245,9 +245,12 @@ if (session) {
       },
     };
 
+    // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
+    console.log("Updated user data saved locally:", updatedUserData);
 
     try {
+      // Send updated user data to the database
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: {
@@ -263,7 +266,8 @@ if (session) {
       const data = await response.json();
       console.log('Success:', data);
 
-      resetCounter(); // Reset the global counter after successful save
+      // Reset the global counter after successful save
+      resetCounter();
       localStorage.setItem("counter", "0"); // Reset counter in localStorage
       console.log("Counter reset to 0");
 

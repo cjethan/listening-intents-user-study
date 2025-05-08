@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function UserInfo() {
   const [name, setName] = useState('');
@@ -28,11 +29,12 @@ export default function UserInfo() {
   const [musicHours, setMusicHours] = useState(20); // Default to average value
   const { setUserData } = useUserStore();
   const router = useRouter();
+  
 
   useEffect(() => {
     // Generate a random user ID
-    const generatedUserId = `user_${Math.random().toString(36).substr(2, 9)}`;
-    setUserId(generatedUserId);
+    const uniqueId = uuidv4();
+    setUserId(uniqueId);
 
     // Fetch genres from the file
     fetch('/all_genres.txt')
