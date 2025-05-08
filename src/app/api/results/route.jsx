@@ -1,38 +1,42 @@
 /*
-* Save a user's input to database
+* Save a user's input to PostgreSQL database
 */
 import { NextResponse } from "next/server";
-import { userResult } from "../../models/results";
-import mongoose from "mongoose";
-
-const uri = process.env.MONGODB_URI_RESULTS;
-
-async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
-  await mongoose.connect(uri);
-}
+import UserResult from "../../models/results";
+import Genre from "../../models/genre";
+import UserGenre from "../../models/userGenre";
 
 export async function POST(request) {
   try {
-    await connectDB();
-    console.log("Connected to MongoDB");
-
     const body = await request.json();
-    console.log("Request body:", body);
+    const { user_id, prolific_id, play_instrument, formal_education, compose_music, hours_listening_weekly, instruments_played_years, genres, intents } = body;
 
-    // Map "yes, ongoing" to "ongoing" for formal_education
-    if (body.formal_education === "yes, ongoing") {
-      body.formal_education = "ongoing";
+    // Save user data
+    const newUser = await UserResult.create({
+      user_id,
+      prolific_id,
+      play_instrument,
+      formal_education,
+      compose_music,
+      hours_listening_weekly,
+      instruments_played_years,
+      intents,
+    });
+
+    // Save genres
+    if (genres && genres.length > 0) {
+      for (const genreName of genres) {
+        let genre = await Genre.findOne({ where: { name: genreName } });
+        if (!genre) {
+          genre = await Genre.create({ name: genreName });
+        }
+        await UserGenre.create({ user_id: newUser.user_id, genre_id: genre.id });
+      }
     }
-
-    const newUser = new userResult(body);
-    console.log("New user document:", newUser);
-
-    await newUser.save();
 
     return NextResponse.json({ message: "User saved successfully!" }, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("Error saving user:", error);
     return NextResponse.json({ error: "Failed to save user" }, { status: 500 });
   }
 }
