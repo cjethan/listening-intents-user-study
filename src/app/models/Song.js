@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "@/app/utils/database";
+import { sequelize } from "@/app/utils/database";
 
 const Song = sequelize.define("Song", {
   track_id: { type: DataTypes.STRING, primaryKey: true },

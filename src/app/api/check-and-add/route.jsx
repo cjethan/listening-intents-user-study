@@ -2,7 +2,7 @@
 * Check if the user's songs (top songs, most recent songs) are already in the database, if not, add them.
 */
 import { NextResponse } from "next/server";
-import sequelize from "@/app/utils/database";
+import { sequelize } from "@/app/utils/database";
 
 export async function POST(req) {
   try {

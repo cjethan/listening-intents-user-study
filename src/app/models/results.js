@@ -1,11 +1,12 @@
-import { Sequelize, DataTypes } from "sequelize";
-import sequelize from "../utils/database.js";
+const { Model, DataTypes } = require('sequelize');
+import { sequelize } from '../utils/database'; // Ensure this path is correct
 
-const UserResult = sequelize.define("user_results", {
+class UserResult extends Model {}
+
+UserResult.init({
   user_id: {
     type: DataTypes.STRING,
     primaryKey: true,
-    allowNull: false,
   },
   prolific_id: {
     type: DataTypes.STRING,
@@ -14,20 +15,6 @@ const UserResult = sequelize.define("user_results", {
   play_instrument: {
     type: DataTypes.ENUM('yes', 'ongoing', 'no'),
     allowNull: false,
-  },
-  instruments_played: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: [],
-  },
-  instruments_played_years: {
-    type: DataTypes.ENUM(
-      'less_than_1_year',
-      '_1_2_years',
-      '_3_5_years',
-      '_6_10_years',
-      'more_than_10_years'
-    ),
-    allowNull: true,
   },
   formal_education: {
     type: DataTypes.ENUM('yes', 'ongoing', 'no'),
@@ -39,13 +26,22 @@ const UserResult = sequelize.define("user_results", {
   },
   hours_listening_weekly: {
     type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
-  intents: {
-    type: DataTypes.JSON,
-    defaultValue: {},
-  },
+  instruments_played_years: {
+    type: DataTypes.ENUM(
+      'less than 1 year',
+      '1-2 years',
+      '3-5 years',
+      '6-10 years',
+      'more than 10 years'
+    ),
+  }
 }, {
+  sequelize, // Ensure the sequelize instance is passed here
+  modelName: 'UserResult',
+  tableName: 'user_results',
   timestamps: false,
 });
 
-export default UserResult;
+export default UserResult; // Change to default export
