@@ -1,10 +1,9 @@
 'use client'
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import ThreeBlocks from "../components/ThreeBlocks";
 import {DragAndDrop} from '../components/DragDrop';
 
 // für db code
-import { useEffect} from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 

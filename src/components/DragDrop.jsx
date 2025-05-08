@@ -237,11 +237,21 @@ export function DragAndDrop({ setDropItems }) {
 
   useEffect(() => {
     if (box2Items.length > 0) {
-      checkGenresForBox2Songs(box2Items);
+      const checkGenresOnce = async () => {
+        try {
+          console.log("Checking genres for songs in Box 2...");
+          const genres = await checkSongsAndExtractGenres(box2Items);
+          console.log("Extracted genres from Box 2 songs:", genres);
+        } catch (error) {
+          console.error("Error checking genres for Box 2 songs:", error);
+        }
+      };
+
+      checkGenresOnce(); // Call the function only once
     } else {
       console.log("Box 2 is empty, skipping genre check.");
     }
-  }, [box2Items]);
+  }, []); // Empty dependency array ensures this runs only once
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
