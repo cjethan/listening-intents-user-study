@@ -2,17 +2,21 @@
 * Save a user's input to PostgreSQL database
 */
 import { NextResponse } from "next/server";
-import UserResult from "../../models/results";
+import UserResult from "../../models/results"; // Use named import
 import Genre from "../../models/genre";
 import UserGenre from "../../models/userGenre";
+import Intent from "../../models/intent";
+import IntentSong from "../../models/intentSong"; // Import IntentSong model
 
 export async function POST(request) {
+  console.log("POST /api/results called");
   try {
     const body = await request.json();
+    console.log("Request body parsed:", body);
+
     const { user_id, prolific_id, play_instrument, formal_education, compose_music, hours_listening_weekly, instruments_played_years, genres, intents } = body;
 
-    // Save user data
-    const newUser = await UserResult.create({
+    console.log("Extracted fields:", {
       user_id,
       prolific_id,
       play_instrument,
@@ -20,23 +24,96 @@ export async function POST(request) {
       compose_music,
       hours_listening_weekly,
       instruments_played_years,
+      genres,
       intents,
     });
 
-    // Save genres
-    if (genres && genres.length > 0) {
-      for (const genreName of genres) {
-        let genre = await Genre.findOne({ where: { name: genreName } });
-        if (!genre) {
-          genre = await Genre.create({ name: genreName });
-        }
-        await UserGenre.create({ user_id: newUser.user_id, genre_id: genre.id });
+    // Check if the user_id already exists
+    console.log(`Checking if user_id ${user_id} exists...`);
+    const existingUser = await UserResult.findOne({ where: { user_id } });
+
+    if (!existingUser) {
+      //console.log(`User with user_id ${user_id} already exists. Skipping creation.`);
+      //return NextResponse.json({ message: "User already exists", user: existingUser }, { status: 200 });
+    
+
+      console.log("User does not exist. Proceeding with creation...");
+
+      // Validate formal_education field
+      const validFormalEducation = ['yes', 'ongoing', 'no'];
+      if (!validFormalEducation.includes(formal_education)) {
+        console.error(`Invalid value for formal_education: ${formal_education}`);
+        return NextResponse.json({ error: `Invalid value for formal_education: ${formal_education}` }, { status: 400 });
       }
+
+      console.log("Formal education validation passed");
+
+      // Save user data
+      console.log("Saving user data...");
+      const newUser = await UserResult.create({
+        user_id,
+        prolific_id,
+        play_instrument,
+        formal_education,
+        compose_music,
+        hours_listening_weekly,
+        instruments_played_years,
+      });
+      console.log("User saved successfully:", newUser);
+    
+
+      // Save genres and associate with the user
+      if (genres && genres.length > 0) {
+        console.log("Processing genres:", genres);
+        for (const genreName of genres) {
+          console.log(`Processing genre: ${genreName}`);
+          const [genre, created] = await Genre.findOrCreate({ where: { name: genreName } });
+          console.log(`Genre ${created ? "created" : "found"}:`, genre);
+
+          await UserGenre.create({ user_id: newUser.user_id, genre_id: genre.id });
+          console.log(`UserGenre association created for user_id: ${newUser.user_id}, genre_id: ${genre.id}`);
+        }
+      } else {
+        console.log("No genres provided");
+      }
+
     }
 
-    return NextResponse.json({ message: "User saved successfully!" }, { status: 201 });
+    console.log("intents start;", intents);
+    for (const key in intents) {
+      const intent = intents[key];
+      console.log("Intent:", intent);
+      const newIntent = await Intent.create({
+        user_id: user_id,
+        name: intent.name,
+        how_often: intent.how_often,
+        how_imp: intent.how_imp,
+      });
+      console.log("Intent saved successfully:", newIntent);
+
+      console.log("songs for intent:", intent.songs);
+      for (const song in intent.songs) {
+        console.log("song:", song);
+        const newSongForIntent = await IntentSong.create({
+          intent_id: newIntent.id, //todo passt das?
+          intent_name: intent.name,
+          track_id: song.track_id,
+          track_name: song.track_name,
+          artist_name: song.artist_name,
+          album_name: song.album_name,
+          track_uri: song.track_uri,
+          artist_uri: song.artist_uri,
+          album_uri: song.album_uri,
+          duration_ms: song.duration_ms,
+        });
+      }
+    }
+    console.log("All intents and songs saved successfully");
+
+    console.log("All data saved successfully");
+    return NextResponse.json({ message: "User, genres, and intents saved successfully!" }, { status: 201 });
   } catch (error) {
-    console.error("Error saving user:", error);
-    return NextResponse.json({ error: "Failed to save user" }, { status: 500 });
+    console.error("Error saving user, genres, or intents:", error);
+    return NextResponse.json({ error: "Failed to save user, genres, or intents" }, { status: 500 });
   }
 }

@@ -1,32 +1,35 @@
 const { Model, DataTypes } = require('sequelize');
 import { sequelize } from '../utils/database'; // assuming your sequelize instance
 
-class UserGenre extends Model {}
+class UserInstrument extends Model {}
 
-UserGenre.init({
+UserInstrument.init({
   user_id: {
     type: DataTypes.STRING,
-    primaryKey: true, // Part of the composite primary key
     references: {
       model: 'user_results',
       key: 'user_id',
     },
     allowNull: false,
   },
-  genre_id: {
+  instrument_id: {
     type: DataTypes.INTEGER,
-    primaryKey: true, // Part of the composite primary key
     references: {
-      model: 'genres',
+      model: 'instruments',
       key: 'id',
     },
     allowNull: false,
   }
 }, {
   sequelize,
-  modelName: 'UserGenre',
-  tableName: 'user_genres',
-  timestamps: false, // Disable automatic timestamps
+  modelName: 'UserInstrument',
+  tableName: 'user_instruments',
+  indexes: [
+    {
+      unique: true,
+      fields: ['user_id', 'instrument_id'],
+    },
+  ],
 });
 
-export default UserGenre;
+export default UserInstrument;

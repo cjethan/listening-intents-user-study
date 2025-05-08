@@ -4,7 +4,7 @@
 import { NextResponse } from "next/server";
 import Song from "@/app/models/Song";
 import { Op } from "sequelize";
-import sequelize from "@/app/utils/database";
+import { sequelize } from "@/app/utils/database";
 
 export async function GET(req: Request) {
   try {

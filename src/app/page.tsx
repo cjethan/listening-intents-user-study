@@ -331,7 +331,7 @@ if (session) {
       </div>
 
       <div className="fixed bottom-6 right-6 space-x-4">
-        {counter < 3 ? ( // Show "NEXT" button for the first 3 clicks
+        {counter < 1 ? ( // Show "NEXT" button for the first 3 clicks todo
           <button
             onClick={() => handleButtonClick(handleNext)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-600 ease-in-out"

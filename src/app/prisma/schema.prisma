@@ -1,3 +1,12 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRESQL_URI")
+}
+
 enum PlayInstrument {
   yes
   ongoing
@@ -26,15 +35,17 @@ enum InstrumentYears {
 
 model UserResult {
   user_id                String   @id
-  prolific_id           String
-  play_instrument       PlayInstrument
-  formal_education      FormalEducation
-  compose_music         ComposeMusic
-  hours_listening_weekly Int      
+  prolific_id            String
+  play_instrument        PlayInstrument
+  formal_education       FormalEducation
+  compose_music          ComposeMusic
+  hours_listening_weekly Int      @default(0)
   instruments_played_years InstrumentYears?
 
-  instruments           UserInstrument[]
-  intents               Intent[]
+
+  genres                 UserGenre[]
+  instruments            UserInstrument[]
+  intents                Intent[]
 }
 
 model Genre {
@@ -44,11 +55,11 @@ model Genre {
 }
 
 model UserGenre {
-  user_id String
+  user_id  String
   genre_id Int
 
-  user  UserResult @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  genre Genre      @relation(fields: [genre_id], references: [id], onDelete: Cascade)
+  user     UserResult @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  genre    Genre      @relation(fields: [genre_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, genre_id])
 }
@@ -60,11 +71,11 @@ model Instrument {
 }
 
 model UserInstrument {
-  user_id      String
+  user_id       String
   instrument_id Int
 
-  user       UserResult  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
-  instrument Instrument  @relation(fields: [instrument_id], references: [id], onDelete: Cascade)
+  user          UserResult  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  instrument    Instrument  @relation(fields: [instrument_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, instrument_id])
 }
@@ -91,8 +102,8 @@ model IntentAdjective {
   intent_id     Int
   adjective_id  Int
 
-  intent     Intent    @relation(fields: [intent_id], references: [id], onDelete: Cascade)
-  adjective  Adjective @relation(fields: [adjective_id], references: [id], onDelete: Cascade)
+  intent        Intent    @relation(fields: [intent_id], references: [id], onDelete: Cascade)
+  adjective     Adjective @relation(fields: [adjective_id], references: [id], onDelete: Cascade)
 
   @@id([intent_id, adjective_id])
 }
@@ -100,6 +111,7 @@ model IntentAdjective {
 model IntentSong {
   id          Int    @id @default(autoincrement())
   intent_id   Int
+  intent_name String
 
   track_id    String?
   artist_name String?
