@@ -11,10 +11,15 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "../store/store";
 
 type Song = {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
+  track_id: string;
+  artist_name: string;
+  track_uri: string;
+  artist_uri: string | null;
+  track_name: string;
+  album_name: string;
+  album_uri: string;
+  duration_ms: number;
+  genres: string[];
   image: string;
 };
 
@@ -34,12 +39,9 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
 
-        //if (!response.ok) throw new Error("Failed to fetch album image");
-
         const trackData = await response.json();
         return trackData.album.images?.[0]?.url || "/default-cover.png"; // Fallback if no image
     } catch (error) {
-        //console.error(`Error fetching album image for ${trackId}:`, error);
         return "/default-cover.png"; // Fallback image
     }
 }
@@ -188,10 +190,15 @@ if (session) {
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
-        track_id: song.id,
-        track_name: song.title,
-        artist_name: song.artist,
-        album_name: song.album,
+        track_id: song.track_id, // Ensure all fields are included
+        track_uri: song.track_uri,
+        track_name: song.track_name,
+        artist_name: song.artist_name,
+        album_name: song.album_name,
+        album_uri: song.album_uri,
+        duration_ms: song.duration_ms,
+        artist_uri: song.artist_uri,
+        genres: song.genres,
         image: song.image,
       })),
     };
@@ -228,10 +235,15 @@ if (session) {
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
-        track_id: song.id,
-        track_name: song.title,
-        artist_name: song.artist,
-        album_name: song.album,
+        track_id: song.track_id, // Ensure all fields are included
+        track_uri: song.track_uri,
+        track_name: song.track_name,
+        artist_name: song.artist_name,
+        album_name: song.album_name,
+        album_uri: song.album_uri,
+        duration_ms: song.duration_ms,
+        artist_uri: song.artist_uri,
+        genres: song.genres,
         image: song.image,
       })),
     };
