@@ -39,7 +39,7 @@ model UserResult {
   play_instrument        PlayInstrument
   formal_education       FormalEducation
   compose_music          ComposeMusic
-  hours_listening_weekly Int      @default(0)
+  hours_listening_weekly Int      
   instruments_played_years InstrumentYears?
 
 

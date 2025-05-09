@@ -28,6 +28,7 @@ IntentSong.init({
   sequelize,
   modelName: 'IntentSong',
   tableName: 'intent_songs',
+  timestamps: false,
 });
 
 export default IntentSong;

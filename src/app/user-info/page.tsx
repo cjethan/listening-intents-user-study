@@ -118,12 +118,14 @@ export default function UserInfo() {
       .replace('occasionally', 'occasionally')
       .replace('no', 'no');
     const instrumentsPlayedYearsEnum = yearsPlayed
-      .toLowerCase()
-      .replace('less than 1 year', 'less than 1 year')
-      .replace('1-2 years', '1-2 years')
-      .replace('3-5 years', '3-5 years')
-      .replace('6-10 years', '6-10 years')
-      .replace('more than 10 years', 'more than 10 years');
+      ? yearsPlayed
+          .toLowerCase()
+          .replace('less than 1 year', 'less than 1 year')
+          .replace('1-2 years', '1-2 years')
+          .replace('3-5 years', '3-5 years')
+          .replace('6-10 years', '6-10 years')
+          .replace('more than 10 years', 'more than 10 years')
+      : null; // Map empty string to null
 
     // Prepare user data according to the model
     const userData = {

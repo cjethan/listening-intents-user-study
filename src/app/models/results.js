@@ -36,6 +36,7 @@ UserResult.init({
       '6-10 years',
       'more than 10 years'
     ),
+    allowNull: true, // Allow null values
   }
 }, {
   sequelize, // Ensure the sequelize instance is passed here

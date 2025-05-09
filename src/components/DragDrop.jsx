@@ -4,9 +4,7 @@ import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/co
 import { useSession } from "next-auth/react";
 import { checkSongsAndExtractGenres } from "../utils/databaseUtils"; // Import the new utility function
 
-const initialItemsBox2 = [
-  { id: "item3", title: "Track Three", artist: "Artist C", album: "Album Z" },
-];
+const initialItemsBox2 = [];
 
 async function fetchAlbumImage(trackId, accessToken) {
   try {
@@ -20,7 +18,7 @@ async function fetchAlbumImage(trackId, accessToken) {
     return trackData.album.images?.[0]?.url || "/default-cover.png"; // Updated path
   } catch (error) {
     console.error(`Error fetching album image for ${trackId}:`, error);
-    return "/default-cover.png"; // Updated path
+    return "/default-cover.png";
   }
 }
 
@@ -35,7 +33,7 @@ async function checkAndAddToDatabase(songs) {
       body: JSON.stringify({ songs }),
     });
 
-    const responseData = await response.json(); // Parse the response as JSON
+    const responseData = await response.json();
     console.log("Response from check-and-add API:", responseData);
   } catch (error) {
     console.error("Error checking/adding songs to the database:", error);
@@ -601,32 +599,6 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
     </div>
   );
 }
-
-// Add CSS for the loading spinner
-<style jsx>{`
-  .loading-spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 10px;
-  }
-  .spinner-circle {
-    width: 24px;
-    height: 24px;
-    border: 3px solid rgba(0, 0, 0, 0.2);
-    border-top: 3px solid #000;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`}</style>
 
 function DraggableItem({ item, isOverlay = false }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({

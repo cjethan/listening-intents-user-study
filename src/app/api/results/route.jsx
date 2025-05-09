@@ -48,6 +48,9 @@ export async function POST(request) {
 
       console.log("Formal education validation passed");
 
+      // Map empty string for instruments_played_years to null
+      const instruments_played_years_mapped = instruments_played_years === "" ? null : instruments_played_years;
+
       // Save user data
       console.log("Saving user data...");
       const newUser = await UserResult.create({
@@ -57,7 +60,7 @@ export async function POST(request) {
         formal_education,
         compose_music,
         hours_listening_weekly,
-        instruments_played_years,
+        instruments_played_years: instruments_played_years_mapped, // Map empty string to null
       });
       console.log("User saved successfully:", newUser);
     
@@ -83,9 +86,10 @@ export async function POST(request) {
     for (const key in intents) {
       const intent = intents[key];
       console.log("Intent:", intent);
+      console.log("Songs received for intent:", intent.songs); // Debug log to inspect songs
       const newIntent = await Intent.create({
         user_id: user_id,
-        name: intent.name,
+        name: intent.intent_name,
         how_often: intent.how_often,
         how_imp: intent.how_imp,
       });
@@ -93,10 +97,10 @@ export async function POST(request) {
 
       console.log("songs for intent:", intent.songs);
       for (const song in intent.songs) {
-        console.log("song:", song);
+        console.log("song:", song); // Debug log for each song
         const newSongForIntent = await IntentSong.create({
           intent_id: newIntent.id, //todo passt das?
-          intent_name: intent.name,
+          intent_name: intent.intent_name,
           track_id: song.track_id,
           track_name: song.track_name,
           artist_name: song.artist_name,
