@@ -509,7 +509,40 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
   return (
     <div ref={setNodeRef} className="drag-box">
       <p className="drag-box-title">{title}</p>
-      {id === "box2" }
+      {id === "box1" && (
+        <div className="text-sm text-gray-500 flex items-center justify-end mb-2">
+          <span>album cover provided by</span>
+          <img
+            src="/Full_Logo_Green_RGB.svg"
+            alt="Spotify"
+            style={{
+              marginLeft: "5px",
+              minWidth: "70px",
+              maxWidth: "90px",
+              height: "auto",
+              padding: "13px 0", // Add half the height as free space around the image
+              boxSizing: "content-box", // Ensure padding doesn't affect the image size
+            }}
+          />
+        </div>
+      )}
+      {id === "box2" && (
+        <div className="text-sm text-gray-500 flex items-center justify-end mb-2">
+          <span>provided by</span>
+          <img
+            src="/Full_Logo_Green_RGB.svg"
+            alt="Spotify"
+            style={{
+              marginLeft: "5px",
+              minWidth: "70px",
+              maxWidth: "90px",
+              height: "auto",
+              padding: "13px 0", // Add half the height as free space around the image
+              boxSizing: "content-box", // Ensure padding doesn't affect the image size
+            }}
+          />
+        </div>
+      )}
       {id === "box3" && (
         <div className="search-bar">
           <input
