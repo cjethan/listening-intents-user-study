@@ -645,6 +645,28 @@ function DraggableItem({ item, isOverlay = false }) {
       }
     : undefined;
 
+  let startX = 0;
+  let startY = 0;
+  let isDragging = false;
+
+  const handleMouseDown = (e) => {
+    startX = e.clientX;
+    startY = e.clientY;
+    isDragging = false;
+  };
+
+  const handleMouseMove = (e) => {
+    if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
+      isDragging = true;
+    }
+  };
+
+  const handleMouseUp = (e) => {
+    if (!isDragging && item.track_uri) {
+      window.open(`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`, "_blank");
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -652,6 +674,9 @@ function DraggableItem({ item, isOverlay = false }) {
       {...attributes}
       className="drag-item"
       style={style}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
     >
       <img
         src={item.image || "https://via.placeholder.com/50"}
@@ -662,6 +687,20 @@ function DraggableItem({ item, isOverlay = false }) {
         <strong>{item.title}</strong>
         <p>{item.artist}</p>
         <small>{item.album}</small>
+        {item.track_uri && (
+          <a
+            href={`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline text-xs relative group"
+            onClick={(e) => e.preventDefault()} // Prevent default click behavior
+          >
+            View on Spotify
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-gray-100 bg-gray-400 rounded opacity-0 group-hover:opacity-95 transition-opacity shadow-lg">
+              Right-click to open link
+            </span>
+          </a>
+        )}
       </div>
     </div>
   );
