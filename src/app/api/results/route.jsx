@@ -9,6 +9,9 @@ import Intent from "../../models/intent";
 import IntentSong from "../../models/intentSong"; // Import IntentSong model
 import UserInstrument from "../../models/userInstruments"; // Import UserInstrument model
 import Instrument from "../../models/instrument"; // Import Instrument model
+import IntentAdjective from "../../models/intentAdjectives"; // Import IntentAdjective model
+import Adjective from "../../models/adjective"; // Import Adjective model
+import IntentSongGenre from "../../models/intentSongGenres"; // Import IntentSongGenre model
 
 export async function POST(request) {
   console.log("POST /api/results called");
@@ -136,6 +139,24 @@ export async function POST(request) {
           duration_ms: song.duration_ms,
         });
         //console.log("IntentSong saved successfully:", newIntentSong);
+
+        for (const genreName of song.genres) {
+          const [genre, created] = await Genre.findOrCreate({ where: { name: genreName } });
+          await IntentSongGenre.create({
+            intent_song_id: newIntentSong.id,
+            genre_id: genre.id,
+          });
+        }
+      }
+
+      for (const adjective of intent.adjectives) {
+        const [adjectiveRecord, created] = await Adjective.findOrCreate({
+          where: { word: adjective },
+        });
+        await IntentAdjective.create({
+          intent_id: newIntent.id,
+          adjective_id: adjectiveRecord.id,
+        });
       }
     }
     console.log("All intents and songs saved successfully");

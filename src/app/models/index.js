@@ -7,6 +7,7 @@ import IntentSong from './intentSong.js';
 import UserGenre from './userGenre.js';
 import UserInstrument from './userInstruments.js';
 import IntentAdjective from './intentAdjectives.js';
+import IntentSongGenre from './intentSongGenres.js';
 
 // Associations
 UserResult.hasMany(UserGenre, { foreignKey: 'user_id', onDelete: 'CASCADE' });
@@ -21,6 +22,9 @@ Intent.belongsToMany(Adjective, { through: IntentAdjective, foreignKey: 'intent_
 Intent.hasMany(IntentSong, { foreignKey: 'intent_id', onDelete: 'CASCADE' });
 Intent.belongsTo(UserResult, { foreignKey: 'user_id' });
 
+IntentSong.belongsToMany(Genre, { through: IntentSongGenre, foreignKey: 'intent_song_id' });
+Genre.belongsToMany(IntentSong, { through: IntentSongGenre, foreignKey: 'genre_id' });
+
 export {
   UserResult,
   Genre,
@@ -31,4 +35,5 @@ export {
   UserGenre,
   UserInstrument,
   IntentAdjective,
+  IntentSongGenre,
 };

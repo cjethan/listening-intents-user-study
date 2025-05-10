@@ -1,22 +1,22 @@
 const { Model, DataTypes } = require('sequelize');
 import { sequelize } from '../utils/database'; // assuming your sequelize instance
 
-class IntentAdjective extends Model {}
+class IntentSongGenre extends Model {}
 
-IntentAdjective.init({
-  intent_id: {
+IntentSongGenre.init({
+  intent_song_id: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'intents',
+      model: 'intent_songs',
       key: 'id',
     },
     allowNull: false,
     primaryKey: true, // Part of the composite primary key
   },
-  adjective_id: {
+  genre_id: {
     type: DataTypes.INTEGER,
     references: {
-      model: 'adjectives',
+      model: 'genres',
       key: 'id',
     },
     allowNull: false,
@@ -24,15 +24,9 @@ IntentAdjective.init({
   }
 }, {
   sequelize,
-  modelName: 'IntentAdjective',
-  tableName: 'intent_adjectives',
-  indexes: [
-    {
-      unique: true,
-      fields: ['intent_id', 'adjective_id'],
-    },
-  ],
+  modelName: 'IntentSongGenre',
+  tableName: 'intent_song_genres',
   timestamps: false,
 });
 
-export default IntentAdjective;
+export default IntentSongGenre;
