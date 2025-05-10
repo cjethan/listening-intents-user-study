@@ -182,7 +182,7 @@ if (session) {
     const currentIntents = userData.intents || {};
     console.log("dropItems", dropItems);
 
-    // Append the current intent data using intent_id as the key
+    // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
       intent_id: randomIntent?.intent_id || "",
       intent_name: randomIntent?.intent_name || "",
@@ -190,7 +190,7 @@ if (session) {
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
-        track_id: song.track_id, // Ensure all fields are included
+        track_id: song.track_id,
         track_uri: song.track_uri,
         track_name: song.track_name,
         artist_name: song.artist_name,
@@ -198,8 +198,8 @@ if (session) {
         album_uri: song.album_uri,
         duration_ms: song.duration_ms,
         artist_uri: song.artist_uri,
-        genres: song.genres,
-        image: song.image,
+        genres: song.genres || [], // Default to an empty array if genres are missing
+        image: song.image || "/default-cover.png", // Default image if missing
       })),
     };
 
@@ -213,7 +213,7 @@ if (session) {
 
     // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    console.log(updatedUserData);
+    console.log("Updated user data", updatedUserData);
 
     // Save updated counter to localStorage
     localStorage.setItem("counter", updatedCounter.toString());
@@ -227,7 +227,7 @@ if (session) {
     const currentIntents = userData.intents || {};
     console.log("dropItems", dropItems);
 
-    // Append the current intent data using intent_id as the key
+    // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
       intent_id: randomIntent?.intent_id || "",
       intent_name: randomIntent?.intent_name || "",
@@ -235,7 +235,7 @@ if (session) {
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
-        track_id: song.track_id, // Ensure all fields are included
+        track_id: song.track_id,
         track_uri: song.track_uri,
         track_name: song.track_name,
         artist_name: song.artist_name,
@@ -243,8 +243,8 @@ if (session) {
         album_uri: song.album_uri,
         duration_ms: song.duration_ms,
         artist_uri: song.artist_uri,
-        genres: song.genres,
-        image: song.image,
+        genres: song.genres || [], // Default to an empty array if genres are missing
+        image: song.image || "/default-cover.png", // Default image if missing
       })),
     };
 

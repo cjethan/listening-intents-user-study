@@ -96,10 +96,10 @@ export async function POST(request) {
       console.log("Intent saved successfully:", newIntent);
 
       console.log("songs for intent:", intent.songs);
-      for (const song in intent.songs) {
+      for (const song of intent.songs) { // Use for...of to iterate through the array
         console.log("song:", song); // Debug log for each song
-        const newSongForIntent = await IntentSong.create({
-          intent_id: newIntent.id, //todo passt das?
+        const newIntentSong = await IntentSong.create({
+          intent_id: newIntent.id, // Ensure this references the correct intent
           intent_name: intent.intent_name,
           track_id: song.track_id,
           track_name: song.track_name,
@@ -110,6 +110,7 @@ export async function POST(request) {
           album_uri: song.album_uri,
           duration_ms: song.duration_ms,
         });
+        console.log("IntentSong saved successfully:", newIntentSong);
       }
     }
     console.log("All intents and songs saved successfully");

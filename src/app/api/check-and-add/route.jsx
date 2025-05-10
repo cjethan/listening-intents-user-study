@@ -17,7 +17,7 @@ export async function POST(req) {
       // Check if the song exists in the database
       const [existingSong] = await sequelize.query(
         `SELECT track_id FROM songs WHERE track_id = $1 LIMIT 1`, // Changed table name to lowercase
-        { bind: [song.id], type: sequelize.QueryTypes.SELECT }
+        { bind: [song.track_id], type: sequelize.QueryTypes.SELECT }
       );
 
       if (!existingSong) {
