@@ -18,6 +18,7 @@ Adjective.init({
   sequelize,
   modelName: 'Adjective',
   tableName: 'adjectives',
+  timestamps: false,
 });
 
 export default Adjective;

@@ -30,6 +30,7 @@ IntentAdjective.init({
       fields: ['intent_id', 'adjective_id'],
     },
   ],
+  timestamps: false,
 });
 
 export default IntentAdjective;
