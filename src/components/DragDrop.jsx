@@ -66,15 +66,16 @@ async function fetchRandomSongsByGenre(genre, accessToken) {
 
       const songsWithImages = await Promise.all(
         randomSongs.map(async (song) => ({
-          id: song.track_id,
-          title: song.track_name,
-          artist: song.artist_name,
-          album: song.album_name,
-          image: await fetchAlbumImage(song.track_id, accessToken),
+          track_id: song.track_id,
+          track_name: song.track_name,
+          artist_name: song.artist_name,
           track_uri: song.track_uri,
-          artist_uri: song.artist_uri,
+          artist_uri: song.artist_uri || null,
+          album_name: song.album_name,
           album_uri: song.album_uri,
           duration_ms: song.duration_ms,
+          genres: song.genres || [],
+          image: await fetchAlbumImage(song.track_id, accessToken),
         }))
       );
 
@@ -164,18 +165,19 @@ export function DragAndDrop({ setDropItems }) {
             const topSongs = data.items.map((item) => {
               const trackName = item.name;
               const trackArtists = item.artists.map((artist) => artist.name).join(", ");
-              if (!uniqueSongs.has(trackName)) {
-                uniqueSongs.set(trackName, trackArtists);
+              if (!uniqueSongs.has(item.id)) {
+                uniqueSongs.set(item.id, true);
                 return {
-                  id: item.id,
-                  title: trackName,
-                  artist: trackArtists,
-                  album: item.album.name,
-                  image: item.album.images?.[0]?.url || "default-image.jpg",
+                  track_id: item.id,
+                  track_name: trackName,
+                  artist_name: trackArtists,
                   track_uri: item.uri,
                   artist_uri: item.artists?.[0]?.uri || null,
+                  album_name: item.album.name,
                   album_uri: item.album.uri,
                   duration_ms: item.duration_ms,
+                  genres: [], // Genres can be populated later
+                  image: item.album.images?.[0]?.url || "default-image.jpg",
                 };
               }
               return null;
@@ -259,12 +261,12 @@ export function DragAndDrop({ setDropItems }) {
     const itemId = active.id;
 
     const allItems = [...box1Items, ...box2Items, ...box3Items, ...localDropItems, ...searchResults];
-    const draggedItem = allItems.find((item) => item.id === itemId);
+    const draggedItem = allItems.find((item) => item.track_id === itemId);
 
-    const removeItem = (items) => items.filter((item) => item.id !== itemId);
+    const removeItem = (items) => items.filter((item) => item.track_id !== itemId);
 
     if (over.id === "dropArea") {
-      if (!localDropItems.find((item) => item.id === itemId)) {
+      if (!localDropItems.find((item) => item.track_id === itemId)) {
         setLocalDropItems((prev) => [...prev, draggedItem]);
         setBox1Items(removeItem(box1Items));
         setBox2Items(removeItem(box2Items));
@@ -273,7 +275,7 @@ export function DragAndDrop({ setDropItems }) {
         setSearchResults(removeItem(searchResults));
       }
     } else if (over.id === "box1") {
-      if (!box1Items.find((item) => item.id === itemId)) {
+      if (!box1Items.find((item) => item.track_id === itemId)) {
         setBox1Items((prev) => [draggedItem, ...prev]);
         setLocalDropItems(removeItem(localDropItems));
         setBox2Items(removeItem(box2Items));
@@ -281,7 +283,7 @@ export function DragAndDrop({ setDropItems }) {
         setBox3Items(removeItem(box3Items));
       }
     } else if (over.id === "box2") {
-      if (!box2Items.find((item) => item.id === itemId)) {
+      if (!box2Items.find((item) => item.track_id === itemId)) {
         setBox2Items((prev) => [draggedItem, ...prev]);
         setFilteredBox2Items((prev) => [draggedItem, ...prev]); // Update filtered items
         setLocalDropItems(removeItem(localDropItems));
@@ -289,7 +291,7 @@ export function DragAndDrop({ setDropItems }) {
         setBox3Items(removeItem(box3Items));
       }
     } else if (over.id === "box3") {
-      if (!box3Items.find((item) => item.id === itemId)) {
+      if (!box3Items.find((item) => item.track_id === itemId)) {
         setBox3Items((prev) => [draggedItem, ...prev]);
         setLocalDropItems(removeItem(localDropItems));
         setBox1Items(removeItem(box1Items));
@@ -304,14 +306,14 @@ export function DragAndDrop({ setDropItems }) {
     const itemId = active?.id;
 
     if (!itemId) {
-      console.error("Active item ID is undefined.");
+      console.error("Active item track_id is undefined.");
       return;
     }
 
     const allItems = [...box1Items, ...box2Items, ...box3Items, ...localDropItems, ...searchResults];
     console.log("All items:", allItems); // Debugging line
     console.log("dropItems:", localDropItems); // Debugging line
-    const draggedItem = allItems.find((item) => item.id === itemId);
+    const draggedItem = allItems.find((item) => item.track_id === itemId);
 
     if (!draggedItem) {
       console.error("Dragged item not found:", itemId);
@@ -397,11 +399,11 @@ function DropArea({ items }) {
           <p className="drop-placeholder">Drop songs here</p>
         ) : null}
         {items.map((item) => {
-          if (!item || !item.id) {
+          if (!item || !item.track_id) {
             console.error("Invalid item in DropArea:", item);
             return null; // Safeguard to prevent crashes
           }
-          return <DraggableItem key={item.id} item={item} />;
+          return <DraggableItem key={item.track_id} item={item} />;
         })}
       </div>
     </div>
@@ -567,7 +569,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
         style={{ maxHeight: "500px", overflowY: "auto" }}
       >
         {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
-          <DraggableItem key={item.id} item={item} />
+          <DraggableItem key={item.track_id} item={item} /> // Ensure unique key using track_id
         ))}
         {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && !isSearching && (
           <div className="text-center mt-4">
@@ -585,10 +587,10 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
                 }
 
                 const newSong = {
-                  id: `custom-${Date.now()}`,
-                  title,
-                  artist,
-                  album: formData.get("album")?.trim() || "Unknown Album",
+                  track_id: `custom-${Date.now()}`, // Ensure unique track_id for custom songs
+                  track_name: title,
+                  artist_name: artist,
+                  album_name: formData.get("album")?.trim() || "Unknown Album",
                   image: "/default-cover.png",
                 };
                 setSearchResults((prev) => [...prev, newSong]);
@@ -635,7 +637,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
 
 function DraggableItem({ item, isOverlay = false }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: item.id,
+    id: item.track_id,
   });
 
   const style = transform
@@ -680,26 +682,28 @@ function DraggableItem({ item, isOverlay = false }) {
     >
       <img
         src={item.image || "https://via.placeholder.com/50"}
-        alt={item.title}
+        alt={item.track_name}
         className="drag-item-image"
       />
       <div className="drag-item-info">
-        <strong>{item.title}</strong>
-        <p>{item.artist}</p>
-        <small>{item.album}</small>
+        <strong>{item.track_name}</strong>
+        <p>{item.artist_name}</p>
+        <small>{item.album_name}</small>
         {item.track_uri && (
-          <a
-            href={`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:underline text-xs relative group"
-            onClick={(e) => e.preventDefault()} // Prevent default click behavior
-          >
-            View on Spotify
-            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-gray-100 bg-gray-400 rounded opacity-0 group-hover:opacity-95 transition-opacity shadow-lg">
-              Right-click to open link
-            </span>
-          </a>
+          <div className="text-xs relative">
+            <a
+              href={`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:underline group"
+              onClick={(e) => e.preventDefault()} // Prevent default click behavior
+            >
+              View on Spotify
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-gray-100 bg-gray-400 rounded opacity-0 group-hover:opacity-95 transition-opacity shadow-lg">
+                Right-click to open link
+              </span>
+            </a>
+          </div>
         )}
       </div>
     </div>
