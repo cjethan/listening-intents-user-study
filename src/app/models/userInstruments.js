@@ -11,6 +11,7 @@ UserInstrument.init({
       key: 'user_id',
     },
     allowNull: false,
+    primaryKey: true, // Part of the composite primary key
   },
   instrument_id: {
     type: DataTypes.INTEGER,
@@ -19,6 +20,7 @@ UserInstrument.init({
       key: 'id',
     },
     allowNull: false,
+    primaryKey: true, // Part of the composite primary key
   }
 }, {
   sequelize,
@@ -30,6 +32,7 @@ UserInstrument.init({
       fields: ['user_id', 'instrument_id'],
     },
   ],
+  timestamps: false,
 });
 
 export default UserInstrument;

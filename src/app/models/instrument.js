@@ -18,6 +18,7 @@ Instrument.init({
   sequelize,
   modelName: 'Instrument',
   tableName: 'instruments',
+  timestamps: false,
 });
 
 export default Instrument;
