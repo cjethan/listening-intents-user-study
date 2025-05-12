@@ -334,15 +334,17 @@ if (session) {
       
       <DragAndDrop setDropItems={setDropItems} />
 
+      {/*
       <div className="">
         <p>
           {counter}, , {JSON.stringify(userData, null, 2)}
         </p>
         <pre>{JSON.stringify(dropItems, null, 2)}</pre>
       </div>
+      */}
 
       <div className="fixed bottom-6 right-6 space-x-4">
-        {counter < 1 ? ( // Show "NEXT" button for the first 3 clicks todo
+        {counter < 9 ? ( // Show "NEXT" button for the first 9 clicks
           <button
             onClick={() => handleButtonClick(handleNext)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-600 ease-in-out"
@@ -363,7 +365,7 @@ if (session) {
               />
             </svg>
           </button>
-        ) : ( // Show "SUBMIT" button after 3 clicks
+        ) : ( // Show "SUBMIT" button after 9 clicks
           <button
             onClick={() => handleButtonClick(handleSaveToDB)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-full shadow-md hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out"
@@ -392,7 +394,7 @@ if (session) {
         </div>
       )}
 
-      <div className="mt-6 p-4 bg-white rounded shadow-md">
+      {/*<div className="mt-6 p-4 bg-white rounded shadow-md">
         <button
           onClick={() => {
             const debugData = null;
@@ -408,7 +410,7 @@ if (session) {
         <pre className="text-sm bg-gray-100 p-2 rounded overflow-x-auto">
           {JSON.stringify(userData, null, 2)}
         </pre>
-      </div>
+      </div>*/}
     </div>
   );
 }
