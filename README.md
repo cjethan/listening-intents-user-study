@@ -1,18 +1,27 @@
 # Music Intent Study
 
-## Environment
+This project is a web application designed to study user music listening intents. It allows users to classify songs based on their listening habits and preferences, providing insights into how music is consumed for different purposes.
 
-Setup the enviroment variables file .env in the projects root directory.
+## Environment Setup
 
-It has to include:
-POSTGRESQL_URI, SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, NEXTAUTH_SECRET, NEXTAUTH_URL
+Create a `.env` file in the project's root directory with the following variables:
 
-Spotify Client Id and Secret are from the Spotify Dev Dashboard.
+- `POSTGRESQL_URI`: Connection string for the PostgreSQL database.
+- `SPOTIFY_CLIENT_ID`: Client ID from the Spotify Developer Dashboard.
+- `SPOTIFY_CLIENT_SECRET`: Client Secret from the Spotify Developer Dashboard.
+- `NEXTAUTH_SECRET`: Secret key for NextAuth authentication.
+- `NEXTAUTH_URL`: The base URL of the application.
 
-## Run
+## Installation
 
-Run
+Install dependencies:
+   ```bash
+   npm install
+   ```
+
+## Running the Application
+
+Start the development server:
 ```bash
 npm run dev
 ```
-while the database is running in a Docker container.
