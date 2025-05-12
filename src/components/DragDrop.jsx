@@ -452,31 +452,31 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
             const queryWords = query.toLowerCase().split(/\s+/);
 
             const filteredResults = data.map((item) => ({
-              id: item.track_id,
-              title: item.track_name,
-              artist: item.artist_name,
-              album: item.album_name,
+              track_id: item.track_id,
+              track_name: item.track_name,
+              artist_name: item.artist_name,
+              album_name: item.album_name,
             })).filter((item) =>
               queryWords.some(
                 (word) =>
-                  item.title.toLowerCase().includes(word) ||
-                  item.artist.toLowerCase().includes(word) ||
-                  item.album.toLowerCase().includes(word)
+                  item.track_id.toLowerCase().includes(word) ||
+                  item.artist_name.toLowerCase().includes(word) ||
+                  item.album_name.toLowerCase().includes(word)
               )
             );
 
             const prioritizedResults = filteredResults.sort((a, b) => {
               const aMatchCount = queryWords.filter(
                 (word) =>
-                  a.title.toLowerCase().includes(word) ||
-                  a.artist.toLowerCase().includes(word) ||
-                  a.album.toLowerCase().includes(word)
+                  a.track_id.toLowerCase().includes(word) ||
+                  a.artist_name.toLowerCase().includes(word) ||
+                  a.album_name.toLowerCase().includes(word)
               ).length;
               const bMatchCount = queryWords.filter(
                 (word) =>
-                  b.title.toLowerCase().includes(word) ||
-                  b.artist.toLowerCase().includes(word) ||
-                  b.album.toLowerCase().includes(word)
+                  b.track_id.toLowerCase().includes(word) ||
+                  b.artist_name.toLowerCase().includes(word) ||
+                  b.album_name.toLowerCase().includes(word)
               ).length;
               return bMatchCount - aMatchCount;
             });
@@ -486,7 +486,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
             const resultsWithImages = await Promise.all(
               prioritizedResults.map(async (item) => ({
                 ...item,
-                image: await fetchAlbumImage(item.id, accessToken),
+                image: await fetchAlbumImage(item.track_id, accessToken),
               }))
             );
 
@@ -690,20 +690,18 @@ function DraggableItem({ item, isOverlay = false }) {
         <p>{item.artist_name}</p>
         <small>{item.album_name}</small>
         {item.track_uri && (
-          <div className="text-xs relative">
-            <a
-              href={`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-400 hover:underline group"
-              onClick={(e) => e.preventDefault()} // Prevent default click behavior
-            >
-              View on Spotify
-              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-gray-100 bg-gray-400 rounded opacity-0 group-hover:opacity-95 transition-opacity shadow-lg">
-                Right-click to open link
-              </span>
-            </a>
-          </div>
+          <a
+            href={`https://open.spotify.com/track/${item.track_uri.split(":").pop()}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline text-xs relative group"
+            onClick={(e) => e.preventDefault()} // Prevent default click behavior
+          >
+            View on Spotify
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-gray-100 bg-gray-400 rounded opacity-0 group-hover:opacity-95 transition-opacity shadow-lg">
+              Right-click to open link
+            </span>
+          </a>
         )}
       </div>
     </div>
