@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../utils/database'; // assuming your sequelize instance
 
 class IntentAdjective extends Model {}

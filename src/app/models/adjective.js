@@ -1,5 +1,6 @@
-const { Model, DataTypes } = require('sequelize');
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+
+import { Model, DataTypes } from 'sequelize';
+import { sequelize } from '../utils/database'; 
 
 class Adjective extends Model {}
 

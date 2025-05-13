@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../utils/database'; // Ensure this path is correct
 
 class UserResult extends Model {}

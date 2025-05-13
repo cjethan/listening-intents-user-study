@@ -1,10 +1,14 @@
+import Image from 'next/image';
+import { useState } from 'react';
+
 const songsData = [
   { id: "1", name: "Jocelyn Flores", artist: "XXXTENTACION", image: "https://via.placeholder.com/50" },
   { id: "2", name: "Lucid Dreams", artist: "Juice WRLD", image: "https://via.placeholder.com/50" },
   { id: "3", name: "God’s Plan", artist: "Drake", image: "https://via.placeholder.com/50" },
 ];
 
-const SongList = ({ onDragStart }) => {
+const SongList = () => {
+  const [search, setSearch] = useState("");
 
   const filteredSongs = songsData.filter((song) =>
     song.name.toLowerCase().includes(search.toLowerCase())
@@ -26,7 +30,13 @@ const SongList = ({ onDragStart }) => {
             onDragStart={(e) => e.dataTransfer.setData("song", JSON.stringify(song))}
             className="p-2 flex items-center bg-white shadow rounded cursor-pointer"
           >
-            <img src={song.image} alt={song.name} className="w-12 h-12 rounded mr-2" />
+            <Image
+              src={song.image}
+              alt={song.name}
+              width={48}
+              height={48}
+              className="w-12 h-12 rounded mr-2"
+            />
             <div>
               <p className="font-semibold">{song.name}</p>
               <p className="text-gray-500 text-sm">{song.artist}</p>

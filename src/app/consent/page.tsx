@@ -6,8 +6,9 @@ export default function ConsentForm() {
   const router = useRouter();
 
   const handleConsent = () => {
-    // Save consent status (if needed)
-    localStorage.setItem('consentGiven', 'true');
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('consentGiven', 'true');
+    }
     router.push('/'); // Redirect to the main app page
   };
 

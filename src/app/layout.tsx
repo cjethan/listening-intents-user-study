@@ -25,13 +25,15 @@ export default function RootLayout({
   const router = useRouter();
 
   useEffect(() => {
-    const storedUserData = localStorage.getItem("userData");
-    const consentGiven = localStorage.getItem("consentGiven");
+    if (typeof window !== 'undefined') {
+      const storedUserData = localStorage.getItem("userData");
+      const consentGiven = localStorage.getItem("consentGiven");
 
-    if (!storedUserData || storedUserData === "null") {
-      router.push("/user-info");
-    } else if (!consentGiven) {
-      router.push("/consent");
+      if (!storedUserData || storedUserData === "null") {
+        router.push("/user-info");
+      } else if (!consentGiven) {
+        router.push("/consent");
+      }
     }
   }, [router]);
 
