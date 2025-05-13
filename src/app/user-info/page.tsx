@@ -7,9 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
 import { v4 as uuidv4 } from 'uuid';
 
-export default function UserInfo() {
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
+
+ export default function UserInfo() {
   const [userId, setUserId] = useState('');
   const [prolificId, setProlificId] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
@@ -17,9 +16,6 @@ export default function UserInfo() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [error, setError] = useState('');
-  const [musicExperience, setMusicExperience] = useState('');
-  const [instruments, setInstruments] = useState('');
-  const [duration, setDuration] = useState('');
   const [playsInstrument, setPlaysInstrument] = useState('');
   const [instrumentsPlayed, setInstrumentsPlayed] = useState<string[]>([]);
   const [otherInstrument, setOtherInstrument] = useState('');
@@ -32,18 +28,20 @@ export default function UserInfo() {
   
 
   useEffect(() => {
-    // Generate a random user ID
-    const uniqueId = uuidv4();
-    setUserId(uniqueId);
+    if (typeof window !== 'undefined') {
+      // Generate a random user ID
+      const uniqueId = uuidv4();
+      setUserId(uniqueId);
 
-    // Fetch genres from the file
-    fetch('/all_genres.txt')
-      .then((response) => response.text())
-      .then((data) => {
-        const genreList = data.split('\n').map((genre) => genre.trim()).filter(Boolean);
-        setGenres(genreList);
-        setFilteredGenres(genreList);
-      });
+      // Fetch genres from the file
+      fetch('/all_genres.txt')
+        .then((response) => response.text())
+        .then((data) => {
+          const genreList = data.split('\n').map((genre) => genre.trim()).filter(Boolean);
+          setGenres(genreList);
+          setFilteredGenres(genreList);
+        });
+    }
   }, []);
 
   useEffect(() => {
@@ -142,7 +140,9 @@ export default function UserInfo() {
     };
 
     setUserData(userData);
-    localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+    }
     router.push('/consent'); // Redirect to consent form
   }
 

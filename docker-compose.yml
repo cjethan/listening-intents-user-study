@@ -10,9 +10,19 @@ services:
       POSTGRES_PASSWORD: Kf6$!5#m952Ku
       POSTGRES_DB: intentdb
     ports:
-      - "5432:5432"
+      - "5432:5432" #localhost:5432 todo oder weg?
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
 
 volumes:
   pgdata:

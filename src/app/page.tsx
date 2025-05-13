@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 
 // für speichern
 import { useUserStore } from "../store/store";
+import dynamic from 'next/dynamic';
+
 
 type Song = {
   track_id: string;
@@ -41,12 +43,12 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
 
         const trackData = await response.json();
         return trackData.album.images?.[0]?.url || "/default-cover.png"; // Fallback if no image
-    } catch (error) {
+    } catch {
         return "/default-cover.png"; // Fallback image
     }
 }
 
-export default function Home() {
+ export default function Home() {
 
   // db stuff
   const [songs, setSongs] = useState<Song[]>([]);
@@ -75,7 +77,7 @@ export default function Home() {
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login'); // Redirect to Spotify login
-    } else if (status === 'authenticated') {
+    } else if (status === 'authenticated' && typeof window !== 'undefined') {
       const storedUserData = localStorage.getItem('userData');
       const consentGiven = localStorage.getItem('consentGiven');
 
@@ -99,7 +101,7 @@ if (session) {
         console.log("API Response:", data); // 🔍 Debugging output
 
         if (Array.isArray(data)) {
-          const accessToken = session?.accessToken; // Assuming accessToken is part of the session
+          const accessToken = (session as any)?.accessToken; // as any)a  )Assumin acces en is part of the session
           console.log("Access Token:", accessToken); // 🔍 Debugging output
           const songsWithImages = await Promise.all(
             data.map(async (song: Song) => ({
@@ -179,8 +181,8 @@ if (session) {
     const updatedCounter = counter + 1; // Increment the counter
 
     // Ensure intents is initialized as an object
-    const currentIntents = userData.intents || {};
-    console.log("dropItems", dropItems);
+    const currentIntents = userData?.intents || {};
+  console.log("dropItems", dropItems);
 
     // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
@@ -188,7 +190,7 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
+      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
         track_id: song.track_id,
         track_uri: song.track_uri,
@@ -224,7 +226,7 @@ if (session) {
 
   async function handleSaveToDB() {
     // Ensure intents is initialized as an object
-    const currentIntents = userData.intents || {};
+    const currentIntents = userData?.intents || {};
     console.log("dropItems", dropItems);
 
     // Create a new intent with each dropItem saved as one song in songs[]
@@ -233,7 +235,7 @@ if (session) {
       intent_name: randomIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => adj.value.toLowerCase()), // Convert adjectives to lowercase
+      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
       songs: dropItems.map((song) => ({
         track_id: song.track_id,
         track_uri: song.track_uri,

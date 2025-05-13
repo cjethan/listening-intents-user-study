@@ -113,22 +113,24 @@ export function DragAndDrop({ setDropItems }) {
           const accessToken = session?.accessToken;
 
           // Retrieve genres from localStorage
-          const userData = JSON.parse(localStorage.getItem("userData"));
-          const genres = userData?.genres || [];
-          console.log(`Retrieved genres from localStorage: ${genres}`);
+          if (typeof window !== 'undefined') {
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            const genres = userData?.genres || [];
+            console.log(`Retrieved genres from localStorage: ${genres}`);
 
-          // Fetch songs for all genres in parallel
-          const genrePromises = genres.map((genre) =>
-            fetchRandomSongsByGenre(genre, accessToken)
-          );
-          const songsByGenre = await Promise.all(genrePromises);
+            // Fetch songs for all genres in parallel
+            const genrePromises = genres.map((genre) =>
+              fetchRandomSongsByGenre(genre, accessToken)
+            );
+            const songsByGenre = await Promise.all(genrePromises);
 
-          // Flatten and limit the total number of songs
-          const allSongs = songsByGenre.flat().slice(0, 50); // Limit to 50 songs
-          console.log(`Fetched ${allSongs.length} songs in total.`);
+            // Flatten and limit the total number of songs
+            const allSongs = songsByGenre.flat().slice(0, 50); // Limit to 50 songs
+            console.log(`Fetched ${allSongs.length} songs in total.`);
 
-          // Display all fetched songs without shuffling
-          setBox1Items(allSongs);
+            // Display all fetched songs without shuffling
+            setBox1Items(allSongs);
+          }
 
           // Check and add songs to the database
           //console.log("Checking and adding songs to the database...");
@@ -482,16 +484,18 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
             });
 
             // Fetch album images after prioritizing results
-            const accessToken = session?.accessToken;
-            const resultsWithImages = await Promise.all(
-              prioritizedResults.map(async (item) => ({
-                ...item,
-                image: await fetchAlbumImage(item.track_id, accessToken),
-              }))
-            );
+            if (typeof window !== 'undefined') {
+              const accessToken = session?.accessToken;
+              const resultsWithImages = await Promise.all(
+                prioritizedResults.map(async (item) => ({
+                  ...item,
+                  image: await fetchAlbumImage(item.track_id, accessToken),
+                }))
+              );
 
-            setSearchResults(resultsWithImages);
-            setIsSearchResultsUpdated(true);
+              setSearchResults(resultsWithImages);
+              setIsSearchResultsUpdated(true);
+            }
           } else {
             console.error("Unexpected search API response:", data);
             if (page === 1) setSearchResults([]);
