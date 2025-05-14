@@ -7,8 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
 import { v4 as uuidv4 } from 'uuid';
 
-
- export default function UserInfo() {
+export default function UserInfo() {
   const [userId, setUserId] = useState('');
   const [prolificId, setProlificId] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
@@ -25,10 +24,22 @@ import { v4 as uuidv4 } from 'uuid';
   const [musicHours, setMusicHours] = useState(20); // Default to average value
   const { setUserData } = useUserStore();
   const router = useRouter();
-  
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const consentGiven = localStorage.getItem('consentGiven');
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+
+      if (!consentGiven) {
+        router.replace('/consent'); // Redirect to the consent page if consent is not given
+        return;
+      }
+
+      if (!isAuthenticated) {
+        router.replace('/login'); // Redirect to the login page if not logged in
+        return;
+      }
+
       // Generate a random user ID
       const uniqueId = uuidv4();
       setUserId(uniqueId);
@@ -42,7 +53,7 @@ import { v4 as uuidv4 } from 'uuid';
           setFilteredGenres(genreList);
         });
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // Filter genres based on the search term
@@ -143,7 +154,7 @@ import { v4 as uuidv4 } from 'uuid';
     if (typeof window !== 'undefined') {
       localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
     }
-    router.push('/consent'); // Redirect to consent form
+    router.push('/'); // Redirect to the main page
   }
 
   return (
@@ -375,9 +386,6 @@ import { v4 as uuidv4 } from 'uuid';
             >
               {musicHours === 5 ? '< 5 hours' : musicHours === 36 ? '> 35 hours' : `${musicHours} hours`}
             </div>
-          </div>
-          <div className="text-sm text-gray-500 mt-4 text-center">
-            The average music consumption is around 20 hours per week.
           </div>
         </div>
         {error && (
