@@ -34,7 +34,7 @@ export default function LoginPage() {
           Login to Continue
         </h1>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          Please log in using your Spotify account to proceed with the study. Your account information will only be used to retrieve your top songs and recently listened songs. The data is not linked to you.
+          Please log in using your Spotify account to proceed with the study.
         </p>
         <button
           onClick={() => signIn("spotify")}

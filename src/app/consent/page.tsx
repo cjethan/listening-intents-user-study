@@ -26,14 +26,17 @@ export default function ConsentForm() {
     <div className="p-8 bg-gray-50 min-h-screen flex flex-col items-center justify-center">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-3xl w-full">
         <h1 className="text-4xl font-bold mb-6 text-center text-gray-800">
-          Welcome to the Music Listening Study
+          Welcome to the Music Listening Intent Study
         </h1>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          During this study, you will be asked to classify songs for different music listening intents. To participate, we will incorporate your music listening history. Your Spotify account information will only be used to retrieve your top songs and recently listened songs. The data is not linked to you.
+          During this study, you will be asked to classify songs for different music listening intents. To participate, your Spotify music listening history will be incorporated.
         </p>
         <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
           Privacy Policy and Consent Form
         </h2>
+        <p className="mb-6 text-lg leading-relaxed text-gray-700">
+        Your Spotify account will only be used to retrieve your top songs and recently listened to songs. 
+        </p>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
           Your data will be stored anonymously, such that it cannot be traced back to you. It will only be used for scientific research purposes. Participation is entirely voluntary. You are free to withdraw your participation. If you send an email to <a href="mailto:caroline.jethan@gmail.com" className="text-blue-600 underline">caroline.jethan@gmail.com</a>, we will remove your data.
         </p>
