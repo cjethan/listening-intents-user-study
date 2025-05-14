@@ -16,7 +16,7 @@ export async function POST(req) {
       return NextResponse.json({ error: "Songs array is required" }, { status: 400 });
     }
 
-    const songIds = songs.map((song) => song.id);
+    const songIds = songs.map((song) => song.track_id);
     const query = `
       SELECT track_id, genres
       FROM songs
