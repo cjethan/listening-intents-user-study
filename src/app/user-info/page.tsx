@@ -6,13 +6,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
 import { v4 as uuidv4 } from 'uuid';
+import Select from 'react-select';
 
 export default function UserInfo() {
   const [userId, setUserId] = useState('');
   const [prolificId, setProlificId] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
-  const [filteredGenres, setFilteredGenres] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [playsInstrument, setPlaysInstrument] = useState('');
@@ -50,23 +49,17 @@ export default function UserInfo() {
         .then((data) => {
           const genreList = data.split('\n').map((genre) => genre.trim()).filter(Boolean);
           setGenres(genreList);
-          setFilteredGenres(genreList);
         });
     }
   }, [router]);
 
-  useEffect(() => {
-    // Filter genres based on the search term
-    setFilteredGenres(
-      genres.filter((genre) => genre.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [searchTerm, genres]);
+  // Helper for react-select options
+  const genreOptions = genres.map((g) => ({ value: g, label: g }));
 
-  function handleGenreClick(genre: string) {
-    setSelectedGenres((prev) =>
-      prev.includes(genre) ? prev.filter((g) => g !== genre) : [...prev, genre]
-    );
-    setError(''); // Clear error when a genre is selected
+  // Handler for react-select
+  function handleGenreSelect(selected: any) {
+    setSelectedGenres(selected ? selected.map((opt: any) => opt.value) : []);
+    setError('');
   }
 
   function handleInstrumentChange(instrument: string) {
@@ -173,43 +166,19 @@ export default function UserInfo() {
           />
         </div>
         <div>
-          <label className="block text-lg font-medium text-gray-800 mb-2">Search Genres</label>
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
-            placeholder="Search genres..."
+          <label className="block text-lg font-medium text-gray-800 mb-2">Please select music genres that you listen to:</label>
+          <Select
+            isMulti
+            options={genreOptions}
+            value={genreOptions.filter(opt => selectedGenres.includes(opt.value))}
+            onChange={handleGenreSelect}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            placeholder="Search and select genres..."
+            closeMenuOnSelect={false}
+            noOptionsMessage={() => "No genres found"}
           />
-          <div className="max-h-40 overflow-y-auto border border-gray-300 rounded-lg mt-3">
-            {filteredGenres.map((genre) => (
-              <div
-                key={genre}
-                onClick={() => handleGenreClick(genre)}
-                className={`flex items-center px-4 py-2 cursor-pointer transition-all ${
-                  selectedGenres.includes(genre) ? 'bg-gray-200' : 'hover:bg-gray-100'
-                }`}
-              >
-                <span className="text-sm text-gray-700">{genre}</span>
-              </div>
-            ))}
-          </div>
         </div>
-        {selectedGenres.length > 0 && (
-          <div>
-            <label className="block text-lg font-medium text-gray-800 mb-2">Selected Genres</label>
-            <div className="flex flex-wrap gap-3 mt-3">
-              {selectedGenres.map((genre) => (
-                <span
-                  key={genre}
-                  className="px-4 py-2 bg-gray-800 text-white text-sm rounded-full shadow-sm"
-                >
-                  {genre}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Do you play a musical instrument?</label>
           <div className="flex gap-6 mt-3">
@@ -323,7 +292,7 @@ export default function UserInfo() {
           <label className="block text-lg font-medium text-gray-800 mb-2">
             How many hours per week do you typically spend listening to music?
           </label>
-          <div className="relative mt-6">
+          <div className="relative mt-10">
             <input
               type="range"
               min="5"
@@ -379,9 +348,13 @@ export default function UserInfo() {
               }
             `}</style>
             <div
-              className="absolute -top-10 left-0 transform -translate-x-1/2 text-sm font-medium text-gray-800 bg-white px-3 py-1 rounded-full shadow-md"
+              className="absolute -top-10 text-sm font-medium text-gray-800 bg-white px-3 py-1 rounded-full shadow-md pointer-events-none"
               style={{
-                left: `${((musicHours - 5) / 36) * 100}%`, // Calculate position based on slider value
+                left: `calc(${((musicHours - 5) / 31) * 100}% - 10px)`, // 10px is half the thumb width (20px)
+                width: 'max-content',
+                minWidth: '60px',
+                textAlign: 'center',
+                transform: 'translateX(-50%)',
               }}
             >
               {musicHours === 5 ? '< 5 hours' : musicHours === 36 ? '> 35 hours' : `${musicHours} hours`}
