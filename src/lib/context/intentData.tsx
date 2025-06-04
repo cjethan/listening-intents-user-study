@@ -1,11 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-
-const filePath = path.join(process.cwd(), 'public', 'intent_data.json');
-
-export function loadAllIntents() {
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const data = JSON.parse(fileContent);
+export async function loadAllIntents() {
+  const response = await fetch('/intent_data.json');
+  const data = await response.json();
 
   const ids = Object.keys(data.intent_id);
 
