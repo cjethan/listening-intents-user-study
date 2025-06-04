@@ -403,12 +403,14 @@ if (session) {
       <div className="fixed bottom-6 left-6">
         <button
           onClick={() => {
-            localStorage.setItem('rankedIntents', 'null');
-            window.location.reload();
+            localStorage.removeItem('rankedIntents');
+            localStorage.removeItem('discardedIntents');
+            // Optionally also clear any other state related to ranking
+            window.location.href = '/rank-intents';
           }}
           className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
         >
-          Debug: Clear rankedIntents
+          Debug: Reset ranking progress
         </button>
       </div>
 
