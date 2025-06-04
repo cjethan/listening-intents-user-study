@@ -78,13 +78,16 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
     if (status === 'unauthenticated') {
       router.push('/login'); // Redirect to Spotify login
     } else if (status === 'authenticated' && typeof window !== 'undefined') {
-      const storedUserData = localStorage.getItem('userData');
       const consentGiven = localStorage.getItem('consentGiven');
+      const storedUserData = localStorage.getItem('userData');
+      const rankedIntents = localStorage.getItem('rankedIntents');
 
-      if (!storedUserData || storedUserData === 'null') {
-        router.push('/user-info'); // Redirect to user info page
-      } else if (!consentGiven) {
+      if (!consentGiven) {
         router.push('/consent'); // Redirect to consent form
+      } else if (!storedUserData || storedUserData === 'null') {
+        router.push('/user-info'); // Redirect to user info page
+      } else if (!rankedIntents) {
+        router.push('/rank-intents'); // Redirect to intent ranking
       } else {
         setUserData(JSON.parse(storedUserData)); // Load persisted user data
       }
@@ -395,6 +398,19 @@ if (session) {
           {errorMessage}
         </div>
       )}
+
+      {/* Debug button to clear rankedIntents */}
+      <div className="fixed bottom-6 left-6">
+        <button
+          onClick={() => {
+            localStorage.setItem('rankedIntents', 'null');
+            window.location.reload();
+          }}
+          className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
+        >
+          Debug: Clear rankedIntents
+        </button>
+      </div>
 
       {/*<div className="mt-6 p-4 bg-white rounded shadow-md">
         <button

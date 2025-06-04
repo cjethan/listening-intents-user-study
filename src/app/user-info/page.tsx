@@ -147,7 +147,7 @@ export default function UserInfo() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
     }
-    router.push('/'); // Redirect to the main page
+    router.push('/rank-intents'); // Redirect to the intent ranking page
   }
 
   return (
