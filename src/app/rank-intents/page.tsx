@@ -117,11 +117,15 @@ export default function RankIntentsPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (ranked.length < 10) {
+      setDiscardFull(true); // Reuse discardFull for error display, or create a new error state if you prefer
+      setTimeout(() => setDiscardFull(false), 2500);
+      return;
+    }
     const rankedIntentIds = ranked.map((intent) => intent.intent_id);
     const discardedIntentIds = discarded.map((intent) => intent.intent_id);
     localStorage.setItem('rankedIntents', JSON.stringify(rankedIntentIds));
     localStorage.setItem('discardedIntents', JSON.stringify(discardedIntentIds));
-    alert('Thank you! Your ranking has been saved.');
     router.push('/'); // Redirect to the main page
   }
 
@@ -243,7 +247,9 @@ export default function RankIntentsPage() {
             </DragDropContext>
             {discardFull && (
               <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg text-center z-50">
-                The "Not relevant" box is full (max 20).
+                {ranked.length < 10
+                  ? 'Please rank at least 10 intents before continuing.'
+                  : 'The "Not relevant" box is full (max 20).'}
               </div>
             )}
             <button
