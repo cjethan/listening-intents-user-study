@@ -82,6 +82,10 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
       const storedUserData = localStorage.getItem('userData');
       const rankedIntents = localStorage.getItem('rankedIntents');
 
+      console.log('DEBUG: consentGiven', consentGiven);
+      console.log('DEBUG: storedUserData', storedUserData);
+     console.log('DEBUG: rankedIntents', rankedIntents);
+
       if (!consentGiven) {
         router.push('/consent'); // Redirect to consent form
       } else if (!storedUserData || storedUserData === 'null') {
@@ -90,6 +94,17 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
         router.push('/rank-intents'); // Redirect to intent ranking
       } else {
         setUserData(JSON.parse(storedUserData)); // Load persisted user data
+        // Set top 10 ranked intents for classification
+        try {
+          const rankedIntentIds = JSON.parse(rankedIntents);
+         console.log('DEBUG: rankedIntentIds (parsed)', rankedIntentIds);
+          if (Array.isArray(rankedIntentIds)) {
+            localStorage.setItem('classificationIntents', JSON.stringify(rankedIntentIds.slice(0, 10)));
+            console.log('DEBUG: classificationIntents set', rankedIntentIds.slice(0, 10));
+          }
+        } catch (e) {
+          console.error('DEBUG: Error parsing rankedIntents', e);
+        }
       }
     }
   }, [status, router, setUserData]);
@@ -128,23 +143,56 @@ if (session) {
 }
   }, [session]);
 
-  useEffect(() => {
-    const fetchRandomIntent = async () => {
-      try {
-        const response = await fetch('/api/random-intent');
-        console.log(response);
-        const data = await response.json();
-        console.log(data);
-        setRandomIntent(data);
-      } catch (error) {
-        console.error('Error fetching random intent:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Replace all usage of randomIntent with the next intent from the top 10 ranked intents
+  const [classificationIntents, setClassificationIntents] = useState<string[]>([]);
+  const [currentIntentIdx, setCurrentIntentIdx] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const idx = localStorage.getItem('currentIntentIdx');
+      return idx ? parseInt(idx, 10) : 0;
+    }
+    return 0;
+  });
 
-    fetchRandomIntent();
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('classificationIntents');
+      console.log('DEBUG: classificationIntents from localStorage', stored);
+      if (stored) {
+        setClassificationIntents(JSON.parse(stored));
+      }
+    }
   }, []);
+
+  const [currentIntent, setCurrentIntent] = useState<Intent | null>(null);
+
+  useEffect(() => {
+    // fetch intent data for the current intent id
+    async function fetchIntentById(intentId: string) {
+      if (!intentId) return;
+      console.log('DEBUG: fetchIntentById', intentId);
+      const response = await fetch('/intent_data.json');
+      const data = await response.json();
+      const ids = Object.keys(data.intent_id);
+      const idx = ids.find((k) => String(data.intent_id[k]) === String(intentId));
+      if (idx !== undefined) {
+        console.log('DEBUG: intent found for id', intentId, data.intent_name[idx]);
+        setCurrentIntent({
+          intent_id: data.intent_id[idx],
+          intent_name: data.intent_name[idx],
+          main_listening_function: data.main_listening_function[idx],
+          listening_functions: data.listening_functions[idx],
+          listening_function_factors: data.listening_function_factors[idx],
+          survey_intent_names: data.survey_intent_names[idx],
+          generated_augmented_texts: data.generated_augmented_texts[idx],
+        });
+      } else {
+        console.warn('DEBUG: No intent found for id', intentId);
+      }
+    }
+    if (classificationIntents.length > 0 && currentIntentIdx < classificationIntents.length) {
+      fetchIntentById(classificationIntents[currentIntentIdx]);
+    }
+  }, [classificationIntents, currentIntentIdx]);
 
   useEffect(() => {
     console.log("Loaded userData from localStorage:", userData); // Verify persistence
@@ -185,12 +233,12 @@ if (session) {
 
     // Ensure intents is initialized as an object
     const currentIntents = userData?.intents || {};
-  console.log("dropItems", dropItems);
+    console.log("dropItems", dropItems);
 
     // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
-      intent_id: randomIntent?.intent_id || "",
-      intent_name: randomIntent?.intent_name || "",
+      intent_id: currentIntent?.intent_id || "",
+      intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
@@ -203,8 +251,8 @@ if (session) {
         album_uri: song.album_uri,
         duration_ms: song.duration_ms,
         artist_uri: song.artist_uri,
-        genres: song.genres || [], // Default to an empty array if genres are missing
-        image: song.image || "/default-cover.png", // Default image if missing
+        genres: song.genres || [],
+        image: song.image || "/default-cover.png",
       })),
     };
 
@@ -218,13 +266,23 @@ if (session) {
 
     // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    console.log("Updated user data", updatedUserData);
+    console.log("DEBUG: Updated user data", updatedUserData);
 
     // Save updated counter to localStorage
     localStorage.setItem("counter", updatedCounter.toString());
 
-    // Reload the page
-    window.location.reload();
+    // Move to next intent or reload if done
+    if (currentIntentIdx < classificationIntents.length - 1) {
+      console.log('DEBUG: Moving to next intent', currentIntentIdx + 1);
+      setCurrentIntentIdx(currentIntentIdx + 1);
+      // Save the next intent index before reload
+      const nextIdx = currentIntentIdx + 1;
+      localStorage.setItem('currentIntentIdx', nextIdx.toString());
+      window.location.reload();
+    } else {
+      localStorage.removeItem('currentIntentIdx');
+      window.location.reload();
+    }
   }
 
   async function handleSaveToDB() {
@@ -234,8 +292,8 @@ if (session) {
 
     // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
-      intent_id: randomIntent?.intent_id || "",
-      intent_name: randomIntent?.intent_name || "",
+      intent_id: currentIntent?.intent_id || "",
+      intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
       adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
@@ -299,7 +357,7 @@ if (session) {
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
         <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
-          {randomIntent?.intent_name}
+          {currentIntent?.intent_name}
         </span>
       </h1>
 
@@ -315,11 +373,11 @@ if (session) {
           </div>
         </div>
         <p className="italic text-gray-700">
-          {randomIntent ? randomIntent.main_listening_function : 'No intent available'}
+          {currentIntent ? currentIntent.main_listening_function : 'No intent available'}
         </p>
         <p className="text-gray-700">
-          {randomIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
-            functionName && functionName !== randomIntent.main_listening_function ? (
+          {currentIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
+            functionName && functionName !== currentIntent.main_listening_function ? (
               <React.Fragment key={index}>
                 {functionName}<br />
               </React.Fragment>
@@ -330,10 +388,10 @@ if (session) {
 
       <div className="pl-6">
         <ThreeBlocks
-          randomIntent={randomIntent}
+          randomIntent={currentIntent}
           setHowOften={setHowOften}
           setHowImp={setHowImp}
-          setAdjectives={setAdjectives} // Pass setAdjectives function
+          setAdjectives={setAdjectives}
         />
       </div>
       
@@ -349,7 +407,7 @@ if (session) {
       */}
 
       <div className="fixed bottom-6 right-6 space-x-4">
-        {counter < 9 ? ( // Show "NEXT" button for the first 9 clicks
+        {currentIntentIdx < classificationIntents.length - 1 ? (
           <button
             onClick={() => handleButtonClick(handleNext)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 font-semibold rounded-full shadow-md hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-600 ease-in-out"
@@ -370,7 +428,7 @@ if (session) {
               />
             </svg>
           </button>
-        ) : ( // Show "SUBMIT" button after 9 clicks
+        ) : (
           <button
             onClick={() => handleButtonClick(handleSaveToDB)}
             className="flex items-center px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-full shadow-md hover:from-emerald-600 hover:to-emerald-700 hover:shadow-lg transition-all duration-300 ease-in-out"
