@@ -325,6 +325,7 @@ if (session) {
 
     try {
       // Send updated user data to the database
+      /* TODO wieder rein
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: {
@@ -339,13 +340,16 @@ if (session) {
 
       const data = await response.json();
       console.log('Success:', data);
+      todo weg bis hier*/
+
+      router.push('/end');
 
       // Reset the global counter after successful save
       resetCounter();
       localStorage.setItem("counter", "0"); // Reset counter in localStorage
       console.log("Counter reset to 0");
 
-      return data;
+      //return data; todo wieder rein
     } catch (error) {
       console.error('Error saving to DB:', error);
       throw error;
@@ -405,6 +409,7 @@ if (session) {
         <pre>{JSON.stringify(dropItems, null, 2)}</pre>
       </div>
       */}
+      
 
       <div className="fixed bottom-6 right-6 space-x-4">
         {currentIntentIdx < classificationIntents.length - 1 ? (
@@ -463,7 +468,10 @@ if (session) {
           onClick={() => {
             localStorage.removeItem('rankedIntents');
             localStorage.removeItem('discardedIntents');
-            // Optionally also clear any other state related to ranking
+            localStorage.removeItem('classificationIntents');
+            localStorage.removeItem('currentIntentIdx');
+            localStorage.removeItem('counter');
+            // Optionally also clear any other state related to ranking/classification
             window.location.href = '/rank-intents';
           }}
           className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
