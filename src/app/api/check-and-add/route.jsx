@@ -23,7 +23,7 @@ export async function POST(req) {
       if (!existingSong) {
         // Add the song to the database if it does not exist
         await sequelize.query(
-          `INSERT INTO songs (track_id, track_name, artist_name, track_uri, artist_uri, album_uri, duration_ms, album_name, added_by_Userdata)
+          `INSERT INTO songs (track_id, track_name, artist_name, track_uri, artist_uri, album_uri, duration_ms, album_name, added_by_userdata)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, // Changed table name to lowercase
           {
             bind: [
@@ -35,7 +35,7 @@ export async function POST(req) {
               song.album_uri,
               song.duration_ms,
               song.album_name,
-              1, // added_by_Userdata
+              1, // added_by_userdata
             ],
           }
         );
