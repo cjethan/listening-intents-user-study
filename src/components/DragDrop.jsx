@@ -579,7 +579,7 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
           <div className="text-center mt-4">
             <p className="text-gray-500">No results found. You can add a new song:</p>
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
                 const title = formData.get("title")?.trim();
@@ -596,8 +596,23 @@ function DraggableBox({ id, items, title, session, setSearchResults, searchResul
                   artist_name: artist,
                   album_name: formData.get("album")?.trim() || "Unknown Album",
                   image: "/default-cover.png",
+                  added_by_userdata: 1, // Mark as added by user
                 };
+
                 setSearchResults((prev) => [...prev, newSong]);
+                // Add the new song to the database
+                try {
+                  await fetch("/api/check-and-add", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ songs: [newSong] }),
+                  });
+                  console.log("Custom song added to the database:", newSong);
+                } catch (error) {
+                  console.error("Error adding custom song to the database:", error);
+                }
                 e.target.reset(); // Clear the form
               }}
               className="mt-2 space-y-2"
