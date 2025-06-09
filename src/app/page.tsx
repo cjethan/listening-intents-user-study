@@ -82,10 +82,6 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
       const storedUserData = localStorage.getItem('userData');
       const rankedIntents = localStorage.getItem('rankedIntents');
 
-      console.log('DEBUG: consentGiven', consentGiven);
-      console.log('DEBUG: storedUserData', storedUserData);
-      console.log('DEBUG: rankedIntents', rankedIntents);
-
       if (!consentGiven) {
         router.push('/consent'); // Redirect to consent form
       } else if (!storedUserData || storedUserData === 'null') {
@@ -97,10 +93,8 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
         // Set top 10 ranked intents for classification
         try {
           const rankedIntentIds = JSON.parse(rankedIntents);
-         console.log('DEBUG: rankedIntentIds (parsed)', rankedIntentIds);
           if (Array.isArray(rankedIntentIds)) {
             localStorage.setItem('classificationIntents', JSON.stringify(rankedIntentIds.slice(0, 10)));
-            console.log('DEBUG: classificationIntents set', rankedIntentIds.slice(0, 10));
           }
         } catch (e) {
           console.error('DEBUG: Error parsing rankedIntents', e);
@@ -156,7 +150,6 @@ if (session) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('classificationIntents');
-      console.log('DEBUG: classificationIntents from localStorage', stored);
       if (stored) {
         setClassificationIntents(JSON.parse(stored));
       }
@@ -168,15 +161,12 @@ if (session) {
   useEffect(() => {
     // fetch intent data for the current intent id
     async function fetchIntentById(intentId: string) {
-      console.log('DEBUG: im fetchIntentById');
       if (!intentId) return;
-      console.log('DEBUG: fetchIntentById', intentId);
       const response = await fetch('/intent_data.json');
       const data = await response.json();
       const ids = Object.keys(data.intent_id);
       const idx = ids.find((k) => String(data.intent_id[k]) === String(intentId));
       if (idx !== undefined) {
-        console.log('DEBUG: intent found for id', intentId, data.intent_name[idx]);
         setCurrentIntent({
           intent_id: data.intent_id[idx],
           intent_name: data.intent_name[idx],
@@ -190,13 +180,7 @@ if (session) {
         console.warn('DEBUG: No intent found for id', intentId);
       }
     }
-    console.log('DEBUG Aufruf: geleich Aufrug für fetchIntentById');
-    console.log('DEBUG Aufruf: classificationIntents.length > 0 ', classificationIntents.length > 0);
-    console.log('DEBUG Aufruf: currentIntentIdx < classificationIntents.length', currentIntentIdx < classificationIntents.length);
-    console.log('DEBUG Aufruf: currentIntentIdx', currentIntentIdx);
-    console.log('DEBUG Aufruf: classificationIntents.length', classificationIntents.length);
     if (classificationIntents.length > 0 && currentIntentIdx < classificationIntents.length) {
-      console.log('DEBUG Aufruf: Aufruf für fetchIntentById true');
       fetchIntentById(classificationIntents[currentIntentIdx]);
     }
   }, [classificationIntents, currentIntentIdx]);
@@ -273,14 +257,12 @@ if (session) {
 
     // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    console.log("DEBUG: Updated user data", updatedUserData);
 
     // Save updated counter to localStorage
     localStorage.setItem("counter", updatedCounter.toString());
 
     // Move to next intent or reload if done
     if (currentIntentIdx < classificationIntents.length - 1) {
-      console.log('DEBUG: Moving to next intent', currentIntentIdx + 1);
       setCurrentIntentIdx(currentIntentIdx + 1);
       // Save the next intent index before reload
       const nextIdx = currentIntentIdx + 1;
@@ -332,7 +314,6 @@ if (session) {
 
     try {
       // Send updated user data to the database
-      /* TODO wieder rein
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: {
@@ -347,7 +328,6 @@ if (session) {
 
       const data = await response.json();
       console.log('Success:', data);
-      todo weg bis hier*/
 
       router.push('/end');
 
@@ -356,7 +336,7 @@ if (session) {
       localStorage.setItem("counter", "0"); // Reset counter in localStorage
       console.log("Counter reset to 0");
 
-      //return data; todo wieder rein
+      return data;
     } catch (error) {
       console.error('Error saving to DB:', error);
       throw error;
