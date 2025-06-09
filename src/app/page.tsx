@@ -84,7 +84,7 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
 
       console.log('DEBUG: consentGiven', consentGiven);
       console.log('DEBUG: storedUserData', storedUserData);
-     console.log('DEBUG: rankedIntents', rankedIntents);
+      console.log('DEBUG: rankedIntents', rankedIntents);
 
       if (!consentGiven) {
         router.push('/consent'); // Redirect to consent form
@@ -168,6 +168,7 @@ if (session) {
   useEffect(() => {
     // fetch intent data for the current intent id
     async function fetchIntentById(intentId: string) {
+      console.log('DEBUG: im fetchIntentById');
       if (!intentId) return;
       console.log('DEBUG: fetchIntentById', intentId);
       const response = await fetch('/intent_data.json');
@@ -189,7 +190,13 @@ if (session) {
         console.warn('DEBUG: No intent found for id', intentId);
       }
     }
+    console.log('DEBUG Aufruf: geleich Aufrug für fetchIntentById');
+    console.log('DEBUG Aufruf: classificationIntents.length > 0 ', classificationIntents.length > 0);
+    console.log('DEBUG Aufruf: currentIntentIdx < classificationIntents.length', currentIntentIdx < classificationIntents.length);
+    console.log('DEBUG Aufruf: currentIntentIdx', currentIntentIdx);
+    console.log('DEBUG Aufruf: classificationIntents.length', classificationIntents.length);
     if (classificationIntents.length > 0 && currentIntentIdx < classificationIntents.length) {
+      console.log('DEBUG Aufruf: Aufruf für fetchIntentById true');
       fetchIntentById(classificationIntents[currentIntentIdx]);
     }
   }, [classificationIntents, currentIntentIdx]);
@@ -408,8 +415,7 @@ if (session) {
         </p>
         <pre>{JSON.stringify(dropItems, null, 2)}</pre>
       </div>
-      */}
-      
+      */}      
 
       <div className="fixed bottom-6 right-6 space-x-4">
         {currentIntentIdx < classificationIntents.length - 1 ? (
