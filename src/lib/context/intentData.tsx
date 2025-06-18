@@ -1,11 +1,16 @@
-import fs from 'fs';
-import path from 'path';
-
-const filePath = path.join(process.cwd(), 'public', 'intent_data.json');
-
-export function loadAllIntents() {
-  const fileContent = fs.readFileSync(filePath, 'utf8');
-  const data = JSON.parse(fileContent);
+export async function loadAllIntents() {
+  // Use absolute URL for server-side fetch, relative for client-side
+  let url = '';
+  if (typeof window === 'undefined') {
+    // On server, construct absolute URL
+    const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    url = `${base}/intent_data.json`;
+  } else {
+    // On client
+    url = '/intent_data.json';
+  }
+  const response = await fetch(url);
+  const data = await response.json();
 
   const ids = Object.keys(data.intent_id);
 
