@@ -34,11 +34,6 @@ export default function UserInfo() {
         return;
       }
 
-      if (!isAuthenticated) {
-        router.replace('/login'); // Redirect to the login page if not logged in
-        return;
-      }
-
       // Generate a random user ID
       const uniqueId = uuidv4();
       setUserId(uniqueId);
@@ -147,7 +142,7 @@ export default function UserInfo() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
     }
-    router.push('/'); // Redirect to the main page
+    router.push('/rank-intents'); // Redirect to the intent ranking page
   }
 
   return (

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import CreatableSelect from 'react-select/creatable';
-import { adjectiveOptions } from '../lib/select_options/adjectiveOptions'; // Import the options
+import { adjectiveOptions } from '../lib/select_options/adjectiveOptions';
 
 const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -14,23 +14,21 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
 
   const handleHowOftenChange = (value) => {
     setHowOften(value);
-    setHowOftenSelected(true); // Mark question as answered
+    setHowOftenSelected(true);
     setSelectedHowOften(value);
     setShowAlert(false);
-    console.log("How often changed to:", value);
   };
 
   const handleHowImpChange = (value) => {
     setHowImp(value);
-    setHowImpSelected(true); // Mark question as answered
+    setHowImpSelected(true);
     setSelectedHowImp(value);
     setShowAlert(false);
-    console.log("How important changed to:", value);
   };
 
   const handleAdjectivesChange = (newValue) => {
     setAdjectivesState(newValue);
-    setAdjectives(newValue); // Update parent state
+    setAdjectives(newValue);
     setShowAlert(false);
   };
 
@@ -82,7 +80,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
             </div>
             <CreatableSelect
               isMulti
-              options={adjectiveOptions} // Use the imported options
+              options={adjectiveOptions}
               value={adjectives}
               onChange={handleAdjectivesChange}
               placeholder="Type or select adjectives..."
@@ -132,7 +130,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
                   name="how-often"
                   className="hidden peer"
                   checked={selectedHowOften === index + 1}
-                  onChange={() => handleHowOftenChange(index + 1)} // Save as 1-6
+                  onChange={() => handleHowOftenChange(index + 1)}
                 />
                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
                 <span>{option}</span>
@@ -164,7 +162,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
                   name="how-imp"
                   className="hidden peer"
                   checked={selectedHowImp === index + 1}
-                  onChange={() => handleHowImpChange(index + 1)} // Save as 1-5
+                  onChange={() => handleHowImpChange(index + 1)}
                 />
                 <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
                 <span>{option}</span>
