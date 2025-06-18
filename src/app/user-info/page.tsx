@@ -11,6 +11,7 @@ import Select from 'react-select';
 export default function UserInfo() {
   const [userId, setUserId] = useState('');
   const [prolificId, setProlificId] = useState('');
+  const [lastfmUsername, setLastfmUsername] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [error, setError] = useState('');
@@ -128,6 +129,7 @@ export default function UserInfo() {
     const userData = {
       user_id: userId,
       prolific_id: prolificId,
+      lastfm_username: lastfmUsername,
       genres: selectedGenres,
       play_instrument: playInstrumentEnum,
       instruments_played: [...instrumentsPlayed, otherInstrument].filter(Boolean),
@@ -157,6 +159,17 @@ export default function UserInfo() {
             onChange={(e) => setProlificId(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
             placeholder="Enter your Prolific ID"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Last.fm Username</label>
+          <input
+            type="text"
+            value={lastfmUsername}
+            onChange={(e) => setLastfmUsername(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
+            placeholder="Enter your Last.fm Username"
             required
           />
         </div>
