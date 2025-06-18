@@ -52,7 +52,7 @@ export function DragAndDrop({ setDropItems }) {
       const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
       const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(
         lastfmUsername
-      )}&api_key=${apiKey}&format=json&limit=20`;
+      )}&api_key=${apiKey}&format=json&limit=50`;
 
       try {
         const res = await fetch(url);
@@ -245,10 +245,77 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         clearTimeout(debounceTimer.current);
       }
       debounceTimer.current = setTimeout(async () => {
-        // Placeholder: Replace with your own search logic or API call
-        setSearchResults([]);
-        setIsSearching(false);
-      }, 500);
+        try {
+          const response = await fetch("/api/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query, page }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            const queryWords = query.toLowerCase().split(/\s+/);
+
+            const filteredResults = data.map((item) => ({
+              track_id: item.track_id,
+              track_name: item.track_name,
+              artist_name: item.artist_name,
+              album_name: item.album_name,
+            })).filter((item) =>
+              queryWords.some(
+                (word) =>
+                  item.track_id.toLowerCase().includes(word) ||
+                  item.artist_name.toLowerCase().includes(word) ||
+                  item.album_name.toLowerCase().includes(word)
+              )
+            );
+
+            const prioritizedResults = filteredResults.sort((a, b) => {
+              const aMatchCount = queryWords.filter(
+                (word) =>
+                  a.track_id.toLowerCase().includes(word) ||
+                  a.artist_name.toLowerCase().includes(word) ||
+                  a.album_name.toLowerCase().includes(word)
+              ).length;
+              const bMatchCount = queryWords.filter(
+                (word) =>
+                  b.track_id.toLowerCase().includes(word) ||
+                  b.artist_name.toLowerCase().includes(word) ||
+                  b.album_name.toLowerCase().includes(word)
+              ).length;
+              return bMatchCount - aMatchCount;
+            });
+
+            // Fetch album images after prioritizing results
+            if (typeof window !== 'undefined') {
+              const accessToken = session?.accessToken;
+              const resultsWithImages = await Promise.all(
+                prioritizedResults.map(async (item) => ({
+                  ...item,
+                  image: await fetchAlbumImage(item.track_id, accessToken),
+                }))
+              );
+
+              setSearchResults(resultsWithImages);
+              setIsSearchResultsUpdated(true);
+            }
+          } else {
+            console.error("Unexpected search API response:", data);
+            if (page === 1) setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Error searching database:", error);
+          if (page === 1) setSearchResults([]);
+        } finally {
+          setIsSearching(false); // Stop loading spinner
+        }
+      }, 100);
     } else {
       setSearchResults([]);
     }
@@ -262,7 +329,10 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
           <input
             type="text"
             value={searchQueryBox3}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => {
+              setPage(1);
+              handleSearch(e.target.value);
+            }}
             placeholder="Search..."
             className="search-input"
           />
@@ -305,7 +375,19 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
                 };
 
                 setSearchResults((prev) => [...prev, newSong]);
-                // Placeholder: Add the new song to your database if needed
+                 // Add the new song to the databaseAdd commentMore actions
+                try {
+                  await fetch("/api/check-and-add", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ songs: [newSong] }),
+                  });
+                  console.log("Custom song added to the database:", newSong);
+                } catch (error) {
+                  console.error("Error adding custom song to the database:", error);
+                }
                 e.target.reset();
               }}
               className="mt-2 space-y-2"
