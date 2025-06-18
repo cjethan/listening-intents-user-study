@@ -1,16 +1,9 @@
 'use client'
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import ThreeBlocks from "../components/ThreeBlocks";
-import {DragAndDrop} from '../components/DragDrop';
-
-// für db code
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-
-// für speichern
+import { DragAndDrop } from '../components/DragDrop';
 import { useUserStore } from "../store/store";
-import dynamic from 'next/dynamic';
-
+import { useRouter } from "next/navigation";
 
 type Song = {
   track_id: string;
@@ -35,21 +28,13 @@ type Intent = {
   generated_augmented_texts: string[];
 };
 
-async function fetchAlbumImage(trackId: string, accessToken: string): Promise<string> {
-    try {
-        const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-        });
-
-        const trackData = await response.json();
-        return trackData.album.images?.[0]?.url || "/default-cover.png"; // Fallback if no image
-    } catch {
-        return "/default-cover.png"; // Fallback image
-    }
+// Placeholder for fetching album images (replace with Last.fm or your own logic)
+async function fetchAlbumImagePlaceholder(trackId: string): Promise<string> {
+  // TODO: Replace with Last.fm or your own API call
+  return "/default-cover.png";
 }
 
- export default function Home() {
-
+export default function Home() {
   // db stuff
   const [songs, setSongs] = useState<Song[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,7 +48,6 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
   const { setUserData, resetCounter, counter, incrementCounter } = useUserStore();
   const { userData } = useUserStore();
 
-  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [howOften, setHowOften] = useState<number | null>(null);
@@ -75,22 +59,19 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
   const [adjectives, setAdjectives] = useState([]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login'); // Redirect to Spotify login
-    } else if (status === 'authenticated' && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       const consentGiven = localStorage.getItem('consentGiven');
       const storedUserData = localStorage.getItem('userData');
       const rankedIntents = localStorage.getItem('rankedIntents');
 
       if (!consentGiven) {
-        router.push('/consent'); // Redirect to consent form
+        router.push('/consent');
       } else if (!storedUserData || storedUserData === 'null') {
-        router.push('/user-info'); // Redirect to user info page
+        router.push('/user-info');
       } else if (!rankedIntents) {
-        router.push('/rank-intents'); // Redirect to intent ranking
+        router.push('/rank-intents');
       } else {
-        setUserData(JSON.parse(storedUserData)); // Load persisted user data
-        // Set top 10 ranked intents for classification
+        setUserData(JSON.parse(storedUserData));
         try {
           const rankedIntentIds = JSON.parse(rankedIntents);
           if (Array.isArray(rankedIntentIds)) {
@@ -101,41 +82,35 @@ async function fetchAlbumImage(trackId: string, accessToken: string): Promise<st
         }
       }
     }
-  }, [status, router, setUserData]);
+  }, [router, setUserData]);
 
   useEffect(() => {
-if (session) {
+    // Placeholder: Replace with your own logic to fetch songs (e.g., from Last.fm or your backend)
     const fetchSongs = async () => {
       try {
+        // Example: Fetch from your own API or static file
         const response = await fetch("/api/songs");
         const data = await response.json();
-        console.log("test2");
-        console.log("API Response:", data); // 🔍 Debugging output
 
         if (Array.isArray(data)) {
-          const accessToken = (session as any)?.accessToken; // as any)a  )Assumin acces en is part of the session
-          console.log("Access Token:", accessToken); // 🔍 Debugging output
           const songsWithImages = await Promise.all(
             data.map(async (song: Song) => ({
               ...song,
-              image: await fetchAlbumImage(song.track_id, accessToken)
+              image: await fetchAlbumImagePlaceholder(song.track_id)
             }))
           );
-          setSongs(songsWithImages); // ✅ Set songs with images
+          setSongs(songsWithImages);
         } else {
-          console.error("Unexpected API response:", data);
-          setSongs([]); // 🚨 Default to empty array
+          setSongs([]);
         }
       } catch (error) {
-        console.error("Error fetching songs:", error);
-        setSongs([]); // 🚨 Handle fetch failure
+        setSongs([]);
       } finally {
         setLoading(false);
       }
     };
     fetchSongs();
-}
-  }, [session]);
+  }, []);
 
   // Replace all usage of randomIntent with the next intent from the top 10 ranked intents
   const [classificationIntents, setClassificationIntents] = useState<string[]>([]);
@@ -186,53 +161,41 @@ if (session) {
   }, [classificationIntents, currentIntentIdx]);
 
   useEffect(() => {
-    console.log("Loaded userData from localStorage:", userData); // Verify persistence
-  }, [userData]);
-
-  useEffect(() => {
     const storedCounter = localStorage.getItem("counter");
     if (storedCounter) {
-      resetCounter(); // Reset the store counter
+      resetCounter();
       const parsedCounter = parseInt(storedCounter, 10);
       for (let i = 0; i < parsedCounter; i++) {
-        incrementCounter(); // Increment the store counter to match the stored value
+        incrementCounter();
       }
     }
   }, [resetCounter, incrementCounter]);
 
-  if (status === "loading") return <p>Loading...</p>;
-
-  if (status === "unauthenticated") return null;
-
   function handleButtonClick(action: () => void) {
     if (!howOften || !howImp) {
       setErrorMessage("Please answer both questions before proceeding.");
-      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+      setTimeout(() => setErrorMessage(null), 3000);
     } else if (dropItems.length < 5) {
       setErrorMessage("Please choose at least 5 songs to proceed.");
-      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+      setTimeout(() => setErrorMessage(null), 3000);
     } else if (adjectives.length === 0) {
       setErrorMessage("Please select at least one adjective before proceeding.");
-      setTimeout(() => setErrorMessage(null), 3000); // Clear message after 3 seconds
+      setTimeout(() => setErrorMessage(null), 3000);
     } else {
       action();
     }
   }
 
   function handleNext() {
-    const updatedCounter = counter + 1; // Increment the counter
-
-    // Ensure intents is initialized as an object
+    const updatedCounter = counter + 1;
     const currentIntents = userData?.intents || {};
-    console.log("dropItems", dropItems);
 
-    // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
       intent_id: currentIntent?.intent_id || "",
       intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
+      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
       songs: dropItems.map((song) => ({
         track_id: song.track_id,
         track_uri: song.track_uri,
@@ -255,16 +218,11 @@ if (session) {
       },
     };
 
-    // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
-
-    // Save updated counter to localStorage
     localStorage.setItem("counter", updatedCounter.toString());
 
-    // Move to next intent or reload if done
     if (currentIntentIdx < classificationIntents.length - 1) {
       setCurrentIntentIdx(currentIntentIdx + 1);
-      // Save the next intent index before reload
       const nextIdx = currentIntentIdx + 1;
       localStorage.setItem('currentIntentIdx', nextIdx.toString());
       window.location.reload();
@@ -275,17 +233,14 @@ if (session) {
   }
 
   async function handleSaveToDB() {
-    // Ensure intents is initialized as an object
     const currentIntents = userData?.intents || {};
-    console.log("dropItems", dropItems);
 
-    // Create a new intent with each dropItem saved as one song in songs[]
     const newIntent = {
       intent_id: currentIntent?.intent_id || "",
       intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()), // Convert adjectives to lowercase
+      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
       songs: dropItems.map((song) => ({
         track_id: song.track_id,
         track_uri: song.track_uri,
@@ -295,8 +250,8 @@ if (session) {
         album_uri: song.album_uri,
         duration_ms: song.duration_ms,
         artist_uri: song.artist_uri,
-        genres: song.genres || [], // Default to an empty array if genres are missing
-        image: song.image || "/default-cover.png", // Default image if missing
+        genres: song.genres || [],
+        image: song.image || "/default-cover.png",
       })),
     };
 
@@ -308,12 +263,10 @@ if (session) {
       },
     };
 
-    // Save updated user data to localStorage
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    console.log("Updated user data saved locally:", updatedUserData);
 
     try {
-      // Send updated user data to the database
+      // Placeholder: Replace with your own API endpoint for saving results
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: {
@@ -326,17 +279,10 @@ if (session) {
         throw new Error('Failed to save user results');
       }
 
-      const data = await response.json();
-      console.log('Success:', data);
-
       router.push('/end');
-
-      // Reset the global counter after successful save
       resetCounter();
-      localStorage.setItem("counter", "0"); // Reset counter in localStorage
-      console.log("Counter reset to 0");
-
-      return data;
+      localStorage.setItem("counter", "0");
+      return await response.json();
     } catch (error) {
       console.error('Error saving to DB:', error);
       throw error;
@@ -352,7 +298,6 @@ if (session) {
         </span>
       </h1>
 
-      {/* Centered Additional Information about the Intent */}
       <div className="p-4 bg-gray-100 rounded shadow relative max-w-2xl mx-auto">
         <h3 className="font-bold mb-2">Additional Information about the Intent</h3>
         <div className="absolute top-2 right-2 group">
@@ -387,15 +332,6 @@ if (session) {
       </div>
       
       <DragAndDrop setDropItems={setDropItems} />
-
-      {/*
-      <div className="">
-        <p>
-          {counter}, , {JSON.stringify(userData, null, 2)}
-        </p>
-        <pre>{JSON.stringify(dropItems, null, 2)}</pre>
-      </div>
-      */}      
 
       <div className="fixed bottom-6 right-6 space-x-4">
         {currentIntentIdx < classificationIntents.length - 1 ? (
@@ -448,7 +384,6 @@ if (session) {
         </div>
       )}
 
-      {/* Debug button to clear rankedIntents */}
       <div className="fixed bottom-6 left-6">
         <button
           onClick={() => {
@@ -457,7 +392,6 @@ if (session) {
             localStorage.removeItem('classificationIntents');
             localStorage.removeItem('currentIntentIdx');
             localStorage.removeItem('counter');
-            // Optionally also clear any other state related to ranking/classification
             window.location.href = '/rank-intents';
           }}
           className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
@@ -465,24 +399,6 @@ if (session) {
           Debug: Reset ranking progress
         </button>
       </div>
-
-      {/*<div className="mt-6 p-4 bg-white rounded shadow-md">
-        <button
-          onClick={() => {
-            const debugData = null;
-            localStorage.setItem("userData", JSON.stringify(debugData));
-            setUserData(debugData);
-            console.log("Debug userData set:", debugData);
-          }}
-          className="mb-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600"
-        >
-          Set Debug User Data
-        </button>
-        <h2 className="text-lg font-bold">Current User Data</h2>
-        <pre className="text-sm bg-gray-100 p-2 rounded overflow-x-auto">
-          {JSON.stringify(userData, null, 2)}
-        </pre>
-      </div>*/}
     </div>
   );
 }
