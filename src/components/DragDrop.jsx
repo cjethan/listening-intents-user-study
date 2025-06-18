@@ -33,12 +33,49 @@ export function DragAndDrop({ setDropItems }) {
     fetchSongs();
   }, []);
 
-  // Placeholder: Replace with your own logic to fetch songs for Box 2
+ // Fetch songs from Last.fm listening history for Box 2
   useEffect(() => {
     const fetchTopSongs = async () => {
-      // TODO: Replace with your own API or static data
-      setBox2Items([]);
-      setFilteredBox2Items([]);
+      console.log("Fetching Last.fm recent tracks...");
+      const storedUserData = localStorage.getItem('userData');
+      console.log("Stored user data:", storedUserData);
+      const lastfmUsername = JSON.parse(localStorage.getItem("userData") || "{}").lastfm_username || "";
+      console.log("Last.fm username from localStorage:", lastfmUsername);
+      if (!lastfmUsername) {
+        setBox2Items([]);
+        setFilteredBox2Items([]);
+        return;
+      }
+      console.log("Last.fm username:", lastfmUsername);
+
+      // Fetch recent tracks from Last.fm public API
+      const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+      const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(
+        lastfmUsername
+      )}&api_key=${apiKey}&format=json&limit=20`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        const tracks = (data.recenttracks?.track || []).map((track, idx) => ({
+          track_id: track.mbid || `${track.artist["#text"]}-${track.name}-${idx}`,
+          artist_name: track.artist["#text"] || "",
+          track_uri: track.url || "",
+          artist_uri: null,
+          track_name: track.name || "",
+          album_name: track.album["#text"] || "",
+          album_uri: "",
+          duration_ms: 0,
+          genres: [],
+          image: track.image?.[track.image.length - 1]?.["#text"] || "/default-cover.png",
+        }));
+        console.log("Last.fm tracks:", tracks);
+        setBox2Items(tracks);
+        setFilteredBox2Items(tracks);
+      } catch (error) {
+        setBox2Items([]);
+        setFilteredBox2Items([]);
+      }
     };
     fetchTopSongs();
   }, []);
