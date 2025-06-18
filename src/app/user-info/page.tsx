@@ -34,11 +34,6 @@ export default function UserInfo() {
         return;
       }
 
-      if (!isAuthenticated) {
-        router.replace('/login'); // Redirect to the login page if not logged in
-        return;
-      }
-
       // Generate a random user ID
       const uniqueId = uuidv4();
       setUserId(uniqueId);

@@ -10,7 +10,7 @@ export default function ConsentForm() {
     if (typeof window !== 'undefined') {
       const consentGiven = localStorage.getItem('consentGiven');
       if (consentGiven === 'true') {
-        router.push('/login'); // Redirect to the login page if consent is already given
+        router.push('/user-info'); // Redirect to the user info page if consent is already given
       }
     }
   }, [router]);
@@ -19,7 +19,7 @@ export default function ConsentForm() {
     if (typeof window !== 'undefined') {
       localStorage.setItem('consentGiven', 'true');
     }
-    router.push('/login'); // Redirect to the login page
+    router.push('/user-info'); // Redirect to the user info page
   };
 
   return (
