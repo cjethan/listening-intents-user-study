@@ -57,9 +57,9 @@ export function DragAndDrop({ setDropItems }) {
     const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
     const user = lastfmUsername;
 
-    const recentUrl = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&limit=10`;
-    const top3mUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=3month&limit=10`;
-    const topOverallUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=overall&limit=5`;
+    const recentUrl = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&limit=50`;
+    const top3mUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=3month&limit=50`;
+    const topOverallUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=overall&limit=50`;
 
     try {
       const [recentRes, top3mRes, topOverallRes] = await Promise.all([
@@ -69,58 +69,109 @@ export function DragAndDrop({ setDropItems }) {
       ]);
 
       const recentData = await recentRes.json();
-      console.log("Recent tracks from Last.fm 1:", recentData);
       const top3mData = await top3mRes.json();
+      console.log("Top 3m tracks from Last.fm 1:", top3mData);
       const topOverallData = await topOverallRes.json();
 
       const recentTracks = Array.isArray(recentData?.recenttracks?.track)
-        ? recentData.recenttracks.track.map((track, idx) => ({
-            track_id: track?.mbid || `${track?.artist?.["#text"] || ""}-${track?.name || ""}-${idx}`,
-            artist_name: track?.artist?.["#text"] || "",
-            track_name: track?.name || "",
-            album_name: track?.album?.["#text"] || "",
-            artist_uri: track.artist?.url || track.artist?.mbid || "",
-            track_uri: track.url || "",
-            album_uri: track.album && track.artist
-              ? `https://www.last.fm/music/${encodeURIComponent(track.artist["#text"] || track.artist.name)}/${encodeURIComponent(track.album["#text"])}`
-              : "",
-            image:  Array.isArray(track?.image) && track.image.length
-          ? (
-              track.image.find(img => img.size === "medium")?.["#text"] ||
-              track.image.find(img => img.size === "small")?.["#text"] ||
-              "/default-cover.png"
-            )
-          : "/default-cover.png",
-          }))
+        ? recentData.recenttracks.track.map((track, idx) => {
+            const artistName = track?.artist?.["#text"] || "";
+            const albumName = track?.album?.["#text"] || "";
+            return {
+              track_id: track?.mbid || `${artistName}-${track?.name || ""}-${idx}`,
+              artist_name: artistName,
+              track_name: track?.name || "",
+              album_name: albumName,
+              image:
+                Array.isArray(track?.image) && track.image.length
+                  ? (
+                      track.image.find(img => img.size === "medium")?.["#text"] ||
+                      track.image.find(img => img.size === "small")?.["#text"] ||
+                      "/default-cover.png"
+                    )
+                  : "/default-cover.png",
+              duration_ms: track?.duration ? parseInt(track.duration, 10) : 0,
+              added_by_userdata: 1,
+              genres: [],
+              artist_uri: artistName
+                ? `https://www.last.fm/music/${encodeURIComponent(artistName)}`
+                : "",
+              album_uri: artistName && albumName
+                ? `https://www.last.fm/music/${encodeURIComponent(artistName)}/${encodeURIComponent(albumName)}`
+                : "",
+              track_uri: track?.url || "",
+            };
+          })
         : [];
-      console.log("Recent tracks from Last.fm 2:", recentTracks);
 
-      const top3mTracks = Array.isArray(top3mData?.toptracks?.track)
-        ? top3mData.toptracks.track.map((track, idx) => ({
-            track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}-${idx}`,
+      const top3mTracksRaw = Array.isArray(top3mData?.toptracks?.track)
+        ? top3mData.toptracks.track
+        : [];
+      const topOverallTracksRaw = Array.isArray(topOverallData?.toptracks?.track)
+        ? topOverallData.toptracks.track
+        : [];
+
+      async function enrichTrackWithAlbum(track) {
+        const artist = encodeURIComponent(track?.artist?.name || "");
+        const name = encodeURIComponent(track?.name || "");
+        if (!artist || !name) return null;
+
+        const infoUrl = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${artist}&track=${name}&format=json`;
+        try {
+          const infoRes = await fetch(infoUrl);
+          const infoData = await infoRes.json();
+          const albumName = infoData?.track?.album?.title || "";
+          const albumImage =
+            Array.isArray(infoData?.track?.album?.image) && infoData.track.album.image.length
+              ? (
+                  infoData.track.album.image.find(img => img.size === "medium")?.["#text"] ||
+                  infoData.track.album.image.find(img => img.size === "small")?.["#text"] ||
+                  "/default-cover.png"
+                )
+              : "/default-cover.png";
+          const albumUri = albumName && track.artist?.name
+            ? `https://www.last.fm/music/${encodeURIComponent(track.artist.name)}/${encodeURIComponent(albumName)}`
+            : "";
+          const duration_ms = infoData?.track?.duration
+            ? parseInt(infoData.track.duration, 10)
+            : 0;
+          return {
+            track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}`,
+            artist_name: track?.artist?.name || "",
+            track_name: track?.name || "",
+            artist_uri: track.artist?.url || "",
+            track_uri: track.url || "",
+            album_name: albumName,
+            album_uri: albumUri,
+            image: albumImage,
+            duration_ms,
+            added_by_userdata: 1,
+            genres: [],
+          };
+        } catch {
+          return {
+            track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}`,
             artist_name: track?.artist?.name || "",
             track_name: track?.name || "",
             artist_uri: track.artist?.url || "",
             track_uri: track.url || "",
             album_name: "",
+            album_uri: "",
             image: Array.isArray(track?.image) && track.image.length
               ? track.image[track.image.length - 1]["#text"] || "/default-cover.png"
               : "/default-cover.png",
-          }))
-        : [];
-        console.log("Top 3 months tracks from Last.fm:", top3mTracks);
+            duration_ms: 0,
+            added_by_userdata: 1,
+            genres: [],
+          };
+        }
+      }
 
-      const topOverallTracks = Array.isArray(topOverallData?.toptracks?.track)
-        ? topOverallData.toptracks.track.map((track, idx) => ({
-            track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}-${idx}`,
-            artist_name: track?.artist?.name || "",
-            track_name: track?.name || "",
-            album_name: "",
-            image: Array.isArray(track?.image) && track.image.length
-              ? track.image[track.image.length - 1]["#text"] || "/default-cover.png"
-              : "/default-cover.png",
-          }))
-        : [];
+      // Enrich top tracks with album info
+      const top3mTracks = (await Promise.all(top3mTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
+      const topOverallTracks = (await Promise.all(topOverallTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
+
+      console.log("Top 3 months tracks from Last.fm:", top3mTracks);
       console.log("Top overall tracks from Last.fm:", topOverallTracks);
 
       // Combine and deduplicate by artist+track_name
