@@ -7,10 +7,8 @@ This project is a web application designed to study user music listening intents
 Create a `.env` file in the project's root directory with the following variables:
 
 - `POSTGRESQL_URI`: Connection string for the PostgreSQL database.
-- `SPOTIFY_CLIENT_ID`: Client ID from the Spotify Developer Dashboard.
-- `SPOTIFY_CLIENT_SECRET`: Client Secret from the Spotify Developer Dashboard.
-- `NEXTAUTH_SECRET`: Secret key for NextAuth authentication.
-- `NEXTAUTH_URL`: The base URL of the application.
+- `NEXT_PUBLIC_LASTFM_API_KEY`: last.fm API key.
+- `NEXT_PUBLIC_LASTFM_API_SECRET`: last.fm API secret key.
 
 ## Installation
 
