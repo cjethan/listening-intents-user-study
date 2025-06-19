@@ -2,12 +2,60 @@
 import React, { useState, useEffect, useRef } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 
-// Remove all useSession and session logic
+/* TODO wollen wir alle songs in der Datenbank haben von user's last.fm??
+async function checkAndAddToDatabase(songs) {
+  console.log("Checking and adding songs to the database...");
+  try {
+    const response = await fetch("/api/check-and-add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ songs }),
+    });
 
-// Placeholder for fetching album images (replace with Last.fm or your own logic)
-async function fetchAlbumImagePlaceholder(trackId) {
-  // TODO: Replace with Last.fm or your own API call
-  return "/default-cover.png";
+    const responseData = await response.json();
+    console.log("Response from check-and-add API:", responseData);
+  } catch (error) {
+    console.error("Error checking/adding songs to the database:", error);
+  }
+}*/
+
+// todo funktioniert das?
+async function fetchRandomSongsByGenre(genre, limit = 10) {
+  const response = await fetch(`/api/songs?genre=${encodeURIComponent(genre)}&limit=${limit}`);
+  const songs = await response.json();
+
+  const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+
+  async function getLastFmImage(artist, track) {
+    if (!artist || !track) return "/default-cover.png";
+    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
+      artist
+    )}&track=${encodeURIComponent(track)}&format=json`;
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      return Array.isArray(data?.track?.album?.image) && data.track.album.image.length
+        ? (
+            data.track.album.image.find(img => img.size === "medium")?.["#text"] ||
+            data.track.album.image.find(img => img.size === "small")?.["#text"] ||
+            "/default-cover.png"
+          )
+        : "/default-cover.png";
+    } catch {
+      return "/default-cover.png";
+    }
+  }
+
+  const enrichedSongs = await Promise.all(
+    songs.map(async (song) => ({
+      ...song,
+      image: await getLastFmImage(song.artist_name, song.track_name),
+    }))
+  );
+
+  return enrichedSongs;
 }
 
 export function DragAndDrop({ setDropItems }) {
@@ -25,12 +73,41 @@ export function DragAndDrop({ setDropItems }) {
   // Placeholder: Replace with your own logic to fetch songs for Box 1
   useEffect(() => {
     const fetchSongs = async () => {
-      setBox1Loading(true);
-      // TODO: Replace with your own API or static data
-      setBox1Items([]);
-      setBox1Loading(false);
-    };
-    fetchSongs();
+      try {
+          setBox1Loading(true); // Start loading
+          console.log("Fetching songs for Box 1...");
+          // Retrieve genres from localStorage
+          if (typeof window !== 'undefined') {
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            const genres = userData?.genres || [];
+            console.log(`Retrieved genres from localStorage: ${genres}`);
+
+            // Fetch songs for all genres in parallel
+            const genrePromises = genres.map((genre) =>
+              fetchRandomSongsByGenre(genre, accessToken)
+            );
+            const songsByGenre = await Promise.all(genrePromises);
+
+            // Flatten and limit the total number of songs
+            // const allSongs = songsByGenre.flat().slice(0, 50); // Limit to 50 songs
+            console.log(`Fetched ${allSongs.length} songs in total.`);
+
+            // Display all fetched songs without shuffling
+            setBox1Items(allSongs);
+          }
+
+          // Check and add songs to the database
+          //console.log("Checking and adding songs to the database...");
+          //await checkAndAddToDatabase(allSongs);
+          //console.log("Songs successfully checked and added to the database.");
+        } catch (error) {
+          console.error("Error fetching songs:", error);
+          setBox1Items([]);
+        } finally {
+          setBox1Loading(false); // End loading
+        }
+      };
+      fetchSongs();
   }, []);
 
  // Fetch songs from Last.fm listening history for Box 2
