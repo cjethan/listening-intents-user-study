@@ -21,41 +21,60 @@ async function checkAndAddToDatabase(songs) {
   }
 }*/
 
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
 // todo funktioniert das?
 async function fetchRandomSongsByGenre(genre, limit = 10) {
-  const response = await fetch(`/api/songs?genre=${encodeURIComponent(genre)}&limit=${limit}`);
-  const songs = await response.json();
+  try {
+    const response = await fetch(`/api/songs?genre=${encodeURIComponent(genre)}&limit=${limit}`);
+    const songs = await response.json();
 
-  const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+    if (Array.isArray(songs)) {
+      const songsWithGenres = songs.filter((song) => song.genres && song.genres.includes(genre));
+      const randomSongs = shuffleArray(songsWithGenres).slice(0, 10);
 
-  async function getLastFmImage(artist, track) {
-    if (!artist || !track) return "/default-cover.png";
-    const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
-      artist
-    )}&track=${encodeURIComponent(track)}&format=json`;
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-      return Array.isArray(data?.track?.album?.image) && data.track.album.image.length
-        ? (
-            data.track.album.image.find(img => img.size === "medium")?.["#text"] ||
-            data.track.album.image.find(img => img.size === "small")?.["#text"] ||
-            "/default-cover.png"
-          )
-        : "/default-cover.png";
-    } catch {
-      return "/default-cover.png";
+      const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+
+      // Helper to fetch album image from Last.fm
+      async function getLastFmImage(artist, track) {
+        if (!artist || !track) return "/default-cover.png";
+        const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
+          artist
+        )}&track=${encodeURIComponent(track)}&format=json`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          return Array.isArray(data?.track?.album?.image) && data.track.album.image.length
+            ? (
+                data.track.album.image.find(img => img.size === "medium")?.["#text"] ||
+                data.track.album.image.find(img => img.size === "small")?.["#text"] ||
+                "/default-cover.png"
+              )
+            : "/default-cover.png";
+        } catch {
+          return "/default-cover.png";
+        }
+      }
+
+      // Enrich each song with its album image from Last.fm
+      const songsWithImages = await Promise.all(
+        randomSongs.map(async (song) => ({
+          ...song,
+          image: await getLastFmImage(song.artist_name, song.track_name),
+        }))
+      );
+
+      return songsWithImages;
+    } else {
+      console.error("Unexpected API response:", songs);
+      return [];
     }
+  } catch (error) {
+    console.error("Error fetching songs by genre:", error);
+    return [];
   }
-
-  const enrichedSongs = await Promise.all(
-    songs.map(async (song) => ({
-      ...song,
-      image: await getLastFmImage(song.artist_name, song.track_name),
-    }))
-  );
-
-  return enrichedSongs;
 }
 
 export function DragAndDrop({ setDropItems }) {
@@ -84,13 +103,14 @@ export function DragAndDrop({ setDropItems }) {
 
             // Fetch songs for all genres in parallel
             const genrePromises = genres.map((genre) =>
-              fetchRandomSongsByGenre(genre, accessToken)
+              fetchRandomSongsByGenre(genre)
             );
             const songsByGenre = await Promise.all(genrePromises);
 
             // Flatten and limit the total number of songs
-            // const allSongs = songsByGenre.flat().slice(0, 50); // Limit to 50 songs
+            const allSongs = songsByGenre.flat().slice(0, 100); // Limit to 100 songs
             console.log(`Fetched ${allSongs.length} songs in total.`);
+            console.log("Songs by genre:", allSongs);
 
             // Display all fetched songs without shuffling
             setBox1Items(allSongs);
@@ -429,6 +449,7 @@ function DropArea({ items }) {
 function DraggableBox({ id, items, title, setSearchResults, searchResults, isSearchResultsReady }) {
   const { setNodeRef } = useDroppable({ id });
   const [searchQueryBox3, setSearchQueryBox3] = useState("");
+  const [page, setPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
 
   const debounceTimer = useRef(null);
@@ -488,7 +509,10 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
               return bMatchCount - aMatchCount;
             });
 
+            setSearchResults(prioritizedResults);
+
             // Fetch album images after prioritizing results
+            /*
             if (typeof window !== 'undefined') {
               const accessToken = session?.accessToken;
               const resultsWithImages = await Promise.all(
@@ -500,7 +524,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
 
               setSearchResults(resultsWithImages);
               setIsSearchResultsUpdated(true);
-            }
+            }*/
           } else {
             console.error("Unexpected search API response:", data);
             if (page === 1) setSearchResults([]);
@@ -511,7 +535,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         } finally {
           setIsSearching(false); // Stop loading spinner
         }
-      }, 100);
+      }, 200);
     } else {
       setSearchResults([]);
     }
@@ -643,7 +667,7 @@ function DraggableItem({ item, isOverlay = false }) {
       style={style}
     >
       <img
-        src={item.image || "https://via.placeholder.com/50"}
+        src={item.image || "/default-cover.png"}
         alt={item.track_name}
         className="drag-item-image"
       />
