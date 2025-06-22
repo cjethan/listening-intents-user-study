@@ -175,8 +175,6 @@ export default function Home() {
   }, [resetCounter, incrementCounter]);
 
   function handleButtonClick(action: () => void) {
-     // TODO: Add back validation checks for howOften, howImp, dropItems, and adjectives
-     /*
     if (!howOften || !howImp) {
       setErrorMessage("Please answer both questions before proceeding.");
       setTimeout(() => setErrorMessage(null), 3000);
@@ -186,9 +184,9 @@ export default function Home() {
     } else if (adjectives.length === 0) {
       setErrorMessage("Please select at least one adjective before proceeding.");
       setTimeout(() => setErrorMessage(null), 3000);
-    } else {*/
+    } else {
       action();
-    //}
+    }
   }
 
   function handleNext() {
@@ -241,7 +239,7 @@ export default function Home() {
     const currentIntents = userData?.intents || {};
 
     const newIntent = {
-      intent_id: currentIntent?.intent_id || "",
+      intent_id: currentIntent?.intent_id ?? "",
       intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
