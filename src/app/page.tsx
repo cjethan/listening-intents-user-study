@@ -117,6 +117,7 @@ export default function Home() {
   const [currentIntentIdx, setCurrentIntentIdx] = useState(() => {
     if (typeof window !== 'undefined') {
       const idx = localStorage.getItem('currentIntentIdx');
+      console.log('DEBUG: currentIntentIdx from localStorage:', idx);
       return idx ? parseInt(idx, 10) : 0;
     }
     return 0;
@@ -136,7 +137,9 @@ export default function Home() {
   useEffect(() => {
     // fetch intent data for the current intent id
     async function fetchIntentById(intentId: string) {
-      if (!intentId) return;
+      if (intentId === undefined || intentId === null || intentId === "") {
+        return;
+      }
       const response = await fetch('/intent_data.json');
       const data = await response.json();
       const ids = Object.keys(data.intent_id);
@@ -172,6 +175,8 @@ export default function Home() {
   }, [resetCounter, incrementCounter]);
 
   function handleButtonClick(action: () => void) {
+     // TODO: Add back validation checks for howOften, howImp, dropItems, and adjectives
+     /*
     if (!howOften || !howImp) {
       setErrorMessage("Please answer both questions before proceeding.");
       setTimeout(() => setErrorMessage(null), 3000);
@@ -181,9 +186,9 @@ export default function Home() {
     } else if (adjectives.length === 0) {
       setErrorMessage("Please select at least one adjective before proceeding.");
       setTimeout(() => setErrorMessage(null), 3000);
-    } else {
+    } else {*/
       action();
-    }
+    //}
   }
 
   function handleNext() {
