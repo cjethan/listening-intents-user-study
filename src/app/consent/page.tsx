@@ -29,13 +29,13 @@ export default function ConsentForm() {
           Welcome to the Music Listening Intent Study
         </h1>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          During this study, you will be asked to classify songs for different music listening intents. To participate, your Spotify music listening history will be incorporated.
+          During this study, you will be asked to classify songs for different music listening intents. To participate, your last.fm music listening history will be incorporated.
         </p>
         <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
           Privacy Policy and Consent Form
         </h2>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-        Your Spotify account will only be used to retrieve your top songs and recently listened to songs. 
+        Your last.fm account will only be used to retrieve your top songs and recently listened to songs.
         </p>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
           Your data will be stored anonymously, such that it cannot be traced back to you. It will only be used for scientific research purposes. Participation is entirely voluntary. You are free to withdraw your participation. If you send an email to <a href="mailto:[removed]" className="text-blue-600 underline">[removed]</a>, we will remove your data.

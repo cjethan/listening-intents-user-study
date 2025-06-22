@@ -117,6 +117,7 @@ export default function Home() {
   const [currentIntentIdx, setCurrentIntentIdx] = useState(() => {
     if (typeof window !== 'undefined') {
       const idx = localStorage.getItem('currentIntentIdx');
+      console.log('DEBUG: currentIntentIdx from localStorage:', idx);
       return idx ? parseInt(idx, 10) : 0;
     }
     return 0;
@@ -136,7 +137,9 @@ export default function Home() {
   useEffect(() => {
     // fetch intent data for the current intent id
     async function fetchIntentById(intentId: string) {
-      if (!intentId) return;
+      if (intentId === undefined || intentId === null || intentId === "") {
+        return;
+      }
       const response = await fetch('/intent_data.json');
       const data = await response.json();
       const ids = Object.keys(data.intent_id);
@@ -236,7 +239,7 @@ export default function Home() {
     const currentIntents = userData?.intents || {};
 
     const newIntent = {
-      intent_id: currentIntent?.intent_id || "",
+      intent_id: currentIntent?.intent_id ?? "",
       intent_name: currentIntent?.intent_name || "",
       how_often: howOften || 0,
       how_imp: howImp || 0,
@@ -294,7 +297,7 @@ export default function Home() {
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
         <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
-          {currentIntent?.intent_name}
+          {currentIntent?.intent_name || 'Loading...'}
         </span>
       </h1>
 
@@ -309,7 +312,7 @@ export default function Home() {
           </div>
         </div>
         <p className="italic text-gray-700">
-          {currentIntent ? currentIntent.main_listening_function : 'No intent available'}
+          {currentIntent ? currentIntent.main_listening_function : 'Intent infomation loading...'}
         </p>
         <p className="text-gray-700">
           {currentIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
@@ -383,22 +386,6 @@ export default function Home() {
           {errorMessage}
         </div>
       )}
-
-      <div className="fixed bottom-6 left-6">
-        <button
-          onClick={() => {
-            localStorage.removeItem('rankedIntents');
-            localStorage.removeItem('discardedIntents');
-            localStorage.removeItem('classificationIntents');
-            localStorage.removeItem('currentIntentIdx');
-            localStorage.removeItem('counter');
-            window.location.href = '/rank-intents';
-          }}
-          className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
-        >
-          Debug: Reset ranking progress
-        </button>
-      </div>
     </div>
   );
 }

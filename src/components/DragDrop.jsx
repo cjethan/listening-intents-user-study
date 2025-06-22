@@ -2,12 +2,78 @@
 import React, { useState, useEffect, useRef } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 
-// Remove all useSession and session logic
+/* TODO wollen wir alle songs in der Datenbank haben von user's last.fm??
+async function checkAndAddToDatabase(songs) {
+  console.log("Checking and adding songs to the database...");
+  try {
+    const response = await fetch("/api/check-and-add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ songs }),
+    });
 
-// Placeholder for fetching album images (replace with Last.fm or your own logic)
-async function fetchAlbumImagePlaceholder(trackId) {
-  // TODO: Replace with Last.fm or your own API call
-  return "/default-cover.png";
+    const responseData = await response.json();
+    console.log("Response from check-and-add API:", responseData);
+  } catch (error) {
+    console.error("Error checking/adding songs to the database:", error);
+  }
+}*/
+
+function shuffleArray(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+async function fetchRandomSongsByGenre(genre, limit = 10) {
+  try {
+    const response = await fetch(`/api/songs?genre=${encodeURIComponent(genre)}&limit=${limit}`);
+    const songs = await response.json();
+
+    if (Array.isArray(songs)) {
+      const songsWithGenres = songs.filter((song) => song.genres && song.genres.includes(genre));
+      const randomSongs = shuffleArray(songsWithGenres).slice(0, 10);
+
+      const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+
+      // Helper to fetch album image from Last.fm
+      async function getLastFmImage(artist, track) {
+        if (!artist || !track) return "/default-cover.png";
+        const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
+          artist
+        )}&track=${encodeURIComponent(track)}&format=json`;
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          return Array.isArray(data?.track?.album?.image) && data.track.album.image.length
+            ? (
+                data.track.album.image.find(img => img.size === "medium")?.["#text"] ||
+                data.track.album.image.find(img => img.size === "small")?.["#text"] ||
+                "/default-cover.png"
+              )
+            : "/default-cover.png";
+        } catch {
+          return "/default-cover.png";
+        }
+      }
+
+      // Enrich each song with its album image from Last.fm
+      const songsWithImages = await Promise.all(
+        randomSongs.map(async (song) => ({
+          ...song,
+          image: await getLastFmImage(song.artist_name, song.track_name),
+        }))
+      );
+
+      return songsWithImages;
+    } else {
+      console.error("Unexpected API response:", songs);
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching songs by genre:", error);
+    return [];
+  }
 }
 
 export function DragAndDrop({ setDropItems }) {
@@ -25,22 +91,229 @@ export function DragAndDrop({ setDropItems }) {
   // Placeholder: Replace with your own logic to fetch songs for Box 1
   useEffect(() => {
     const fetchSongs = async () => {
-      setBox1Loading(true);
-      // TODO: Replace with your own API or static data
-      setBox1Items([]);
-      setBox1Loading(false);
-    };
-    fetchSongs();
+      try {
+          setBox1Loading(true); // Start loading
+          console.log("Fetching songs for Box 1...");
+          // Retrieve genres from localStorage
+          if (typeof window !== 'undefined') {
+            const userData = JSON.parse(localStorage.getItem("userData"));
+            const genres = userData?.genres || [];
+            console.log(`Retrieved genres from localStorage: ${genres}`);
+
+            // Fetch songs for all genres in parallel
+            const genrePromises = genres.map((genre) =>
+              fetchRandomSongsByGenre(genre)
+            );
+            const songsByGenre = await Promise.all(genrePromises);
+
+            // Flatten and limit the total number of songs
+            const allSongs = songsByGenre.flat().slice(0, 100); // Limit to 100 songs
+            console.log(`Fetched ${allSongs.length} songs in total.`);
+            console.log("Songs by genre:", allSongs);
+
+            // Display all fetched songs without shuffling
+            setBox1Items(allSongs);
+          }
+
+          // Check and add songs to the database
+          //console.log("Checking and adding songs to the database...");
+          //await checkAndAddToDatabase(allSongs);
+          //console.log("Songs successfully checked and added to the database.");
+        } catch (error) {
+          console.error("Error fetching songs:", error);
+          setBox1Items([]);
+        } finally {
+          setBox1Loading(false); // End loading
+        }
+      };
+      fetchSongs();
   }, []);
 
-  // Placeholder: Replace with your own logic to fetch songs for Box 2
+ // Fetch songs from Last.fm listening history for Box 2
   useEffect(() => {
     const fetchTopSongs = async () => {
-      // TODO: Replace with your own API or static data
-      setBox2Items([]);
-      setFilteredBox2Items([]);
+      let lastfmUsername = "";
+      if (typeof window !== "undefined") {
+        const storedUserData = localStorage.getItem("userData");
+        if (storedUserData) {
+          try {
+            const userData = JSON.parse(storedUserData);
+            lastfmUsername = userData.lastfm_username || "";
+          } catch {
+            lastfmUsername = "";
+          }
+        }
+      }
+      if (!lastfmUsername) {
+        setBox2Items([]);
+        setFilteredBox2Items([]);
+        return;
+      }
+
+      if (!localStorage.getItem("lastfmTopSongs")) {
+
+        const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+        const user = lastfmUsername;
+
+        const recentUrl = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&limit=50`;
+        const top3mUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=3month&limit=50`;
+        const topOverallUrl = `https://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&period=overall&limit=50`;
+
+        try {
+          const [recentRes, top3mRes, topOverallRes] = await Promise.all([
+            fetch(recentUrl),
+            fetch(top3mUrl),
+            fetch(topOverallUrl),
+          ]);
+
+          const recentData = await recentRes.json();
+          const top3mData = await top3mRes.json();
+          console.log("Top 3m tracks from Last.fm 1:", top3mData);
+          const topOverallData = await topOverallRes.json();
+
+          const recentTracks = Array.isArray(recentData?.recenttracks?.track)
+            ? recentData.recenttracks.track.map((track, idx) => {
+                const artistName = track?.artist?.["#text"] || "";
+                const albumName = track?.album?.["#text"] || "";
+                return {
+                  track_id: track?.mbid || `${artistName}-${track?.name || ""}-${idx}`,
+                  artist_name: artistName,
+                  track_name: track?.name || "",
+                  album_name: albumName,
+                  image:
+                    Array.isArray(track?.image) && track.image.length
+                      ? (
+                          track.image.find(img => img.size === "medium")?.["#text"] ||
+                          track.image.find(img => img.size === "small")?.["#text"] ||
+                          "/default-cover.png"
+                        )
+                      : "/default-cover.png",
+                  duration_ms: track?.duration ? parseInt(track.duration, 10) : 0,
+                  added_by_userdata: 1,
+                  genres: [],
+                  artist_uri: artistName
+                    ? `https://www.last.fm/music/${encodeURIComponent(artistName)}`
+                    : "",
+                  album_uri: artistName && albumName
+                    ? `https://www.last.fm/music/${encodeURIComponent(artistName)}/${encodeURIComponent(albumName)}`
+                    : "",
+                  track_uri: track?.url || "",
+                };
+              })
+            : [];
+
+          const top3mTracksRaw = Array.isArray(top3mData?.toptracks?.track)
+            ? top3mData.toptracks.track
+            : [];
+          const topOverallTracksRaw = Array.isArray(topOverallData?.toptracks?.track)
+            ? topOverallData.toptracks.track
+            : [];
+
+          async function enrichTrackWithAlbum(track) {
+            const artist = encodeURIComponent(track?.artist?.name || "");
+            const name = encodeURIComponent(track?.name || "");
+            if (!artist || !name) return null;
+
+            const infoUrl = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${artist}&track=${name}&format=json`;
+            try {
+              const infoRes = await fetch(infoUrl);
+              const infoData = await infoRes.json();
+              const albumName = infoData?.track?.album?.title || "";
+              const albumImage =
+                Array.isArray(infoData?.track?.album?.image) && infoData.track.album.image.length
+                  ? (
+                      infoData.track.album.image.find(img => img.size === "medium")?.["#text"] ||
+                      infoData.track.album.image.find(img => img.size === "small")?.["#text"] ||
+                      "/default-cover.png"
+                    )
+                  : "/default-cover.png";
+              const albumUri = albumName && track.artist?.name
+                ? `https://www.last.fm/music/${encodeURIComponent(track.artist.name)}/${encodeURIComponent(albumName)}`
+                : "";
+              const duration_ms = infoData?.track?.duration
+                ? parseInt(infoData.track.duration, 10)
+                : 0;
+              return {
+                track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}`,
+                artist_name: track?.artist?.name || "",
+                track_name: track?.name || "",
+                artist_uri: track.artist?.url || "",
+                track_uri: track.url || "",
+                album_name: albumName,
+                album_uri: albumUri,
+                image: albumImage,
+                duration_ms,
+                added_by_userdata: 1,
+                genres: [],
+              };
+            } catch {
+              return {
+                track_id: track?.mbid || `${track?.artist?.name || ""}-${track?.name || ""}`,
+                artist_name: track?.artist?.name || "",
+                track_name: track?.name || "",
+                artist_uri: track.artist?.url || "",
+                track_uri: track.url || "",
+                album_name: "",
+                album_uri: "",
+                image: Array.isArray(track?.image) && track.image.length
+                  ? track.image[track.image.length - 1]["#text"] || "/default-cover.png"
+                  : "/default-cover.png",
+                duration_ms: 0,
+                added_by_userdata: 1,
+                genres: [],
+              };
+            }
+          }
+
+          // Enrich top tracks with album info
+          const top3mTracks = (await Promise.all(top3mTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
+          const topOverallTracks = (await Promise.all(topOverallTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
+
+          console.log("Top 3 months tracks from Last.fm:", top3mTracks);
+          console.log("Top overall tracks from Last.fm:", topOverallTracks);
+
+          // Combine and deduplicate by artist+track_name
+          const allTracks = [...recentTracks, ...top3mTracks, ...topOverallTracks];
+          const uniqueTracks = [];
+          const seen = new Set();
+
+          for (const t of allTracks) {
+            const key = `${t.artist_name} - ${t.track_name}`;
+            if (t.artist_name && t.track_name && !seen.has(key)) {
+              seen.add(key);
+              uniqueTracks.push(t);
+            }
+          }
+
+          localStorage.setItem("lastfmTopSongs", JSON.stringify(uniqueTracks));
+          console.log("Combined Last.fm tracks:", uniqueTracks);
+          setBox2Items(uniqueTracks);
+          setFilteredBox2Items(uniqueTracks);
+        } catch (error) {
+          setBox2Items([]);
+          setFilteredBox2Items([]);
+          console.error("Error fetching Last.fm tracks:", error);
+        }
+      } else {
+        // Not first intent, or already fetched: load from localStorage
+        const stored = localStorage.getItem("lastfmTopSongs");
+        console.log("Loading Last.fm top songs from localStorage");
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            setBox2Items(parsed);
+            setFilteredBox2Items(parsed);
+          } catch {
+            setBox2Items([]);
+            setFilteredBox2Items([]);
+          }
+        } else {
+          setBox2Items([]);
+          setFilteredBox2Items([]);
+        }
+      }
     };
-    fetchTopSongs();
+  fetchTopSongs();
   }, []);
 
   useEffect(() => {
@@ -196,6 +469,7 @@ function DropArea({ items }) {
 function DraggableBox({ id, items, title, setSearchResults, searchResults, isSearchResultsReady }) {
   const { setNodeRef } = useDroppable({ id });
   const [searchQueryBox3, setSearchQueryBox3] = useState("");
+  const [page, setPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
 
   const debounceTimer = useRef(null);
@@ -208,10 +482,80 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         clearTimeout(debounceTimer.current);
       }
       debounceTimer.current = setTimeout(async () => {
-        // Placeholder: Replace with your own search logic or API call
-        setSearchResults([]);
-        setIsSearching(false);
-      }, 500);
+        try {
+          const response = await fetch("/api/search", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query, page }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (Array.isArray(data)) {
+            const queryWords = query.toLowerCase().split(/\s+/);
+
+            const filteredResults = data.map((item) => ({
+              track_id: item.track_id,
+              track_name: item.track_name,
+              artist_name: item.artist_name,
+              album_name: item.album_name,
+            })).filter((item) =>
+              queryWords.some(
+                (word) =>
+                  item.track_id.toLowerCase().includes(word) ||
+                  item.artist_name.toLowerCase().includes(word) ||
+                  item.album_name.toLowerCase().includes(word)
+              )
+            );
+
+            const prioritizedResults = filteredResults.sort((a, b) => {
+              const aMatchCount = queryWords.filter(
+                (word) =>
+                  a.track_id.toLowerCase().includes(word) ||
+                  a.artist_name.toLowerCase().includes(word) ||
+                  a.album_name.toLowerCase().includes(word)
+              ).length;
+              const bMatchCount = queryWords.filter(
+                (word) =>
+                  b.track_id.toLowerCase().includes(word) ||
+                  b.artist_name.toLowerCase().includes(word) ||
+                  b.album_name.toLowerCase().includes(word)
+              ).length;
+              return bMatchCount - aMatchCount;
+            });
+
+            setSearchResults(prioritizedResults);
+
+            // Fetch album images after prioritizing results
+            /*
+            if (typeof window !== 'undefined') {
+              const accessToken = session?.accessToken;
+              const resultsWithImages = await Promise.all(
+                prioritizedResults.map(async (item) => ({
+                  ...item,
+                  image: await fetchAlbumImage(item.track_id, accessToken),
+                }))
+              );
+
+              setSearchResults(resultsWithImages);
+              setIsSearchResultsUpdated(true);
+            }*/
+          } else {
+            console.error("Unexpected search API response:", data);
+            if (page === 1) setSearchResults([]);
+          }
+        } catch (error) {
+          console.error("Error searching database:", error);
+          if (page === 1) setSearchResults([]);
+        } finally {
+          setIsSearching(false); // Stop loading spinner
+        }
+      }, 200);
     } else {
       setSearchResults([]);
     }
@@ -225,7 +569,10 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
           <input
             type="text"
             value={searchQueryBox3}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => {
+              setPage(1);
+              handleSearch(e.target.value);
+            }}
             placeholder="Search..."
             className="search-input"
           />
@@ -268,7 +615,19 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
                 };
 
                 setSearchResults((prev) => [...prev, newSong]);
-                // Placeholder: Add the new song to your database if needed
+                 // Add the new song to the databaseAdd commentMore actions
+                try {
+                  await fetch("/api/check-and-add", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ songs: [newSong] }),
+                  });
+                  console.log("Custom song added to the database:", newSong);
+                } catch (error) {
+                  console.error("Error adding custom song to the database:", error);
+                }
                 e.target.reset();
               }}
               className="mt-2 space-y-2"
@@ -328,7 +687,7 @@ function DraggableItem({ item, isOverlay = false }) {
       style={style}
     >
       <img
-        src={item.image || "https://via.placeholder.com/50"}
+        src={item.image || "/default-cover.png"}
         alt={item.track_name}
         className="drag-item-image"
       />
