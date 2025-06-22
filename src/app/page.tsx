@@ -297,7 +297,7 @@ export default function Home() {
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
         <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
-          {currentIntent?.intent_name}
+          {currentIntent?.intent_name || 'Loading...'}
         </span>
       </h1>
 
@@ -312,7 +312,7 @@ export default function Home() {
           </div>
         </div>
         <p className="italic text-gray-700">
-          {currentIntent ? currentIntent.main_listening_function : 'No intent available'}
+          {currentIntent ? currentIntent.main_listening_function : 'Intent infomation loading...'}
         </p>
         <p className="text-gray-700">
           {currentIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
@@ -386,22 +386,6 @@ export default function Home() {
           {errorMessage}
         </div>
       )}
-
-      <div className="fixed bottom-6 left-6">
-        <button
-          onClick={() => {
-            localStorage.removeItem('rankedIntents');
-            localStorage.removeItem('discardedIntents');
-            localStorage.removeItem('classificationIntents');
-            localStorage.removeItem('currentIntentIdx');
-            localStorage.removeItem('counter');
-            window.location.href = '/rank-intents';
-          }}
-          className="px-4 py-2 bg-red-500 text-white font-semibold rounded shadow hover:bg-red-600"
-        >
-          Debug: Reset ranking progress
-        </button>
-      </div>
     </div>
   );
 }
