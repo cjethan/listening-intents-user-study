@@ -30,35 +30,33 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
 
   // Build dynamic choices for "How often" based on musicHours and switch
   const getHowOftenOptions = () => {
-    const bins = 6;
     const hours = Number(musicHours) || 20;
     const totalMinutes = hours * 60;
     const totalSongs = Math.round(totalMinutes / 3);
-    const stepMinutes = Math.max(1, Math.floor(totalMinutes / bins));
-    const stepSongs = Math.max(1, Math.floor(totalSongs / bins));
-    const options = [];
-    for (let i = 0; i < bins; i++) {
+
+    // Percentages for the bins
+    const percentages = [0.05, 0.15, 0.3, 0.6, 0.6]; // 5%, 15%, 30%, 60%, 60%
+    // Note: The last value is repeated to provide a "more than" option
+
+    const options = percentages.map((percent, idx) => {
       if (useMinutes) {
-        let value = stepMinutes * i;
-        let label = "";
-        if (i === 0) {
-          label = `<${stepMinutes > 100 ? (stepMinutes / 60).toFixed(1) + " h" : stepMinutes + " min"}/week`;
-        } else if (i === bins - 1) {
-          label = `>${value > 100 ? (value / 60).toFixed(1) + " h" : value + " min"}/week`;
+        let value = Math.round(totalMinutes * percent);
+        if (value > 100) {
+          value = (value / 60).toFixed(1) + " h";
         } else {
-          label = `${value > 100 ? (value / 60).toFixed(1) + " h" : value + " min"}/week`;
+          value = value + " min";
         }
-        options.push(label);
+        if (idx === 0) return `<${value}/week`;
+        if (idx === percentages.length - 1) return `>${value}/week`;
+        return `${value}/week`;
       } else {
-        if (i === 0) {
-          options.push(`<${stepSongs} songs/week`);
-        } else if (i === bins - 1) {
-          options.push(`>${stepSongs * i} songs/week`);
-        } else {
-          options.push(`${stepSongs * i} songs/week`);
-        }
+        let value = Math.round(totalSongs * percent);
+        if (idx === 0) return `<${value} songs/week`;
+        if (idx === percentages.length - 1) return `>${value} songs/week`;
+        return `${value} songs/week`;
       }
-    }
+    });
+
     return options;
   };
 

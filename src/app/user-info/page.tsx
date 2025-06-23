@@ -22,6 +22,7 @@ export default function UserInfo() {
   const [formalEducation, setFormalEducation] = useState('');
   const [musicProduction, setMusicProduction] = useState('');
   const [musicHours, setMusicHours] = useState(20); // Default to average value
+  const [verifying, setVerifying] = useState(false);
   const { setUserData } = useUserStore();
   const router = useRouter();
 
@@ -64,86 +65,106 @@ export default function UserInfo() {
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError('');
+    setVerifying(true);
 
-    // Validation for required fields
-    if (!prolificId.trim()) {
-      setError('Prolific ID is required.');
-      return;
-    }
-    if (selectedGenres.length < 3) {
-      setError('Please select at least 3 genres.');
-      return;
-    }
-    if (!playsInstrument) {
-      setError('Please specify if you play a musical instrument.');
-      return;
-    }
-    if (
-      (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
-      instrumentsPlayed.length === 0 &&
-      !otherInstrument.trim()
-    ) {
-      setError('Please specify at least one instrument you play or played.');
-      return;
-    }
-    if (
-      (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
-      !yearsPlayed
-    ) {
-      setError('Please specify how many years you have played music.');
-      return;
-    }
-    if (!formalEducation) {
-      setError('Please specify your formal music education status.');
-      return;
-    }
-    if (!musicProduction) {
-      setError('Please specify if you compose, produce, or record music.');
-      return;
-    }
+    // Verify Last.fm username
+    const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+    const url = `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURIComponent(lastfmUsername)}&api_key=${apiKey}&format=json`;
 
-    // Map user input to enum values
-    const playInstrumentEnum = playsInstrument.toLowerCase();
-    const formalEducationEnum = formalEducation
-      .toLowerCase()
-      .replace('yes, ongoing', 'ongoing')
-      .replace('yes, completed', 'yes');
-    const composeMusicEnum = musicProduction
-      .toLowerCase()
-      .replace('yes, regularly', 'yes')
-      .replace('occasionally', 'occasionally')
-      .replace('no', 'no');
-    const instrumentsPlayedYearsEnum = yearsPlayed
-      ? yearsPlayed
-          .toLowerCase()
-          .replace('less than 1 year', 'less than 1 year')
-          .replace('1-2 years', '1-2 years')
-          .replace('3-5 years', '3-5 years')
-          .replace('6-10 years', '6-10 years')
-          .replace('more than 10 years', 'more than 10 years')
-      : null; // Map empty string to null
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      setVerifying(false);
 
-    const userData = {
-      user_id: userId,
-      prolific_id: prolificId,
-      lastfm_username: lastfmUsername,
-      genres: selectedGenres,
-      play_instrument: playInstrumentEnum,
-      instruments_played: [...instrumentsPlayed, otherInstrument].filter(Boolean),
-      instruments_played_years: instrumentsPlayedYearsEnum,
-      formal_education: formalEducationEnum,
-      compose_music: composeMusicEnum,
-      hours_listening_weekly: musicHours,
-      intents: {}, // Placeholder for intents
-    };
+      if (!data.user) {
+        setError("Could not verify your Last.fm username. Please double check your username and try again.");
+        return;
+      }
 
-    setUserData(userData);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+      // Validation for required fields
+      if (!prolificId.trim()) {
+        setError('Prolific ID is required.');
+        return;
+      }
+      if (selectedGenres.length < 3) {
+        setError('Please select at least 3 genres.');
+        return;
+      }
+      if (!playsInstrument) {
+        setError('Please specify if you play a musical instrument.');
+        return;
+      }
+      if (
+        (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
+        instrumentsPlayed.length === 0 &&
+        !otherInstrument.trim()
+      ) {
+        setError('Please specify at least one instrument you play or played.');
+        return;
+      }
+      if (
+        (playsInstrument === 'Yes' || playsInstrument === 'I used to, but not anymore') &&
+        !yearsPlayed
+      ) {
+        setError('Please specify how many years you have played music.');
+        return;
+      }
+      if (!formalEducation) {
+        setError('Please specify your formal music education status.');
+        return;
+      }
+      if (!musicProduction) {
+        setError('Please specify if you compose, produce, or record music.');
+        return;
+      }
+
+      // Map user input to enum values
+      const playInstrumentEnum = playsInstrument.toLowerCase();
+      const formalEducationEnum = formalEducation
+        .toLowerCase()
+        .replace('yes, ongoing', 'ongoing')
+        .replace('yes, completed', 'yes');
+      const composeMusicEnum = musicProduction
+        .toLowerCase()
+        .replace('yes, regularly', 'yes')
+        .replace('occasionally', 'occasionally')
+        .replace('no', 'no');
+      const instrumentsPlayedYearsEnum = yearsPlayed
+        ? yearsPlayed
+            .toLowerCase()
+            .replace('less than 1 year', 'less than 1 year')
+            .replace('1-2 years', '1-2 years')
+            .replace('3-5 years', '3-5 years')
+            .replace('6-10 years', '6-10 years')
+            .replace('more than 10 years', 'more than 10 years')
+        : null; // Map empty string to null
+
+      const userData = {
+        user_id: userId,
+        prolific_id: prolificId,
+        lastfm_username: lastfmUsername,
+        genres: selectedGenres,
+        play_instrument: playInstrumentEnum,
+        instruments_played: [...instrumentsPlayed, otherInstrument].filter(Boolean),
+        instruments_played_years: instrumentsPlayedYearsEnum,
+        formal_education: formalEducationEnum,
+        compose_music: composeMusicEnum,
+        hours_listening_weekly: musicHours,
+        intents: {}, // Placeholder for intents
+      };
+
+      setUserData(userData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+      }
+      router.push('/rank-intents'); // Redirect to the intent ranking page
+    } catch (err) {
+      setVerifying(false);
+      setError("Could not verify your Last.fm username. Please double check your username and try again.");
     }
-    router.push('/rank-intents'); // Redirect to the intent ranking page
   }
 
   return (
@@ -376,8 +397,9 @@ export default function UserInfo() {
         <button
           type="submit"
           className="w-full px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow hover:bg-gray-900 focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
+          disabled={verifying}
         >
-          Submit
+          {verifying ? "Verifying..." : "Submit"}
         </button>
       </form>
     </div>
