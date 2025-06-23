@@ -11,7 +11,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
   const [selectedHowImp, setSelectedHowImp] = useState(null);
   const [useMinutes, setUseMinutes] = useState(false);
   const [adjectives, setAdjectivesState] = useState([]);
-  const [musicHours, setMusicHours] = useState(20); // Default
+  const [musicHours, setMusicHours] = useState(undefined);
 
   // Get musicHours from localStorage userData
   useEffect(() => {
@@ -22,11 +22,22 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
           const parsed = JSON.parse(userData);
           if (parsed.hours_listening_weekly) {
             setMusicHours(parsed.hours_listening_weekly);
+          } else {
+            setMusicHours(20); // fallback
           }
-        } catch {}
+        } catch {
+          setMusicHours(20); // fallback
+        }
+      } else {
+        setMusicHours(20); // fallback
       }
     }
   }, []);
+
+  // If musicHours is undefined, return null or a loading spinner
+  if (musicHours === undefined) {
+    return null; // or a loading spinner
+  }
 
   // Build dynamic choices for "How often" based on musicHours and switch
   const getHowOftenOptions = () => {
