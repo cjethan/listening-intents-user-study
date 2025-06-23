@@ -125,7 +125,6 @@ export default function UserInfo() {
           .replace('more than 10 years', 'more than 10 years')
       : null; // Map empty string to null
 
-    // Prepare user data according to the model
     const userData = {
       user_id: userId,
       prolific_id: prolificId,
