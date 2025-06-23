@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CreatableSelect from 'react-select/creatable';
 import { adjectiveOptions } from '../lib/select_options/adjectiveOptions';
 
@@ -9,8 +9,69 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
   const [showAlert, setShowAlert] = useState(false);
   const [selectedHowOften, setSelectedHowOften] = useState(null);
   const [selectedHowImp, setSelectedHowImp] = useState(null);
-  const [usePlaceholderLabels2, setUsePlaceholderLabels2] = useState(false);
+  const [useMinutes, setUseMinutes] = useState(false);
   const [adjectives, setAdjectivesState] = useState([]);
+  const [musicHours, setMusicHours] = useState(undefined);
+
+  // Get musicHours from localStorage userData
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const userData = localStorage.getItem("userData");
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData);
+          if (parsed.hours_listening_weekly) {
+            setMusicHours(parsed.hours_listening_weekly);
+          } else {
+            setMusicHours(20); // fallback
+          }
+        } catch {
+          setMusicHours(20); // fallback
+        }
+      } else {
+        setMusicHours(20); // fallback
+      }
+    }
+  }, []);
+
+  // If musicHours is undefined, return null or a loading spinner
+  if (musicHours === undefined) {
+    return null; // or a loading spinner
+  }
+
+  // Build dynamic choices for "How often" based on musicHours and switch
+  const getHowOftenOptions = () => {
+    const hours = Number(musicHours) || 20;
+    const totalMinutes = hours * 60;
+    const totalSongs = Math.round(totalMinutes / 3);
+
+    // Percentages for the bins
+    const percentages = [0.05, 0.15, 0.3, 0.6, 0.6]; // 5%, 15%, 30%, 60%, 60%
+    // Note: The last value is repeated to provide a "more than" option
+
+    const options = percentages.map((percent, idx) => {
+      if (useMinutes) {
+        let value = Math.round(totalMinutes * percent);
+        if (value > 100) {
+          value = (value / 60).toFixed(1) + " h";
+        } else {
+          value = value + " min";
+        }
+        if (idx === 0) return `<${value}/week`;
+        if (idx === percentages.length - 1) return `>${value}/week`;
+        return `${value}/week`;
+      } else {
+        let value = Math.round(totalSongs * percent);
+        if (idx === 0) return `<${value} songs/week`;
+        if (idx === percentages.length - 1) return `>${value} songs/week`;
+        return `${value} songs/week`;
+      }
+    });
+
+    return options;
+  };
+
+  const howOftenOptions = getHowOftenOptions();
 
   const handleHowOftenChange = (value) => {
     setHowOften(value);
@@ -108,22 +169,15 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
                   <input
                     type="checkbox"
                     className="sr-only peer"
-                    checked={usePlaceholderLabels2}
-                    onChange={() => setUsePlaceholderLabels2(!usePlaceholderLabels2)}
+                    checked={useMinutes}
+                    onChange={() => setUseMinutes(!useMinutes)}
                   />
                   <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
                   <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
                 </label>
               </div>
             </div>
-            {[
-              usePlaceholderLabels2 ? "<9 min/week" : "<3 songs/week",
-              usePlaceholderLabels2 ? "9 min/week" : "3 songs/week",
-              usePlaceholderLabels2 ? "27 min/week" : "9 songs/week",
-              usePlaceholderLabels2 ? "54 min/week" : "18 songs/week",
-              usePlaceholderLabels2 ? "72 min/week" : "24 songs/week",
-              usePlaceholderLabels2 ? ">72 min/week" : ">24 songs/week",
-            ].map((option, index) => (
+            {howOftenOptions.map((option, index) => (
               <label key={option} className="flex items-center space-x-3 text-gray-600">
                 <input
                   type="radio"
@@ -151,9 +205,9 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
             </div>
             {[
               "Not important / Never listening with this intent",
-              "Little important",
-              "Medium important",
-              "Relatively important",
+              "Slightly important",
+              "Moderately important",
+              "Fairly important",
               "Very important",
             ].map((option, index) => (
               <label key={option} className="flex items-center space-x-3 text-gray-600">
