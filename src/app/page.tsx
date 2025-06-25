@@ -292,11 +292,36 @@ export default function Home() {
     }
   }
 
+  // Calculate progress
+  const totalIntents = classificationIntents.length || 0;
+  const progress =
+    totalIntents === 0
+      ? 0 // Default to 0% while loading
+      : Math.min(((currentIntentIdx + 1) / totalIntents) * 100, 100);
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-4">
+      {/* Progress Bar */}
+      <div className="w-full max-w-2xl mx-auto mb-6">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-sm font-medium text-gray-700">
+            Progress
+          </span>
+          <span className="text-xs text-gray-500">{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="h-2 rounded-full transition-all duration-300"
+            style={{
+              width: `${progress}%`,
+              background: "linear-gradient(90deg, rgba(6,182,212,0.7) 0%, rgba(96,165,250,0.7) 50%, rgba(124,58,237,0.7) 100%)"
+            }}
+          ></div>
+        </div>
+      </div>
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
-        <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
+        <span className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
           {currentIntent?.intent_name || 'Loading...'}
         </span>
       </h1>
