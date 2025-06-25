@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import { loadAllIntents } from '@/lib/context/intentData';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
@@ -133,13 +134,37 @@ export default function RankIntentsPage() {
     <>
       <div className="min-h-screen w-full bg-gradient-to-br from-gray-100 via-white to-blue-50 flex flex-col items-center justify-start py-12 px-2 font-sf">
         <div className="w-full max-w-6xl">
-          <h1 className="text-5xl font-extrabold mb-4 text-center text-gray-900 tracking-tight drop-shadow-sm font-sf">
-            Rank Your Listening Intents
-          </h1>
-          <p className="mb-10 text-gray-600 text-center text-lg font-medium">
-            Drag intents from the left list to the right to rank them.<br />
-            If you never listen with a certain intent, you can drop it in the box below.<br />
-          </p>
+          <h1 className="text-3xl font-bold text-blue-900 mb-4">Rank Your Music Listening Intents</h1>
+          <div className="mb-8 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+            <h2 className="text-lg font-bold mb-2 text-blue-800">Instructions:</h2>
+            <p className="mb-2 text-blue-900">
+              The goal of this study is to understand why you choose certain music in different situations and moods. We refer to these reasons as <b>music listening intents</b>. A music listening intent is the purpose or motivation behind why you listen to music at a particular moment. Each intent has a name and includes additional details that explain its purpose.</p>
+              <p className="mb-2 text-blue-900">On this page, you will see a list of different music listening intents. Please <b>rank these intents</b> according to how important or relevant they are for your own music listening habits.
+            </p>
+            <p className="mb-2 text-blue-900">
+              <strong>How to use this page:</strong><br />
+              <ul className="list-disc pl-5">
+                <li>
+                  <b>All Intents:</b> On the left, you see all possible listening intents. These are unranked at the start.
+                </li>
+                <li>
+                  <b>Your Ranking:</b> Drag and drop the intents that are most relevant to you into the "Your Ranking" box in the order of importance (top = most important).
+                </li>
+                <li>
+                  <b>Not Relevant:</b> If there are intents that do not apply to you at all, drag them into the "Not relevant for me" box at the bottom. You can discard up to 20 intents.
+                </li>
+                <li>
+                  You can reorder intents within each box or move them back and forth as needed.
+                </li>
+                <li>
+                  Minimum Requirement: Please rank at least <b>10 intents</b> before continuing.
+                </li>
+              </ul>
+            </p>
+            <p className="text-blue-900">
+              When you are satisfied with your ranking, click <b>Submit Ranking</b> to continue.<br />
+            </p>
+          </div>
           <form onSubmit={handleSubmit}>
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="flex gap-8">
