@@ -10,7 +10,7 @@ import Select from 'react-select';
 
 export default function UserInfo() {
   const [userId, setUserId] = useState('');
-  const [prolificId, setProlificId] = useState('');
+  // const [prolificId, setProlificId] = useState(''); todo include when using prolific
   const [lastfmUsername, setLastfmUsername] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -21,7 +21,7 @@ export default function UserInfo() {
   const [yearsPlayed, setYearsPlayed] = useState('');
   const [formalEducation, setFormalEducation] = useState('');
   const [musicProduction, setMusicProduction] = useState('');
-  const [musicHours, setMusicHours] = useState(20); // Default to average value
+  const [musicHours, setMusicHours] = useState(6); // Default to average value
   const [verifying, setVerifying] = useState(false);
   const { setUserData } = useUserStore();
   const router = useRouter();
@@ -85,10 +85,11 @@ export default function UserInfo() {
       }
 
       // Validation for required fields
+      /*
       if (!prolificId.trim()) {
         setError('Prolific ID is required.');
         return;
-      }
+      }*/
       if (selectedGenres.length < 3) {
         setError('Please select at least 3 genres.');
         return;
@@ -144,7 +145,7 @@ export default function UserInfo() {
 
       const userData = {
         user_id: userId,
-        prolific_id: prolificId,
+        prolific_id: "0", //todo when using prolific, set to prolific_id: prolificId
         lastfm_username: lastfmUsername,
         genres: selectedGenres,
         play_instrument: playInstrumentEnum,
@@ -171,6 +172,7 @@ export default function UserInfo() {
     <div className="p-8 bg-gradient-to-b from-gray-100 to-gray-50 min-h-screen flex flex-col items-center justify-center">
       <h1 className="text-5xl font-semibold text-gray-800 mb-10 tracking-tight">Tell us about yourself</h1>
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-12 rounded-2xl shadow-2xl w-full max-w-3xl">
+        {/* todo include when using prolific
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Prolific ID</label>
           <input
@@ -181,7 +183,7 @@ export default function UserInfo() {
             placeholder="Enter your Prolific ID"
             required
           />
-        </div>
+        </div>*/}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Last.fm Username</label>
           <input
@@ -194,7 +196,7 @@ export default function UserInfo() {
           />
         </div>
         <div>
-          <label className="block text-lg font-medium text-gray-800 mb-2">Please select music genres that you listen to:</label>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Please select music genres that you listen to (at least 3)</label>
           <Select
             isMulti
             options={genreOptions}
@@ -318,19 +320,19 @@ export default function UserInfo() {
         </div>
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">
-            How many hours per week do you typically spend listening to music?
+            Please estimate how many hours you spend listening to music per day on average
           </label>
           <div className="relative mt-10">
             <input
               type="range"
-              min="5"
-              max="36"
-              step="1"
+              min="0"
+              max="12"
+              step="0.5"
               value={musicHours}
               onChange={(e) => setMusicHours(Number(e.target.value))}
               className="w-full h-2 bg-gray-300 rounded-full appearance-none focus:outline-none focus:ring-2 focus:ring-gray-800"
               style={{
-                background: `linear-gradient(to right, #1f2937 ${(musicHours - 5) / 31 * 100}%, #d1d5db ${(musicHours - 5) / 31 * 100}%)`,
+                background: `linear-gradient(to right, #1f2937 ${(musicHours - 0) / 12 * 100}%, #d1d5db ${(musicHours - 0) / 12 * 100}%)`,
               }}
             />
             <style jsx>{`
@@ -378,14 +380,14 @@ export default function UserInfo() {
             <div
               className="absolute -top-10 text-sm font-medium text-gray-800 bg-white px-3 py-1 rounded-full shadow-md pointer-events-none"
               style={{
-                left: `calc(${((musicHours - 5) / 31) * 100}% - 10px)`, // 10px is half the thumb width (20px)
+                left: `calc(${((musicHours - 0) / 12) * 100}% - 10px)`, // 10px is half the thumb width (20px)
                 width: 'max-content',
                 minWidth: '60px',
                 textAlign: 'center',
                 transform: 'translateX(-50%)',
               }}
             >
-              {musicHours === 5 ? '< 5 hours' : musicHours === 36 ? '> 35 hours' : `${musicHours} hours`}
+              {`${musicHours} hours`}
             </div>
           </div>
         </div>
