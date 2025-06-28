@@ -224,7 +224,12 @@ export default function RankIntentsPage() {
                                 snapshot.isDragging ? 'bg-green-50' : ''
                               }`}
                             >
-                              <span className="font-semibold">{intent.intent_name}</span>
+                              <div className="flex items-center">
+                                <span className="text-xs text-gray-400 mr-2 font-bold" style={{ minWidth: 18, textAlign: 'right' }}>
+                                  {idx + 1}.
+                                </span>
+                                <span className="font-semibold">{intent.intent_name}</span>
+                              </div>
                               <span className="text-gray-500 text-xs">{intent.main_listening_function}</span>
                             </div>
                           )}
