@@ -180,7 +180,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
               </label>
               <span className="text-xs text-gray-500">{useSongs ? "Songs" : "Minutes/Hours"}</span>
             </div>
-            <div className="flex flex-col space-y-2 mt-4">
+            <div>
               {howOftenOptions.map((option, index) => (
                 <label key={option} className="flex items-center space-x-3 text-gray-600">
                   <input
