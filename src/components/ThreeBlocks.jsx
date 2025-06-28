@@ -132,9 +132,9 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
       </div>
       {!isCollapsed && (
         <div className="grid grid-cols-3 gap-4">
-          {/* Multi-select Autocomplete for Adjectives */}
           <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">Adjectives for Songs in this Intent</h3>
+            <p className="text-gray-700">Please select or add new adjectives that describe the songs you will classify for this intent.</p>
             <div className="absolute top-2 right-2 group">
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
