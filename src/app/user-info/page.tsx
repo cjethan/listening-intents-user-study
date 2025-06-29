@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from "@/store/store";
 import { v4 as uuidv4 } from 'uuid';
 import Select from 'react-select';
+import countryList from 'react-select-country-list';
 
 export default function UserInfo() {
   const [userId, setUserId] = useState('');
@@ -23,6 +24,12 @@ export default function UserInfo() {
   const [musicProduction, setMusicProduction] = useState('');
   const [musicHours, setMusicHours] = useState(6); // Default to average value
   const [verifying, setVerifying] = useState(false);
+
+  // New fields
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
+  const [nationality, setNationality] = useState('');
+
   const { setUserData } = useUserStore();
   const router = useRouter();
 
@@ -52,6 +59,22 @@ export default function UserInfo() {
 
   // Helper for react-select options
   const genreOptions = genres.map((g) => ({ value: g, label: g }));
+
+  const genderOptions = [
+    { value: '', label: 'Select your gender', isDisabled: true },
+    { value: 'Female', label: 'Female' },
+    { value: 'Male', label: 'Male' },
+    { value: 'Non-binary', label: 'Non-binary' },
+    { value: 'Other', label: 'Other' },
+    { value: 'Prefer not to say', label: 'Prefer not to say' },
+  ];
+
+  // Get country options from react-select-country-list
+  const nationalityOptions = [
+    { value: '', label: 'Select your nationality', isDisabled: true },
+    ...countryList().getData(),
+    { value: 'Other', label: 'Other' }
+  ];
 
   // Handler for react-select
   function handleGenreSelect(selected: any) {
@@ -90,6 +113,18 @@ export default function UserInfo() {
         setError('Prolific ID is required.');
         return;
       }*/
+      if (!age.trim()) {
+        setError('Please enter your age.');
+        return;
+      }
+      if (!gender.trim()) {
+        setError('Please specify your gender.');
+        return;
+      }
+      if (!nationality.trim()) {
+        setError('Please enter your nationality.');
+        return;
+      }
       if (selectedGenres.length < 3) {
         setError('Please select at least 3 genres.');
         return;
@@ -147,6 +182,9 @@ export default function UserInfo() {
         user_id: userId,
         prolific_id: "0", //todo when using prolific, set to prolific_id: prolificId
         lastfm_username: lastfmUsername,
+        age,
+        gender,
+        nationality,
         genres: selectedGenres,
         play_instrument: playInstrumentEnum,
         instruments_played: [...instrumentsPlayed, otherInstrument].filter(Boolean),
@@ -195,6 +233,45 @@ export default function UserInfo() {
             required
           />
         </div>
+        {/* New fields for age, gender, nationality */}
+        <div>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Age</label>
+          <input
+            type="number"
+            min="10"
+            max="120"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
+            placeholder="Enter your age"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Gender</label>
+          <Select
+            options={genderOptions}
+            value={genderOptions.find(opt => opt.value === gender) || genderOptions[0]}
+            onChange={option => setGender(option?.value || '')}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            placeholder="Select your gender"
+            isSearchable={false}
+          />
+        </div>
+        <div>
+          <label className="block text-lg font-medium text-gray-800 mb-2">Nationality</label>
+          <Select
+            options={nationalityOptions}
+            value={nationalityOptions.find(opt => opt.value === nationality) || nationalityOptions[0]}
+            onChange={option => setNationality(option?.value || '')}
+            className="react-select-container"
+            classNamePrefix="react-select"
+            placeholder="Select your nationality"
+            isSearchable
+          />
+        </div>
+        {/* End new fields */}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Please select music genres that you listen to (at least 3)</label>
           <Select
