@@ -20,8 +20,8 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
       if (userData) {
         try {
           const parsed = JSON.parse(userData);
-          if (parsed.hours_listening_weekly) {
-            setMusicHoursPerDay(Number(parsed.hours_listening_weekly) / 7);
+          if (parsed.hours_listening_daily) {
+            setMusicHoursPerDay(Number(parsed.hours_listening_daily));
           } else {
             setMusicHoursPerDay(1); // fallback to 1 hour/day
           }
@@ -56,7 +56,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
     const options = percentages.map((percent, idx) => {
       let minuteValue = totalMinutes * percent;
       let songValue = Math.round(totalSongs * percent);
-      if (useSongs) {
+      if (!useSongs) {
         if (idx === 0) return `<${songValue} songs per day`;
         return `${songValue} songs per day`;
       } else {
@@ -68,9 +68,9 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
     let lastMinute = totalMinutes * percentages[percentages.length - 1];
     let lastSong = Math.round(totalSongs * percentages[percentages.length - 1]);
     options.push(
-      useSongs
-        ? `>${lastSong} songs per day`
-        : `>${formatMinutes(lastMinute)} per day`
+      !useSongs
+        ? `> ${lastSong} songs per day`
+        : `> ${formatMinutes(lastMinute)} per day`
     );
     return options;
   };
@@ -178,7 +178,6 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
                 <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
                 <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
               </label>
-              <span className="text-xs text-gray-500">{useSongs ? "Songs" : "Minutes/Hours"}</span>
             </div>
             <div>
               {howOftenOptions.map((option, index) => (

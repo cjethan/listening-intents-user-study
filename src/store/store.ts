@@ -20,7 +20,7 @@ type UserData = {
   instruments_played_years: string | null;
   formal_education: string;
   compose_music: string;
-  hours_listening_weekly: number;
+  hours_listening_daily: number;
   intents: Record<string, Intent>;
 };
 

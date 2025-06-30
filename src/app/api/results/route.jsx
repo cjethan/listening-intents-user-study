@@ -19,7 +19,7 @@ export async function POST(request) {
     const body = await request.json();
     console.log("Request body parsed:", body);
 
-    const { user_id, prolific_id, play_instrument, formal_education, compose_music, hours_listening_weekly, instruments_played_years, genres, intents, instruments_played } = body;
+    const { user_id, prolific_id, play_instrument, formal_education, compose_music, hours_listening_daily, instruments_played_years, genres, intents, instruments_played } = body;
 
     /*console.log("Extracted fields:", {
       user_id,
@@ -27,7 +27,7 @@ export async function POST(request) {
       play_instrument,
       formal_education,
       compose_music,
-      hours_listening_weekly,
+      hours_listening_daily,
       instruments_played_years,
       genres,
       intents,
@@ -65,7 +65,7 @@ export async function POST(request) {
         play_instrument,
         formal_education,
         compose_music,
-        hours_listening_weekly,
+        hours_listening_daily,
         instruments_played_years: instruments_played_years_mapped, // Map empty string to null
       });
       //console.log("User saved successfully:", newUser);

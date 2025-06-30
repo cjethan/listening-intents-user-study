@@ -191,7 +191,7 @@ export default function UserInfo() {
         instruments_played_years: instrumentsPlayedYearsEnum,
         formal_education: formalEducationEnum,
         compose_music: composeMusicEnum,
-        hours_listening_weekly: musicHours,
+        hours_listening_daily: musicHours,
         intents: {}, // Placeholder for intents
       };
 

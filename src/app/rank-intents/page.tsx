@@ -141,7 +141,7 @@ export default function RankIntentsPage() {
               The goal of this study is to understand why you choose certain music in different situations and moods. We refer to these reasons as <b>music listening intents</b>. A music listening intent is the purpose or motivation behind why you listen to music at a particular moment. Each intent has a name and includes additional details that explain its purpose.</p>
               <p className="mb-2 text-blue-900">On this page, you will see a list of different music listening intents. Please <b>rank these intents</b> according to how important or relevant they are for your own music listening habits.
             </p>
-            <p className="mb-2 text-blue-900">
+            <div className="mb-2 text-blue-900">
               <strong>How to use this page:</strong><br />
               <ul className="list-disc pl-5">
                 <li>
@@ -160,7 +160,7 @@ export default function RankIntentsPage() {
                   Minimum Requirement: Please rank at least <b>10 intents</b> before continuing.
                 </li>
               </ul>
-            </p>
+            </div>
             <p className="text-blue-900">
               When you are satisfied with your ranking, click <b>Submit Ranking</b> to continue.<br />
             </p>

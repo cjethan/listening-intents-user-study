@@ -24,7 +24,7 @@ UserResult.init({
     type: DataTypes.ENUM('yes', 'no', 'occasionally'),
     allowNull: false,
   },
-  hours_listening_weekly: {
+  hours_listening_daily: {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
