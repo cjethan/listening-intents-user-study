@@ -87,6 +87,7 @@ export function DragAndDrop({ setDropItems }) {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchResultsReady, setIsSearchResultsReady] = useState(false);
   const [box2SearchQuery, setBox2SearchQuery] = useState("");
+  const [box2FullHistory, setBox2FullHistory] = useState([]); // Store all history for search
 
   // Placeholder: Replace with your own logic to fetch songs for Box 1
   useEffect(() => {
@@ -316,6 +317,149 @@ export function DragAndDrop({ setDropItems }) {
   fetchTopSongs();
   }, []);
 
+  // Fetch full listening history for Box 2 (capped to 1000 tracks)
+  useEffect(() => {
+    const fetchFullHistory = async () => {
+      let lastfmUsername = "";
+      if (typeof window !== "undefined") {
+        const storedUserData = localStorage.getItem("userData");
+        if (storedUserData) {
+          try {
+            const userData = JSON.parse(storedUserData);
+            lastfmUsername = userData.lastfm_username || "";
+          } catch {
+            lastfmUsername = "";
+          }
+        }
+      }
+      if (!lastfmUsername) {
+        setBox2Items([]);
+        setFilteredBox2Items([]);
+        setBox2FullHistory([]);
+        return;
+      }
+
+      // Try to load from localStorage first
+      if (localStorage.getItem("lastfmListeningHistory")) {
+        const stored = localStorage.getItem("lastfmListeningHistory");
+        try {
+          let parsed = JSON.parse(stored);
+
+          // Deduplicate by track_id
+          const seen = new Set();
+          parsed = parsed.filter(item => {
+            if (!item.track_id || seen.has(item.track_id)) return false;
+            seen.add(item.track_id);
+            return true;
+          });
+
+          setBox2FullHistory(parsed);
+          setBox2Items(parsed.slice(0, 100));
+          setFilteredBox2Items(parsed.slice(0, 100));
+        } catch {
+          setBox2FullHistory([]);
+          setBox2Items([]);
+          setFilteredBox2Items([]);
+        }
+        return;
+      }
+
+      // Otherwise, fetch from Last.fm API (capped to 1000 tracks)
+      const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
+      const user = lastfmUsername;
+      const limit = 200; // max per page
+      const maxTracks = 1000;
+      let allTracks = [];
+      let page = 1;
+      let totalPages = 1;
+
+      try {
+        while (allTracks.length < maxTracks && page <= totalPages) {
+          const url = `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${encodeURIComponent(user)}&api_key=${apiKey}&format=json&limit=${limit}&page=${page}`;
+          const res = await fetch(url);
+          const data = await res.json();
+          const tracks = Array.isArray(data?.recenttracks?.track) ? data.recenttracks.track : [];
+          if (data?.recenttracks?.["@attr"]?.totalPages) {
+            totalPages = parseInt(data.recenttracks["@attr"].totalPages, 10);
+          }
+          allTracks = allTracks.concat(
+            tracks.map((track, idx) => {
+              const artistName = track?.artist?.["#text"] || "";
+              const albumName = track?.album?.["#text"] || "";
+              return {
+                track_id: track?.mbid || `${artistName}-${track?.name || ""}-${page}-${idx}`,
+                artist_name: artistName,
+                track_name: track?.name || "",
+                album_name: albumName,
+                image:
+                  Array.isArray(track?.image) && track.image.length
+                    ? (
+                        track.image.find(img => img.size === "medium")?.["#text"] ||
+                        track.image.find(img => img.size === "small")?.["#text"] ||
+                        "/default-cover.png"
+                      )
+                    : "/default-cover.png",
+                duration_ms: track?.duration ? parseInt(track.duration, 10) : 0,
+                added_by_userdata: 1,
+                genres: [],
+                artist_uri: artistName
+                  ? `https://www.last.fm/music/${encodeURIComponent(artistName)}`
+                  : "",
+                album_uri: artistName && albumName
+                  ? `https://www.last.fm/music/${encodeURIComponent(artistName)}/${encodeURIComponent(albumName)}`
+                  : "",
+                track_uri: track?.url || "",
+                date_uts: track?.date?.uts ? parseInt(track.date.uts, 10) : 0,
+              };
+            })
+          );
+          if (tracks.length < limit) break;
+          page++;
+        }
+        // Sort by most recent (date_uts descending)
+        allTracks = allTracks
+          .filter(t => t.track_name && t.artist_name)
+          .sort((a, b) => (b.date_uts || 0) - (a.date_uts || 0))
+          .slice(0, maxTracks);
+
+        // Deduplicate by track_id
+        const seen = new Set();
+        const uniqueTracks = allTracks.filter(item => {
+          if (!item.track_id || seen.has(item.track_id)) return false;
+          seen.add(item.track_id);
+          return true;
+        });
+
+        localStorage.setItem("lastfmListeningHistory", JSON.stringify(uniqueTracks));
+        setBox2FullHistory(uniqueTracks);
+        setBox2Items(uniqueTracks);           // Show all 1000 by default
+        setFilteredBox2Items(uniqueTracks);   // Show all 1000 by default
+      } catch (error) {
+        setBox2FullHistory([]);
+        setBox2Items([]);
+        setFilteredBox2Items([]);
+        console.error("Error fetching Last.fm listening history:", error);
+      }
+    };
+    fetchFullHistory();
+  }, []);
+
+  // Box 2 search: filter through the full listening history
+  useEffect(() => {
+    if (!box2SearchQuery.trim()) {
+      setFilteredBox2Items(box2FullHistory.slice(0, 100));
+      return;
+    }
+    const query = box2SearchQuery.trim().toLowerCase();
+    const filtered = box2FullHistory.filter(
+      item =>
+        item.track_name.toLowerCase().includes(query) ||
+        item.artist_name.toLowerCase().includes(query) ||
+        (item.album_name && item.album_name.toLowerCase().includes(query))
+    );
+    setFilteredBox2Items(filtered.slice(0, 100));
+  }, [box2SearchQuery, box2FullHistory]);
+
   useEffect(() => {
     if (searchResults.length > 0) {
       setIsSearchResultsReady(true);
@@ -407,11 +551,14 @@ export function DragAndDrop({ setDropItems }) {
           </div>
           <DraggableBox
             id="box2"
-            items={filteredBox2Items}
+            items={filteredBox2Items} // This will be all 1000 by default, or filtered by search
             title="Songs from your Listening History"
             setSearchResults={setSearchResults}
             searchResults={searchResults}
             isSearchResultsReady={isSearchResultsReady}
+            box2SearchQuery={box2SearchQuery}
+            setBox2SearchQuery={setBox2SearchQuery}
+            enableBox2Search={true}
           />
           <DraggableBox
             id="box3"
@@ -466,7 +613,7 @@ function DropArea({ items }) {
   );
 }
 
-function DraggableBox({ id, items, title, setSearchResults, searchResults, isSearchResultsReady }) {
+function DraggableBox({ id, items, title, setSearchResults, searchResults, isSearchResultsReady, box2SearchQuery, setBox2SearchQuery, enableBox2Search }) {
   const { setNodeRef } = useDroppable({ id });
   const [searchQueryBox3, setSearchQueryBox3] = useState("");
   const [page, setPage] = useState(1);
@@ -530,21 +677,6 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
             });
 
             setSearchResults(prioritizedResults);
-
-            // Fetch album images after prioritizing results
-            /*
-            if (typeof window !== 'undefined') {
-              const accessToken = session?.accessToken;
-              const resultsWithImages = await Promise.all(
-                prioritizedResults.map(async (item) => ({
-                  ...item,
-                  image: await fetchAlbumImage(item.track_id, accessToken),
-                }))
-              );
-
-              setSearchResults(resultsWithImages);
-              setIsSearchResultsUpdated(true);
-            }*/
           } else {
             console.error("Unexpected search API response:", data);
             if (page === 1) setSearchResults([]);
@@ -564,6 +696,19 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
   return (
     <div ref={setNodeRef} className="drag-box">
       <p className="drag-box-title">{title}</p>
+      {/* Box 2 search bar */}
+      {enableBox2Search && (
+        <div className="search-bar mb-2">
+          <input
+            type="text"
+            value={box2SearchQuery}
+            onChange={e => setBox2SearchQuery(e.target.value)}
+            placeholder="Search your listening history..."
+            className="search-input"
+          />
+        </div>
+      )}
+      {/* Box 3 search bar */}
       {id === "box3" && (
         <div className="search-bar">
           <input
