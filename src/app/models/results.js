@@ -12,6 +12,18 @@ UserResult.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  age: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  gender: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  nationality: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   play_instrument: {
     type: DataTypes.ENUM('yes', 'ongoing', 'no'),
     allowNull: false,
@@ -25,7 +37,7 @@ UserResult.init({
     allowNull: false,
   },
   hours_listening_daily: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
     defaultValue: 0,
   },
   instruments_played_years: {
