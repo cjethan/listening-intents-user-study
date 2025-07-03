@@ -9,65 +9,69 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
   const [showAlert, setShowAlert] = useState(false);
   const [selectedHowOften, setSelectedHowOften] = useState(null);
   const [selectedHowImp, setSelectedHowImp] = useState(null);
-  const [useMinutes, setUseMinutes] = useState(false);
   const [adjectives, setAdjectivesState] = useState([]);
-  const [musicHours, setMusicHours] = useState(undefined);
+  const [musicHoursPerDay, setMusicHoursPerDay] = useState(undefined);
+  const [useSongs, setUseSongs] = useState(false);
 
-  // Get musicHours from localStorage userData
+  // Get daily music hours from localStorage userData
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("userData");
       if (userData) {
         try {
           const parsed = JSON.parse(userData);
-          if (parsed.hours_listening_weekly) {
-            setMusicHours(parsed.hours_listening_weekly);
+          if (parsed.hours_listening_daily) {
+            setMusicHoursPerDay(Number(parsed.hours_listening_daily));
           } else {
-            setMusicHours(20); // fallback
+            setMusicHoursPerDay(1); // fallback to 1 hour/day
           }
         } catch {
-          setMusicHours(20); // fallback
+          setMusicHoursPerDay(1);
         }
       } else {
-        setMusicHours(20); // fallback
+        setMusicHoursPerDay(1);
       }
     }
   }, []);
 
-  // If musicHours is undefined, return null or a loading spinner
-  if (musicHours === undefined) {
-    return null; // or a loading spinner
+  // If musicHoursPerDay is undefined, return null or a loading spinner
+  if (musicHoursPerDay === undefined) {
+    return null;
   }
 
-  // Build dynamic choices for "How often" based on musicHours and switch
+  // Build dynamic choices for "How often" based on musicHoursPerDay and switch
   const getHowOftenOptions = () => {
-    const hours = Number(musicHours) || 20;
+    const percentages = [0.05, 0.15, 0.3, 0.6];
+    const hours = Number(musicHoursPerDay) || 1;
     const totalMinutes = hours * 60;
     const totalSongs = Math.round(totalMinutes / 3);
 
-    // Percentages for the bins
-    const percentages = [0.05, 0.15, 0.3, 0.6, 0.6]; // 5%, 15%, 30%, 60%, 60%
-    // Note: The last value is repeated to provide a "more than" option
+    const formatMinutes = (min) => {
+      if (min > 60) {
+        return `${(min / 60).toFixed(1)} hours`;
+      }
+      return `${Math.round(min)} min`;
+    };
 
     const options = percentages.map((percent, idx) => {
-      if (useMinutes) {
-        let value = Math.round(totalMinutes * percent);
-        if (value > 100) {
-          value = (value / 60).toFixed(1) + " h";
-        } else {
-          value = value + " min";
-        }
-        if (idx === 0) return `<${value}/week`;
-        if (idx === percentages.length - 1) return `>${value}/week`;
-        return `${value}/week`;
+      let minuteValue = totalMinutes * percent;
+      let songValue = Math.round(totalSongs * percent);
+      if (!useSongs) {
+        if (idx === 0) return `<${songValue} songs per day`;
+        return `${songValue} songs per day`;
       } else {
-        let value = Math.round(totalSongs * percent);
-        if (idx === 0) return `<${value} songs/week`;
-        if (idx === percentages.length - 1) return `>${value} songs/week`;
-        return `${value} songs/week`;
+        if (idx === 0) return `<${formatMinutes(minuteValue)} per day`;
+        return `${formatMinutes(minuteValue)} per day`;
       }
     });
-
+    // Add a "more than" option at the end
+    let lastMinute = totalMinutes * percentages[percentages.length - 1];
+    let lastSong = Math.round(totalSongs * percentages[percentages.length - 1]);
+    options.push(
+      !useSongs
+        ? `> ${lastSong} songs per day`
+        : `> ${formatMinutes(lastMinute)} per day`
+    );
     return options;
   };
 
@@ -128,9 +132,9 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
       </div>
       {!isCollapsed && (
         <div className="grid grid-cols-3 gap-4">
-          {/* Multi-select Autocomplete for Adjectives */}
           <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">Adjectives for Songs in this Intent</h3>
+            <p className="text-gray-700">Please select or add new adjectives that describe the songs you will classify for this intent.</p>
             <div className="absolute top-2 right-2 group">
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
@@ -150,46 +154,46 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
             />
           </div>
 
-          {/* First Block */}
+          {/* First Block: How often question with switch */}
           <div className="p-4 bg-gray-100 rounded shadow relative">
-            <h3 className="font-bold mb-2">How often do you listen with this intent?</h3>
+            <h3 className="font-bold mb-2">On average, how often do you listen to music with this intent per day?</h3>
             <div className="absolute top-2 right-2 group">
               <div className="w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-700 rounded-full cursor-pointer">
                 i
               </div>
               <div className="absolute top-8 right-0 hidden group-hover:block bg-white text-gray-700 text-sm p-4 rounded shadow-lg w-64 z-10">
-                Approximate how much you listen to music with this intent. <br />
-                Choose songs/minutes according to how it is easier to answer for you.
+                Please select the option that best matches your average daily listening for this intent.<br />
+                Use the switch to toggle between minutes/hours and songs per day.
               </div>
             </div>
-            <div className="flex items-center mb-4 space-x-6">
-              <div className="flex items-center">
-                <span className="text-gray-600 text-sm mr-2">Songs/Minutes</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={useMinutes}
-                    onChange={() => setUseMinutes(!useMinutes)}
-                  />
-                  <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
-                  <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
-                </label>
-              </div>
-            </div>
-            {howOftenOptions.map((option, index) => (
-              <label key={option} className="flex items-center space-x-3 text-gray-600">
+            <div className="flex items-center mb-2 space-x-4">
+              <span className="text-xs text-gray-500">Songs/Minutes</span>
+              <label className="relative inline-flex items-center cursor-pointer">
                 <input
-                  type="radio"
-                  name="how-often"
-                  className="hidden peer"
-                  checked={selectedHowOften === index + 1}
-                  onChange={() => handleHowOftenChange(index + 1)}
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={useSongs}
+                  onChange={() => setUseSongs(!useSongs)}
                 />
-                <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
-                <span>{option}</span>
+                <div className="w-8 h-4 bg-gray-300 rounded-full peer peer-checked:bg-blue-200 transition-colors"></div>
+                <span className="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
               </label>
-            ))}
+            </div>
+            <div>
+              {howOftenOptions.map((option, index) => (
+                <label key={option} className="flex items-center space-x-3 text-gray-600">
+                  <input
+                    type="radio"
+                    name="how-often"
+                    className="hidden peer"
+                    checked={selectedHowOften === index + 1}
+                    onChange={() => handleHowOftenChange(index + 1)}
+                  />
+                  <div className="w-4 h-4 rounded-full border-2 border-gray-300 peer-checked:border-blue-300 peer-checked:bg-blue-300 peer-checked:ring-2 peer-checked:ring-blue-400"></div>
+                  <span>{option}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           {/* Second Block */}

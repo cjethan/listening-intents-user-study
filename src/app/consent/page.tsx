@@ -29,7 +29,7 @@ export default function ConsentForm() {
           Welcome to the Music Listening Intent Study
         </h1>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          During this study, you will be asked to classify songs for different music listening intents. To participate, your last.fm music listening history will be incorporated.
+          During this study, you will be asked to classify songs for different music listening intents. To participate, your last.fm music listening history will be retrieved.
         </p>
         <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
           Privacy Policy and Consent Form

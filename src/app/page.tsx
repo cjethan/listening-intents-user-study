@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ThreeBlocks from "../components/ThreeBlocks";
 import { DragAndDrop } from '../components/DragDrop';
 import { useUserStore } from "../store/store";
@@ -57,6 +57,8 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [adjectives, setAdjectives] = useState([]);
+
+   const [infoCollapsed, setInfoCollapsed] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -189,7 +191,33 @@ export default function Home() {
     }
   }
 
-  function handleNext() {
+  // Track if user info has been saved already
+  const userInfoSavedRef = useRef(false);
+
+  // Save user info and current intent to DB
+  async function saveToDB(updatedUserData: any, onlyIntent: boolean = false) {
+    try {
+      const payload = onlyIntent
+        ? { user_id: updatedUserData.user_id, intents: updatedUserData.intents }
+        : updatedUserData;
+
+      const response = await fetch('/api/results', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save user results');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving to DB:', error);
+      throw error;
+    }
+  }
+
+  async function handleNext() {
     const updatedCounter = counter + 1;
     const currentIntents = userData?.intents || {};
 
@@ -223,6 +251,14 @@ export default function Home() {
 
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
     localStorage.setItem("counter", updatedCounter.toString());
+
+    // Save user info only once, then only save intents
+    if (!userInfoSavedRef.current) {
+      await saveToDB(updatedUserData, false);
+      userInfoSavedRef.current = true;
+    } else {
+      await saveToDB(updatedUserData, true);
+    }
 
     if (currentIntentIdx < classificationIntents.length - 1) {
       setCurrentIntentIdx(currentIntentIdx + 1);
@@ -268,35 +304,90 @@ export default function Home() {
 
     localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-    try {
-      // Placeholder: Replace with your own API endpoint for saving results
-      const response = await fetch('/api/results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedUserData),
-      });
+    // Always save everything on submit
+    await saveToDB(updatedUserData, false);
 
-      if (!response.ok) {
-        throw new Error('Failed to save user results');
-      }
-
-      router.push('/end');
-      resetCounter();
-      localStorage.setItem("counter", "0");
-      return await response.json();
-    } catch (error) {
-      console.error('Error saving to DB:', error);
-      throw error;
-    }
+    router.push('/end');
+    resetCounter();
+    localStorage.setItem("counter", "0");
   }
+
+  // Calculate progress
+  const totalIntents = classificationIntents.length || 0;
+  const progress =
+    totalIntents === 0
+      ? 0 // Default to 0% while loading
+      : Math.min(((currentIntentIdx + 1) / totalIntents) * 100, 100);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen space-y-4">
+      {/* Collapsible Info Box - only show on first intent */}
+      {currentIntentIdx === 0 && (
+        <div className="w-full max-w-6xl mx-auto mb-6">
+          <div className="relative">
+            <button
+              onClick={() => setInfoCollapsed((prev) => !prev)}
+              className="absolute top-4 right-4 z-10 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-full p-2 shadow transition"
+              aria-label={infoCollapsed ? "Expand info" : "Collapse info"}
+              type="button"
+            >
+              <svg
+                className={`w-6 h-6 transition-transform ${infoCollapsed ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+              </svg>
+            </button>
+            {!infoCollapsed && (
+              <div className="mb-8 p-4 bg-blue-50 border-l-4 border-blue-400 rounded shadow">
+                <h2 className="text-lg font-bold mb-2 text-blue-800">Instructions</h2>
+                <p className="mb-2 text-blue-900">
+                  You are now classifying songs for a specific <b>music listening intent</b> - that is, a reason or motivation for listening to music.
+                </p>
+                <p className="mb-2 text-blue-900">
+                  <b>What should you do?</b><br />
+                  For each intent:
+                </p>
+                <ul className="list-disc pl-5 text-blue-900 mb-2">
+                  <li>Please answer the questions about how often and how important this intent is for you.</li>
+                  <li>Select adjectives that, for you, describe songs for this intent.</li>
+                  <li>Drag and drop songs that fit this intent into the box.</li>
+                  <li>You can use the genre, history, or search boxes to find songs.</li>
+                  <li>Click <b>NEXT</b> to continue to the next intent.</li>
+                  <li>On the last intent, click <b>SUBMIT</b> to finish.</li>
+                </ul>
+                <p className="text-blue-900">
+                  If unsure, use the <b>i</b> button in the top right corner of the components for additional information about the intent.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Progress Bar */}
+      <div className="w-full max-w-2xl mx-auto mb-6">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-sm font-medium text-gray-700">
+            Progress
+          </span>
+          <span className="text-xs text-gray-500">{Math.round(progress)}%</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="h-2 rounded-full transition-all duration-300"
+            style={{
+              width: `${progress}%`,
+              background: "linear-gradient(90deg, rgba(6,182,212,0.7) 0%, rgba(96,165,250,0.7) 50%, rgba(124,58,237,0.7) 100%)"
+            }}
+          ></div>
+        </div>
+      </div>
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
-        <span className="text-4xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
+        <span className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
           {currentIntent?.intent_name || 'Loading...'}
         </span>
       </h1>
