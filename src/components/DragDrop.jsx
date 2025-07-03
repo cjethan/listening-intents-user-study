@@ -563,7 +563,7 @@ export function DragAndDrop({ setDropItems }) {
           <DraggableBox
             id="box3"
             items={box3Items}
-            title="Search for Song, Artist, or Album"
+            title="Search for any Song, Artist, or Album"
             setSearchResults={setSearchResults}
             searchResults={searchResults}
             isSearchResultsReady={isSearchResultsReady}
@@ -587,7 +587,8 @@ function DropArea({ items }) {
   return (
     <div>
       <p className="text-gray-500 text-sm italic mb-2">
-        Drag and drop songs here to associate them with the current intent. To remove items, place them in any box below. The more songs, the better.
+        Drag and drop songs here to associate them with the current intent. The more songs, the better. <br />
+        Drag songs from any of the boxes below and drop them in the dashed box. If you want to remove a song from this list, simply drag it back into any of the boxes below (such as your listening history or genre suggestions).
       </p>
       <div ref={setNodeRef} className="drop-area relative">
         <div className="absolute top-2 right-2 group">
@@ -698,7 +699,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
       <p className="drag-box-title">{title}</p>
       {/* Box 2 search bar */}
       {enableBox2Search && (
-        <div className="search-bar mb-2">
+        <div className="search-bar mb-2 my-2">
           <input
             type="text"
             value={box2SearchQuery}
@@ -710,7 +711,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
       )}
       {/* Box 3 search bar */}
       {id === "box3" && (
-        <div className="search-bar">
+        <div className="search-bar my-2">
           <input
             type="text"
             value={searchQueryBox3}
