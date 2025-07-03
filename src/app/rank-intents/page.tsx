@@ -148,10 +148,10 @@ export default function RankIntentsPage() {
                   <b>All Intents:</b> On the left, you see all possible listening intents. These are unranked at the start.
                 </li>
                 <li>
-                  <b>Your Ranking:</b> Drag and drop the intents that are most relevant to you into the "Your Ranking" box in the order of importance (top = most important).
+                  <b>Your Ranking:</b> Drag and drop the intents that are most relevant to you into the &quot;Your Ranking&quot; box in the order of importance (top = most important).
                 </li>
                 <li>
-                  <b>Not Relevant:</b> If there are intents that do not apply to you at all, drag them into the "Not relevant for me" box at the bottom. You can discard up to 20 intents.
+                  <b>Not Relevant:</b> If there are intents that do not apply to you at all, drag them into the &quot;Not relevant for me&quot; box at the bottom. You can discard up to 20 intents.
                 </li>
                 <li>
                   You can reorder intents within each box or move them back and forth as needed.
