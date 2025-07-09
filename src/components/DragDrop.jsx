@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
+import ReactSelect from "react-select";
 
 /* TODO wollen wir alle songs in der Datenbank haben von user's last.fm??
 async function checkAndAddToDatabase(songs) {
@@ -89,7 +90,6 @@ export function DragAndDrop({ setDropItems }) {
   const [box2SearchQuery, setBox2SearchQuery] = useState("");
   const [box2FullHistory, setBox2FullHistory] = useState([]); // Store all history for search
 
-  // Placeholder: Replace with your own logic to fetch songs for Box 1
   useEffect(() => {
     const fetchSongs = async () => {
       try {
@@ -621,6 +621,15 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
   const [page, setPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [searchType, setSearchType] = useState({ value: "track_name", label: "Song" });
+
+  const searchTypeOptions = [
+    { value: "all", label: "All" },
+    { value: "track_name", label: "Song"},
+    { value: "artist_name", label: "Artist" },
+    { value: "album_name", label: "Album" },
+  ];
+
   const debounceTimer = useRef(null);
 
   const handleSearch = async (query) => {
@@ -632,12 +641,13 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
       }
       debounceTimer.current = setTimeout(async () => {
         try {
+          // Pass searchType to the API
           const response = await fetch("/api/search", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ query, page }),
+            body: JSON.stringify({ query, page, searchType: searchType.value }),
           });
 
           if (!response.ok) {
@@ -712,31 +722,44 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
       )}
       {/* Box 3 search bar */}
       {id === "box3" && (
-        <div className="search-bar my-2">
-          <input
-            type="text"
-            value={searchQueryBox3}
-            onChange={(e) => {
-              setPage(1);
-              handleSearch(e.target.value);
-            }}
-            placeholder="Search..."
-            className="search-input"
-          />
-          {isSearching && (
-            <div className="loading-spinner">
-              <div className="spinner-circle"></div>
-            </div>
-          )}
+        <div className="search-bar my-2 flex flex-col gap-2">
+          <div className="flex gap-2 items-center">
+            <ReactSelect
+              options={searchTypeOptions}
+              value={searchType}
+              onChange={setSearchType}
+              className="w-36"
+              classNamePrefix="react-select"
+              isSearchable={false}
+              menuPlacement="auto"
+            />
+            <input
+              type="text"
+              value={searchQueryBox3}
+              onChange={(e) => {
+                setPage(1);
+                handleSearch(e.target.value);
+              }}
+              placeholder={`Search by ${searchType.label.toLowerCase()}...`}
+              className="search-input flex-1"
+            />
+            {isSearching && (
+              <div className="loading-spinner">
+                <div className="spinner-circle"></div>
+              </div>
+            )}
+          </div>
         </div>
       )}
       <div
         className="drag-box-content"
         style={{ maxHeight: "500px", overflowY: "auto" }}
       >
+        { id === "box3" && searchResults.length != 0 && <NotFoundAddSongButton setSearchResults={setSearchResults}/> }
         {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
           <DraggableItem key={item.track_id} item={item} />
         ))}
+        
         {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && !isSearching && (
           <div className="text-center mt-4">
             <p className="text-gray-500">No results found. You can add a new song:</p>
@@ -754,15 +777,19 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
 
                 const newSong = {
                   track_id: `custom-${Date.now()}`,
-                  track_name: title,
-                  artist_name: artist,
-                  album_name: formData.get("album")?.trim() || "Unknown Album",
-                  image: "/default-cover.png",
-                  added_by_userdata: 1,
+                track_name: title,
+                artist_name: artist,
+                album_name: formData.get("album")?.trim() || null,
+                track_uri: null,
+                artist_uri: null,
+                album_uri: null,
+                duration_ms: 0,
+                genres: [],
+                image: "/default-cover.png",
+                added_by_userdata: "by_add_song",
                 };
 
                 setSearchResults((prev) => [...prev, newSong]);
-                 // Add the new song to the databaseAdd commentMore actions
                 try {
                   await fetch("/api/check-and-add", {
                     method: "POST",
@@ -844,5 +871,106 @@ function DraggableItem({ item, isOverlay = false }) {
         <small>{item.album_name}</small>
       </div>
     </div>
+  );
+}
+
+function NotFoundAddSongButton({ setSearchResults }) {
+  const [showAdd, setShowAdd] = useState(false);
+
+  return (
+    <>
+      {!showAdd ? (
+        <button
+          type="button"
+          className="w-full mt-2 px-4 py-2 bg-blue-100 text-blue-800 rounded hover:bg-blue-200 transition"
+          onClick={() => setShowAdd(true)}
+        >
+          Not what you are looking for?
+        </button>
+      ) : (
+        <div className="mt-2 p-3 bg-blue-50 rounded shadow">
+          <p className="mb-2 text-blue-900 font-semibold">Add a new song:</p>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const title = formData.get("title")?.trim();
+              const artist = formData.get("artist")?.trim();
+
+              if (!title || !artist) {
+                alert("Song Name and Artist Name are required.");
+                return;
+              }
+
+              const newSong = {
+                track_id: `custom-${Date.now()}`,
+                track_name: title,
+                artist_name: artist,
+                album_name: formData.get("album")?.trim() || null,
+                track_uri: null,
+                artist_uri: null,
+                album_uri: null,
+                duration_ms: 0,
+                genres: [],
+                image: "/default-cover.png",
+                added_by_userdata: "by_add_song",
+              };
+
+              setSearchResults((prev) => [newSong, ...prev]);
+              try {
+                await fetch("/api/check-and-add", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ songs: [newSong] }),
+                });
+                setShowAdd(false);
+              } catch (error) {
+                alert("Error adding song.");
+              }
+              e.target.reset();
+            }}
+            className="space-y-2"
+          >
+            <input
+              type="text"
+              name="title"
+              placeholder="Song Name"
+              required
+              className="w-full px-3 py-2 border rounded"
+            />
+            <input
+              type="text"
+              name="artist"
+              placeholder="Artist Name"
+              required
+              className="w-full px-3 py-2 border rounded"
+            />
+            <input
+              type="text"
+              name="album"
+              placeholder="Album Name (Optional)"
+              className="w-full px-3 py-2 border rounded"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600"
+              >
+                Add Song
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                onClick={() => setShowAdd(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   );
 }
