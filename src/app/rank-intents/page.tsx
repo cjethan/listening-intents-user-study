@@ -138,7 +138,7 @@ export default function RankIntentsPage() {
           <div className="mb-8 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
             <h2 className="text-lg font-bold mb-2 text-blue-800">Instructions:</h2>
             <p className="mb-2 text-blue-900">
-              The goal of this study is to understand why you choose certain music in different situations and moods. We refer to these reasons as <b>music listening intents</b>. A music listening intent is the purpose or motivation behind why you listen to music at a particular moment. Each intent has a name and includes additional details that explain its purpose.</p>
+              The goal of this study is to understand why you choose certain music in different situations. We refer to these reasons as <b>music listening intents</b>. A music listening intent is the purpose or motivation behind why you listen to music at a particular moment. Each intent has a name and includes additional details that explain its purpose.</p>
               <p className="mb-2 text-blue-900">On this page, you will see a list of different music listening intents. Please <b>rank these intents</b> according to how important or relevant they are for your own music listening habits.
             </p>
             <div className="mb-2 text-blue-900">
@@ -148,7 +148,7 @@ export default function RankIntentsPage() {
                   <b>All Intents:</b> On the left, you see all possible listening intents. These are unranked at the start.
                 </li>
                 <li>
-                  <b>Your Ranking:</b> Drag and drop the intents that are most relevant to you into the &quot;Your Ranking&quot; box in the order of importance (top = most important).
+                  <b>Your Ranking:</b> Drag and drop the intents that are most relevant to you into the &quot;Your Ranking&quot; box in the order of importance for your listening behavior (top = most important).
                 </li>
                 <li>
                   <b>Not Relevant:</b> If there are intents that do not apply to you at all, drag them into the &quot;Not relevant for me&quot; box at the bottom. You can discard up to 20 intents.
