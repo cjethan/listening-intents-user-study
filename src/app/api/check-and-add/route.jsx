@@ -5,41 +5,63 @@ import { NextResponse } from "next/server";
 import { sequelize } from "@/app/utils/database";
 
 export async function POST(req) {
+  console.log("DEBUG: Received POST request to /api/check-and-add");
   try {
-    const { songs } = await req.json();
+    const body = await req.json();
+    console.log("DEBUG: Parsed request body:", body);
+
+    const { songs } = body;
 
     if (!Array.isArray(songs)) {
+      console.error("DEBUG: Invalid data format - songs is not an array:", songs);
       return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
     }
 
+    console.log(`DEBUG: Number of songs received: ${songs.length}`);
     const newSongs = [];
-    for (const song of songs) {
+    for (const [idx, song] of songs.entries()) {
+      console.log(`DEBUG: Processing song #${idx + 1}:`, song);
+
       // Check if the song exists in the database
-      const [existingSong] = await sequelize.query(
-        `SELECT track_id FROM songs WHERE track_id = $1 LIMIT 1`, // Changed table name to lowercase
-        { bind: [song.track_id], type: sequelize.QueryTypes.SELECT }
-      );
+      let existingSong;
+      try {
+        [existingSong] = await sequelize.query(
+          `SELECT track_id FROM songs WHERE track_id = $1 LIMIT 1`,
+          { bind: [song.track_id], type: sequelize.QueryTypes.SELECT }
+        );
+        console.log(`DEBUG: Song with track_id ${song.track_id} exists:`, !!existingSong);
+      } catch (checkErr) {
+        console.error(`DEBUG: Error checking song existence for track_id ${song.track_id}:`, checkErr);
+        continue;
+      }
 
       if (!existingSong) {
-        // Add the song to the database if it does not exist
-        await sequelize.query(
-          `INSERT INTO songs (track_id, track_name, artist_name, track_uri, artist_uri, album_uri, duration_ms, album_name, added_by_userdata)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`, // Changed table name to lowercase
-          {
-            bind: [
-              song.track_id,
-              song.track_name,
-              song.artist_name,
-              song.track_uri,
-              song.artist_uri,
-              song.album_uri,
-              song.duration_ms,
-              song.album_name,
-              1, // added_by_userdata
-            ],
-          }
-        );
-        newSongs.push(song);
+        console.log(`DEBUG: Song with track_id ${song.track_id} does not exist. Adding to database.`);
+        try {
+          await sequelize.query(
+            `INSERT INTO songs (track_id, track_name, artist_name, track_uri, artist_uri, album_uri, duration_ms, album_name, added_by_userdata)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            {
+              bind: [
+                song.track_id,
+                song.track_name,
+                song.artist_name,
+                song.track_uri,
+                song.artist_uri,
+                song.album_uri,
+                song.duration_ms,
+                song.album_name,
+                song.added_by_userdata
+              ],
+            }
+          );
+          console.log(`DEBUG: Successfully added song with track_id ${song.track_id} to database.`);
+          newSongs.push(song);
+        } catch (insertErr) {
+          console.error(`DEBUG: Error inserting song with track_id ${song.track_id}:`, insertErr);
+        }
+      } else {
+        console.log(`DEBUG: Song with track_id ${song.track_id} already exists. Skipping insert.`);
       }
     }
 
