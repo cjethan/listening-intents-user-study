@@ -131,7 +131,7 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
         )}
       </div>
       {!isCollapsed && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-4 bg-gray-100 rounded shadow relative">
             <h3 className="font-bold mb-2">Adjectives for Songs in this Intent</h3>
             <p className="text-gray-700">Please select or add new adjectives that describe the songs you will classify for this intent.</p>
