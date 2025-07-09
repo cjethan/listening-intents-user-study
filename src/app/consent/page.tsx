@@ -32,6 +32,9 @@ export default function ConsentForm() {
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
           During this study, you will be asked to classify songs for different music listening intents. To participate, your last.fm music listening history will be retrieved.
         </p>
+        <p className="mb-6 text-lg leading-relaxed text-gray-700">
+          For the best user experience, please use a desktop PC or laptop with a modern browser (Edge, Chrome, Firefox, Safari).
+        </p>
         <h2 className="text-3xl font-bold mb-4 text-center text-gray-800">
           Privacy Policy and Consent Form
         </h2>
@@ -39,13 +42,13 @@ export default function ConsentForm() {
         Your last.fm account will only be used to retrieve your top songs and recently listened to songs.
         </p>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          Your data will be stored anonymously, such that it cannot be traced back to you. It will only be used for scientific research purposes. Participation is entirely voluntary. You are free to withdraw your participation. If you send an email to <a href="mailto:[removed]" className="text-blue-600 underline">[removed]</a>, we will remove your data.
+          Your data will only be used for scientific research purposes. Participation is entirely voluntary. You are free to withdraw your participation. If you send an email to <a href="mailto:[removed]" className="text-blue-600 underline">[removed]</a>, we will remove your data.
         </p>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
           By clicking “I consent”, you consent to the use of your data as specified above, and you confirm that you have read and understood the provided information.
         </p>
         <p className="mb-6 text-lg leading-relaxed text-gray-700">
-          This study is performed by Caroline Jethan, a student under the supervision of Prof. D.I. Mag. Dr. Markus Schedl of the Human-centered AI group of JKU. If you have any more questions, you can send a mail to <a href="mailto:[removed]" className="text-blue-600 underline">[removed]</a>.
+          This study is performed by Caroline Jethan, a student under the supervision of Markus Schedl of the Human-centered AI group (<a href="https://hcai.at" className="text-blue-600 underline">hcai.at</a>) of Johannes Kepler University Linz (<a href="https://jku.at" className="text-blue-600 underline">jku.at</a>). If you have any more questions, you can send a mail to <a href="mailto:[removed]" className="text-blue-600 underline">[removed]</a>.
         </p>
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
           Cookie Usage
