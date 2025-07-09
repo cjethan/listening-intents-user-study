@@ -17,6 +17,7 @@ export default function ConsentForm() {
 
   const handleConsent = () => {
     if (typeof window !== 'undefined') {
+      localStorage.clear();
       localStorage.setItem('consentGiven', 'true');
     }
     router.push('/user-info'); // Redirect to the user info page
