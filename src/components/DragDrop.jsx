@@ -588,7 +588,8 @@ function DropArea({ items }) {
     <div>
       <p className="text-gray-500 text-sm italic mb-2">
         Drag and drop songs here to associate them with the current intent. The more songs, the better. <br />
-        Drag songs from any of the boxes below and drop them in the dashed box. If you want to remove a song from this list, simply drag it back into any of the boxes below (such as your listening history or genre suggestions).
+        Drag songs from any of the boxes below and drop them in the dashed box. If you want to remove a song from this list, simply drag it back into any of the boxes below (such as your listening history or genre suggestions).<br />
+        Any problems with the drag and drop? Please refresh the page.
       </p>
       <div ref={setNodeRef} className="drop-area relative">
         <div className="absolute top-2 right-2 group">
