@@ -761,85 +761,98 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         className="drag-box-content min-h-[450px]"
         style={{ maxHeight: "500px", overflowY: "auto" }}
       >
-        { id === "box3" && searchResults.length != 0 && <NotFoundAddSongButton setSearchResults={setSearchResults}/> }
-        {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
-          <DraggableItem key={item.track_id} item={item} />
-        ))}
-        
-        {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && !isSearching && (
-          <div className="text-center mt-4">
-            <p className="text-gray-500">No results found. You can add a new song:</p>
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const title = formData.get("title")?.trim();
-                const artist = formData.get("artist")?.trim();
-
-                if (!title || !artist) {
-                  alert("Song Name and Artist Name are required.");
-                  return;
-                }
-
-                const newSong = {
-                  track_id: `custom-${Date.now()}`,
-                track_name: title,
-                artist_name: artist,
-                album_name: formData.get("album")?.trim() || null,
-                track_uri: null,
-                artist_uri: null,
-                album_uri: null,
-                duration_ms: 0,
-                genres: [],
-                image: "/default-cover.png",
-                added_by_userdata: "by_add_song",
-                };
-
-                setSearchResults((prev) => [...prev, newSong]);
-                try {
-                  await fetch("/api/check-and-add", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ songs: [newSong] }),
-                  });
-                  console.log("Custom song added to the database:", newSong);
-                } catch (error) {
-                  console.error("Error adding custom song to the database:", error);
-                }
-                e.target.reset();
-              }}
-              className="mt-2 space-y-2"
-            >
-              <input
-                type="text"
-                name="title"
-                placeholder="Song Name"
-                required
-                className="w-full px-3 py-2 border rounded"
-              />
-              <input
-                type="text"
-                name="artist"
-                placeholder="Artist Name"
-                required
-                className="w-full px-3 py-2 border rounded"
-              />
-              <input
-                type="text"
-                name="album"
-                placeholder="Album Name (Optional)"
-                className="w-full px-3 py-2 border rounded"
-              />
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600"
-              >
-                Add Song
-              </button>
-            </form>
+        {/* Loading stage for Box 3 */}
+        {id === "box3" && isSearching && (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-spin rounded-full h-5 w-5 border-t-4 border-solid"></div>
+            <span className="ml-2 font-semibold">Loading search results...</span>
           </div>
+        )}
+        {/* Show results only when not loading */}
+        {!(id === "box3" && isSearching) && (
+          <>
+            {id === "box3" && searchResults.length !== 0 && (
+              <NotFoundAddSongButton setSearchResults={setSearchResults} />
+            )}
+            {(id === "box3" && searchQueryBox3.trim() ? searchResults : items).map((item) => (
+              <DraggableItem key={item.track_id} item={item} />
+            ))}
+            {id === "box3" && searchQueryBox3.trim() && searchResults.length === 0 && !isSearching && (
+              <div className="text-center mt-4">
+                <p className="text-gray-500">No results found. You can add a new song:</p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const title = formData.get("title")?.trim();
+                    const artist = formData.get("artist")?.trim();
+
+                    if (!title || !artist) {
+                      alert("Song Name and Artist Name are required.");
+                      return;
+                    }
+
+                    const newSong = {
+                      track_id: `custom-${Date.now()}`,
+                    track_name: title,
+                    artist_name: artist,
+                    album_name: formData.get("album")?.trim() || null,
+                    track_uri: null,
+                    artist_uri: null,
+                    album_uri: null,
+                    duration_ms: 0,
+                    genres: [],
+                    image: "/default-cover.png",
+                    added_by_userdata: "by_add_song",
+                    };
+
+                    setSearchResults((prev) => [...prev, newSong]);
+                    try {
+                      await fetch("/api/check-and-add", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ songs: [newSong] }),
+                      });
+                      console.log("Custom song added to the database:", newSong);
+                    } catch (error) {
+                      console.error("Error adding custom song to the database:", error);
+                    }
+                    e.target.reset();
+                  }}
+                  className="mt-2 space-y-2"
+                >
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Song Name"
+                    required
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <input
+                    type="text"
+                    name="artist"
+                    placeholder="Artist Name"
+                    required
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <input
+                    type="text"
+                    name="album"
+                    placeholder="Album Name (Optional)"
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-2 bg-blue-500 text-white font-semibold rounded shadow hover:bg-blue-600"
+                  >
+                    Add Song
+                  </button>
+                </form>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
