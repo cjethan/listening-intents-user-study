@@ -4,10 +4,10 @@ export async function loadAllIntents() {
   if (typeof window === 'undefined') {
     // On server, construct absolute URL
     const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    url = `${base}/intent_data.json`;
+    url = `${base}/intent_data_new_titles.json`;
   } else {
     // On client
-    url = '/intent_data.json';
+    url = '/intent_data_new_titles.json';
   }
   const response = await fetch(url);
   const data = await response.json();
@@ -22,6 +22,8 @@ export async function loadAllIntents() {
     listening_function_factors: data.listening_function_factors[id],
     survey_intent_names: data.survey_intent_names[id],
     generated_augmented_texts: data.generated_augmented_texts[id],
+    title_new: data.title_new[id],
+    description_new: data.description_new[id],
   }));
 
   return allIntents;

@@ -26,6 +26,8 @@ type Intent = {
   listening_function_factors: number[];
   survey_intent_names: string[];
   generated_augmented_texts: string[];
+  title_new: string;
+  description_new: string;
 };
 
 // Placeholder for fetching album images (replace with Last.fm or your own logic)
@@ -142,7 +144,7 @@ export default function Home() {
       if (intentId === undefined || intentId === null || intentId === "") {
         return;
       }
-      const response = await fetch('/intent_data.json');
+      const response = await fetch('/intent_data_new_titles.json');
       const data = await response.json();
       const ids = Object.keys(data.intent_id);
       const idx = ids.find((k) => String(data.intent_id[k]) === String(intentId));
@@ -155,6 +157,8 @@ export default function Home() {
           listening_function_factors: data.listening_function_factors[idx],
           survey_intent_names: data.survey_intent_names[idx],
           generated_augmented_texts: data.generated_augmented_texts[idx],
+          title_new: data.title_new[idx],
+          description_new: data.description_new[idx],
         });
       } else {
         console.warn('DEBUG: No intent found for id', intentId);
@@ -388,7 +392,7 @@ export default function Home() {
       <h1 className="text-center">
         <span className="block text-lg font-semibold text-gray-600">🎵 Intent: 🎵</span>
         <span className="text-5xl font-extrabold bg-gradient-to-r from-purple-600 via-blue-400 to-cyan-500 text-transparent bg-clip-text">
-          {currentIntent?.intent_name || 'Loading...'}
+          {currentIntent?.title_new || 'Loading...'}
         </span>
       </h1>
 
@@ -403,7 +407,7 @@ export default function Home() {
           </div>
         </div>
         <p className="italic text-gray-700">
-          {currentIntent ? currentIntent.main_listening_function : 'Intent infomation loading...'}
+          {currentIntent ? currentIntent.description_new : 'Intent infomation loading...'}
         </p>
         <p className="text-gray-700">
           {currentIntent?.listening_functions.slice(0, 3).map((functionName, index) => (

@@ -191,8 +191,8 @@ export default function RankIntentsPage() {
                                 snapshot.isDragging ? 'bg-blue-50 shadow-2xl' : ''
                               }`}
                             >
-                              <span className="font-semibold">{intent.intent_name}</span>
-                              <span className="text-gray-500 text-xs">{intent.main_listening_function}</span>
+                              <span className="font-semibold">{intent.title_new}</span>
+                              <span className="text-gray-500 text-xs">{intent.description_new}</span>
                             </div>
                           )}
                         </Draggable>
@@ -228,9 +228,9 @@ export default function RankIntentsPage() {
                                 <span className="text-xs text-gray-400 mr-2 font-bold" style={{ minWidth: 18, textAlign: 'right' }}>
                                   {idx + 1}.
                                 </span>
-                                <span className="font-semibold">{intent.intent_name}</span>
+                                <span className="font-semibold">{intent.title_new}</span>
                               </div>
-                              <span className="text-gray-500 text-xs">{intent.main_listening_function}</span>
+                              <span className="text-gray-500 text-xs">{intent.description_new}</span>
                             </div>
                           )}
                         </Draggable>
@@ -264,7 +264,7 @@ export default function RankIntentsPage() {
                                 snapshot.isDragging ? 'bg-gray-300' : ''
                               }`}
                             >
-                              <span className="font-semibold">{intent.intent_name}</span>
+                              <span className="font-semibold">{intent.title_new}</span>
                             </div>
                           )}
                         </Draggable>
