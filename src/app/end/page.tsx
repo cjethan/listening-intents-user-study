@@ -8,9 +8,6 @@ export default function EndPage() {
         You have completed all tasks. <br />
         Your responses have been saved.
       </p>
-      <div className="text-gray-400 text-sm">
-        This is a placeholder end page.
-      </div>
     </div>
   );
 }
