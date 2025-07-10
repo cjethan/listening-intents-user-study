@@ -533,41 +533,47 @@ export function DragAndDrop({ setDropItems }) {
     <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="drag-container">
         <DropArea items={localDropItems} />
-        <div className="drag-box-wrapper">
-          <div className="relative">
+        <div className="drag-box-wrapper flex-col md:flex-row gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="relative">
+              <DraggableBox
+                id="box1"
+                items={box1Items}
+                title="Random Songs from your Genres"
+                setSearchResults={setSearchResults}
+                searchResults={searchResults}
+                isSearchResultsReady={isSearchResultsReady}
+              />
+              {box1Loading && (
+                <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+                  <p className="text-gray-700 font-semibold">Loading songs... Please wait.</p>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
             <DraggableBox
-              id="box1"
-              items={box1Items}
-              title="Random Songs from your Genres"
+              id="box2"
+              items={filteredBox2Items} // This will be all 1000 by default, or filtered by search
+              title="Songs from your Listening History"
+              setSearchResults={setSearchResults}
+              searchResults={searchResults}
+              isSearchResultsReady={isSearchResultsReady}
+              box2SearchQuery={box2SearchQuery}
+              setBox2SearchQuery={setBox2SearchQuery}
+              enableBox2Search={true}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <DraggableBox
+              id="box3"
+              items={box3Items}
+              title="Search for any Song, Artist, or Album"
               setSearchResults={setSearchResults}
               searchResults={searchResults}
               isSearchResultsReady={isSearchResultsReady}
             />
-            {box1Loading && (
-              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-                <p className="text-gray-700 font-semibold">Loading songs... Please wait.</p>
-              </div>
-            )}
           </div>
-          <DraggableBox
-            id="box2"
-            items={filteredBox2Items} // This will be all 1000 by default, or filtered by search
-            title="Songs from your Listening History"
-            setSearchResults={setSearchResults}
-            searchResults={searchResults}
-            isSearchResultsReady={isSearchResultsReady}
-            box2SearchQuery={box2SearchQuery}
-            setBox2SearchQuery={setBox2SearchQuery}
-            enableBox2Search={true}
-          />
-          <DraggableBox
-            id="box3"
-            items={box3Items}
-            title="Search for any Song, Artist, or Album"
-            setSearchResults={setSearchResults}
-            searchResults={searchResults}
-            isSearchResultsReady={isSearchResultsReady}
-          />
         </div>
         <DragOverlay dropAnimation={{ duration: 150, easing: "cubic-bezier(0.25, 0.8, 0.5, 1)" }}>
           {activeItem ? (
@@ -752,7 +758,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         </div>
       )}
       <div
-        className="drag-box-content"
+        className="drag-box-content min-h-[450px]"
         style={{ maxHeight: "500px", overflowY: "auto" }}
       >
         { id === "box3" && searchResults.length != 0 && <NotFoundAddSongButton setSearchResults={setSearchResults}/> }
