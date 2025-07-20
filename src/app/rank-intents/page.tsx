@@ -192,7 +192,7 @@ export default function RankIntentsPage() {
                               }`}
                             >
                               <span className="font-semibold">{intent.title_new}</span>
-                              <span className="text-gray-500 text-xs">{intent.description_new}</span>
+                              <span className="text-gray-500 text-xs">{intent.main_listening_function}</span>
                             </div>
                           )}
                         </Draggable>
