@@ -4,10 +4,10 @@ export async function loadAllIntents() {
   if (typeof window === 'undefined') {
     // On server, construct absolute URL
     const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    url = `${base}/intent_data_new_titles_v01.json`;
+    url = `${base}/intent_data_new_titles_v02.json`;
   } else {
     // On client
-    url = '/intent_data_new_titles_v01.json';
+    url = '/intent_data_new_titles_v02.json';
   }
   const response = await fetch(url);
   const data = await response.json();
