@@ -89,6 +89,19 @@ export default function Home() {
   }, [router, setUserData]);
 
   useEffect(() => {
+  if (typeof window !== "undefined") {
+    const collapsed = localStorage.getItem("infoCollapsed");
+    if (collapsed === "true") setInfoCollapsed(true);
+  }
+}, []);
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("infoCollapsed", infoCollapsed ? "true" : "false");
+  }
+}, [infoCollapsed]);
+
+  useEffect(() => {
     // Placeholder: Replace with your own logic to fetch songs (e.g., from Last.fm or your backend)
     const fetchSongs = async () => {
       try {
@@ -144,7 +157,7 @@ export default function Home() {
       if (intentId === undefined || intentId === null || intentId === "") {
         return;
       }
-      const response = await fetch('/intent_data_new_titles.json');
+      const response = await fetch('/intent_data_new_titles_v02.json');
       const data = await response.json();
       const ids = Object.keys(data.intent_id);
       const idx = ids.find((k) => String(data.intent_id[k]) === String(intentId));
@@ -407,7 +420,7 @@ export default function Home() {
           </div>
         </div>
         <p className="italic text-gray-700">
-          {currentIntent ? currentIntent.description_new : 'Intent infomation loading...'}
+          {currentIntent ? currentIntent.main_listening_function : 'Intent infomation loading...'}
         </p>
         <p className="text-gray-700">
           {currentIntent?.listening_functions.slice(0, 3).map((functionName, index) => (
