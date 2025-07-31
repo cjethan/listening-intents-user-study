@@ -8,6 +8,12 @@ export default function EndPage() {
         You have completed all tasks. <br />
         Your responses have been saved.
       </p>
+      <div className="mt-8 text-center text-gray-500">
+        <p>
+          If you have any questions, please contact us at:<br />
+          <span className="font-semibold">caroline.jethan@gmail.com</span>
+        </p>
+      </div>
     </div>
   );
 }
