@@ -157,7 +157,7 @@ export default function RankIntentsPage() {
                   You can reorder intents within each box or move them back and forth as needed.
                 </li>
                 <li>
-                  Please rank at least <b>10 intents</b> before continuing, your top 10 intents will be used in the next steps.
+                  Please rank <b>10 intents</b> before continuing, your top 10 intents will be used in the next steps.
                 </li>
               </ul>
             </div>
