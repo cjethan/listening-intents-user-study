@@ -117,6 +117,10 @@ export default function UserInfo() {
         setError('Please enter your age.');
         return;
       }
+      if (parseInt(age) < 18 || parseInt(age) > 120) {
+        setError('Please enter a valid age. You must be at least 18 years old to participate.');
+        return;
+      }
       if (!gender.trim()) {
         setError('Please specify your gender.');
         return;
@@ -457,7 +461,7 @@ export default function UserInfo() {
             <div
               className="absolute -top-10 text-sm font-medium text-gray-800 bg-white px-3 py-1 rounded-full shadow-md pointer-events-none"
               style={{
-                left: `calc(${((musicHours - 0) / 12) * 100}% - 10px)`, // 10px is half the thumb width (20px)
+                left: `calc(${((musicHours - 0) / 12) * 100}% - 10px)`,
                 width: 'max-content',
                 minWidth: '60px',
                 textAlign: 'center',
