@@ -6,7 +6,8 @@ export default function EndPage() {
       <h1 className="text-4xl font-bold mb-4 text-gray-800">Thank you for participating!</h1>
       <p className="text-lg text-gray-600 mb-8 text-center">
         You have completed all tasks. <br />
-        Your responses have been saved.
+        Your responses have been saved. <br />
+        Your completion code is: <b>CISKTGJO</b>
       </p>
       <div className="mt-8 text-center text-gray-500">
         <p>
