@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/core";
 import ReactSelect from "react-select";
 
-/* TODO wollen wir alle songs in der Datenbank haben von user's last.fm??
 async function checkAndAddToDatabase(songs) {
   console.log("Checking and adding songs to the database...");
   try {
@@ -20,7 +19,7 @@ async function checkAndAddToDatabase(songs) {
   } catch (error) {
     console.error("Error checking/adding songs to the database:", error);
   }
-}*/
+}
 
 function shuffleArray(array) {
   return array.sort(() => Math.random() - 0.5);
@@ -115,11 +114,6 @@ export function DragAndDrop({ setDropItems }) {
             // Display all fetched songs without shuffling
             setBox1Items(allSongs);
           }
-
-          // Check and add songs to the database
-          //console.log("Checking and adding songs to the database...");
-          //await checkAndAddToDatabase(allSongs);
-          //console.log("Songs successfully checked and added to the database.");
         } catch (error) {
           console.error("Error fetching songs:", error);
           setBox1Items([]);
@@ -290,6 +284,10 @@ export function DragAndDrop({ setDropItems }) {
           console.log("Combined Last.fm tracks:", uniqueTracks);
           setBox2Items(uniqueTracks);
           setFilteredBox2Items(uniqueTracks);
+          // Check and add songs to the database
+          console.log("Checking and adding songs to the database...");
+          await checkAndAddToDatabase(uniqueTracks);
+          console.log("Songs successfully checked and added to the database.");
         } catch (error) {
           setBox2Items([]);
           setFilteredBox2Items([]);
