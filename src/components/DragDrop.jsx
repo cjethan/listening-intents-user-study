@@ -4,7 +4,7 @@ import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/co
 import ReactSelect from "react-select";
 
 async function checkAndAddToDatabase(songs) {
-  console.log("Checking and adding songs to the database...");
+  //console.log("Checking and adding songs to the database...");
   try {
     const response = await fetch("/api/check-and-add", {
       method: "POST",
@@ -15,9 +15,11 @@ async function checkAndAddToDatabase(songs) {
     });
 
     const responseData = await response.json();
-    console.log("Response from check-and-add API:", responseData);
+    //console.log("Response from check-and-add API:", responseData);
+    return responseData; // Return the response which should contain info about existing songs
   } catch (error) {
-    console.error("Error checking/adding songs to the database:", error);
+    //console.error("Error checking/adding songs to the database:", error);
+    return null; // Return null or an empty object on error
   }
 }
 
@@ -93,12 +95,12 @@ export function DragAndDrop({ setDropItems }) {
     const fetchSongs = async () => {
       try {
           setBox1Loading(true); // Start loading
-          console.log("Fetching songs for Box 1...");
+          //console.log("Fetching songs for Box 1...");
           // Retrieve genres from localStorage
           if (typeof window !== 'undefined') {
             const userData = JSON.parse(localStorage.getItem("userData"));
             const genres = userData?.genres || [];
-            console.log(`Retrieved genres from localStorage: ${genres}`);
+            //console.log(`Retrieved genres from localStorage: ${genres}`);
 
             // Fetch songs for all genres in parallel
             const genrePromises = genres.map((genre) =>
@@ -108,8 +110,8 @@ export function DragAndDrop({ setDropItems }) {
 
             // Flatten and limit the total number of songs
             const allSongs = songsByGenre.flat().slice(0, 100); // Limit to 100 songs
-            console.log(`Fetched ${allSongs.length} songs in total.`);
-            console.log("Songs by genre:", allSongs);
+            //console.log(`Fetched ${allSongs.length} songs in total.`);
+            //console.log("Songs by genre:", allSongs);
 
             // Display all fetched songs without shuffling
             setBox1Items(allSongs);
@@ -125,7 +127,7 @@ export function DragAndDrop({ setDropItems }) {
   }, []);
 
  // Fetch songs from Last.fm listening history for Box 2
-  useEffect(() => {
+  /*useEffect(() => {
     const fetchTopSongs = async () => {
       let lastfmUsername = "";
       if (typeof window !== "undefined") {
@@ -283,11 +285,36 @@ export function DragAndDrop({ setDropItems }) {
           localStorage.setItem("lastfmTopSongs", JSON.stringify(uniqueTracks));
           console.log("Combined Last.fm tracks:", uniqueTracks);
           setBox2Items(uniqueTracks);
-          setFilteredBox2Items(uniqueTracks);
-          // Check and add songs to the database
+          setFilteredBox2Items(uniqueTracks);  
+          
+          // Check songs against the database to get their status
           console.log("Checking and adding songs to the database...");
-          await checkAndAddToDatabase(uniqueTracks);
+          const checkData = await checkAndAddToDatabase(uniqueTracks);
+          const existingTrackIds = new Set(checkData?.existingTrackIds || []);
           console.log("Songs successfully checked and added to the database.");
+
+          // Sort uniqueTracks: songs in the database first, with original DB songs prioritized
+          uniqueTracks.sort((a, b) => {
+            const aInDb = existingTrackIds.has(a.track_id);
+            const bInDb = existingTrackIds.has(b.track_id);
+            //const aIsOriginal = a.added_by_userdata === null || a.added_by_userdata === undefined;
+            //const bIsOriginal = b.added_by_userdata === null || b.added_by_userdata === undefined;
+
+            //if (aInDb && aIsOriginal && !(bInDb && bIsOriginal)) return -1;
+            //if (!(aInDb && aIsOriginal) && bInDb && bIsOriginal) return 1;
+
+            if (aInDb && !bInDb) return -1;
+            if (!aInDb && bInDb) return 1;
+            
+            return 0;
+          });
+
+          localStorage.setItem("lastfmTopSongs", JSON.stringify(uniqueTracks));
+          console.log("Combined Last.fm tracks:", uniqueTracks);
+          setBox2Items(uniqueTracks);
+          setFilteredBox2Items(uniqueTracks); 
+          console.log("TOP SONGS") 
+
         } catch (error) {
           setBox2Items([]);
           setFilteredBox2Items([]);
@@ -313,7 +340,7 @@ export function DragAndDrop({ setDropItems }) {
       }
     };
   fetchTopSongs();
-  }, []);
+  }, []);*/
 
   // Fetch full listening history for Box 2 (capped to 1000 tracks)
   useEffect(() => {
@@ -343,29 +370,29 @@ export function DragAndDrop({ setDropItems }) {
         try {
           let parsed = JSON.parse(stored);
 
-          // Deduplicate by track_id
-          const seen = new Set();
-          parsed = parsed.filter(item => {
-            if (!item.track_id || seen.has(item.track_id)) return false;
-            seen.add(item.track_id);
-            return true;
-          });
+            // Deduplicate by track_id
+            const seen = new Set();
+            parsed = parsed.filter(item => {
+              if (!item.track_id || seen.has(item.track_id)) return false;
+              seen.add(item.track_id);
+              return true;
+            });
 
-          setBox2FullHistory(parsed);
-          setBox2Items(parsed.slice(0, 100));
-          setFilteredBox2Items(parsed.slice(0, 100));
-        } catch {
-          setBox2FullHistory([]);
-          setBox2Items([]);
-          setFilteredBox2Items([]);
-        }
+            setBox2FullHistory(parsed);
+            setBox2Items(parsed.slice(0, 100));
+            setFilteredBox2Items(parsed.slice(0, 100));
+          } catch {
+            setBox2FullHistory([]);
+            setBox2Items([]);
+            setFilteredBox2Items([]);
+          }
         return;
       }
 
       // Otherwise, fetch from Last.fm API (capped to 1000 tracks)
       const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
       const user = lastfmUsername;
-      const limit = 200; // max per page
+      const limit = 300; // max per page
       const maxTracks = 1000;
       let allTracks = [];
       let page = 1;
@@ -420,18 +447,51 @@ export function DragAndDrop({ setDropItems }) {
           .sort((a, b) => (b.date_uts || 0) - (a.date_uts || 0))
           .slice(0, maxTracks);
 
+        // log first 10 tracks
+        //console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
+
         // Deduplicate by track_id
         const seen = new Set();
-        const uniqueTracks = allTracks.filter(item => {
+        let uniqueTracks = allTracks.filter(item => {
           if (!item.track_id || seen.has(item.track_id)) return false;
           seen.add(item.track_id);
           return true;
         });
 
+        setBox2Items(uniqueTracks);
+        setFilteredBox2Items(uniqueTracks);
+
+        // Check songs against the database and sort them
+        const checkData = await checkAndAddToDatabase(uniqueTracks);
+        // UPDATE THE SORTING LOGIC HERE
+        if (checkData && checkData.existingTrackIds_originalDB) {
+          const originalDbTrackIds = new Set(checkData.existingTrackIds_originalDB);
+          //const allExistingTrackIds = new Set(checkData.existingTrackIds);
+
+          uniqueTracks.sort((a, b) => {
+            const aIsOriginal = originalDbTrackIds.has(a.track_id);
+            const bIsOriginal = originalDbTrackIds.has(b.track_id);
+            //const aInDb = allExistingTrackIds.has(a.track_id);
+            //const bInDb = allExistingTrackIds.has(b.track_id);
+
+            // Priority 1: Original DB songs
+            if (aIsOriginal && !bIsOriginal) return -1;
+            if (!aIsOriginal && bIsOriginal) return 1;
+
+            // Priority 2: Other songs that exist in the DB
+            //if (aInDb && !bInDb) return -1;
+            //if (!aInDb && bInDb) return 1;
+
+            // Otherwise, keep original order (most recent)
+            return 0;
+          });
+        }
+
         localStorage.setItem("lastfmListeningHistory", JSON.stringify(uniqueTracks));
         setBox2FullHistory(uniqueTracks);
         setBox2Items(uniqueTracks);           // Show all 1000 by default
-        setFilteredBox2Items(uniqueTracks);   // Show all 1000 by default
+        setFilteredBox2Items(uniqueTracks); // Initially, filtered items are all items
+        //console.log("FULL HISTORY")
       } catch (error) {
         setBox2FullHistory([]);
         setBox2Items([]);
