@@ -351,7 +351,7 @@ export function DragAndDrop({ setDropItems }) {
         if (storedUserData) {
           try {
             const userData = JSON.parse(storedUserData);
-            lastfmUsername = userData.lastfm_username || "";
+            lastfmUsername = userData.last_fm_id || "";
           } catch {
             lastfmUsername = "";
           }
@@ -448,7 +448,7 @@ export function DragAndDrop({ setDropItems }) {
           .slice(0, maxTracks);
 
         // log first 10 tracks
-        //console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
+        console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
 
         // Deduplicate by track_id
         const seen = new Set();
