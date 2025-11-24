@@ -12,6 +12,10 @@ UserResult.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  last_fm_id: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   age: {
     type: DataTypes.INTEGER,
     allowNull: false,

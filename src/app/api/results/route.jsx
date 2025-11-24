@@ -30,9 +30,10 @@ export async function POST(request) {
       genres,
       intents,
       instruments_played,
-      age,            // <-- added
-      gender,         // <-- added
-      nationality     // <-- added
+      age,            
+      gender,         
+      nationality,
+      last_fm_id
     } = body;
 
     // Check if the user_id already exists
@@ -61,9 +62,10 @@ export async function POST(request) {
         compose_music,
         hours_listening_daily,
         instruments_played_years: instruments_played_years_mapped,
-        age,            // <-- added
-        gender,         // <-- added
-        nationality     // <-- added
+        age,            
+        gender,         
+        nationality,
+        last_fm_id
       });
 
       // Save instruments and associate with the user
