@@ -184,7 +184,7 @@ export default function UserInfo() {
 
       const existingUserData = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userData') || '{}') : {};
       const prolificId = existingUserData.prolific_id || '';
-      console.log("Prolific ID retrieved from localStorage:", prolificId);
+      //console.log("Prolific ID retrieved from localStorage:", prolificId);
 
       const userData = {
         user_id: userId,
