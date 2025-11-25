@@ -34,7 +34,7 @@ export async function POST(req) {
             type: sequelize.QueryTypes.SELECT 
           }
         );
-        //console.log(`DEBUG: Song with track_id ${song.track_id} or name "${song.track_name}" exists:`, !!existingSong);
+        console.log(`DEBUG: Song with track_id ${song.track_id} or name "${song.track_name}" exists:`, !!existingSong);
       } catch (checkErr) {
         console.error(`DEBUG: Error checking song existence for track_id ${song.track_id}:`, checkErr);
         continue;
