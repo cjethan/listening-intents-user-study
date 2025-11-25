@@ -448,7 +448,7 @@ export function DragAndDrop({ setDropItems }) {
           .slice(0, maxTracks);
 
         // log first 10 tracks
-        console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
+        //console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
 
         // Deduplicate by track_id
         const seen = new Set();
@@ -467,6 +467,7 @@ export function DragAndDrop({ setDropItems }) {
         if (checkData && checkData.existingTrackIds_originalDB) {
           const originalDbTrackIds = new Set(checkData.existingTrackIds_originalDB);
           //const allExistingTrackIds = new Set(checkData.existingTrackIds);
+          console.log("in sorting");
 
           uniqueTracks.sort((a, b) => {
             const aIsOriginal = originalDbTrackIds.has(a.track_id);
@@ -485,6 +486,7 @@ export function DragAndDrop({ setDropItems }) {
             // Otherwise, keep original order (most recent)
             return 0;
           });
+          console.log("sorted");
         }
 
         localStorage.setItem("lastfmListeningHistory", JSON.stringify(uniqueTracks));

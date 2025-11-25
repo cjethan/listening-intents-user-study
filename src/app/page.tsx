@@ -134,7 +134,7 @@ useEffect(() => {
   const [currentIntentIdx, setCurrentIntentIdx] = useState(() => {
     if (typeof window !== 'undefined') {
       const idx = localStorage.getItem('currentIntentIdx');
-      console.log('DEBUG: currentIntentIdx from localStorage:', idx);
+      //console.log('DEBUG: currentIntentIdx from localStorage:', idx);
       return idx ? parseInt(idx, 10) : 0;
     }
     return 0;
