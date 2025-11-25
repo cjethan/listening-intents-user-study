@@ -78,7 +78,7 @@ export async function POST(req) {
     }
 
     //console.log("New songs added to the database:", newSongs);
-    //console.log("Original DB track IDs found:", existingTrackIds_originalDB);
+    console.log("Original DB track IDs found:", existingTrackIds_originalDB);
 
     return NextResponse.json({ 
       message: "Songs checked and added successfully", 
