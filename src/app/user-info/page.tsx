@@ -182,10 +182,14 @@ export default function UserInfo() {
             .replace('more than 10 years', 'more than 10 years')
         : null; // Map empty string to null
 
+      const existingUserData = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userData') || '{}') : {};
+      const prolificId = existingUserData.prolific_id || '';
+      console.log("Prolific ID retrieved from localStorage:", prolificId);
+
       const userData = {
         user_id: userId,
-        prolific_id: "0", //todo when using prolific, set to prolific_id: prolificId
-        lastfm_username: lastfmUsername,
+        prolific_id: prolificId,
+        last_fm_id: lastfmUsername,
         age,
         gender,
         nationality,
