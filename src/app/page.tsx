@@ -64,6 +64,12 @@ export default function Home() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      const submissionComplete = localStorage.getItem('submissionComplete');
+      if (submissionComplete === 'true') {
+        router.push('/end');
+        return;
+      }
+
       const consentGiven = localStorage.getItem('consentGiven');
       const storedUserData = localStorage.getItem('userData');
       const rankedIntents = localStorage.getItem('rankedIntents');
@@ -327,6 +333,10 @@ useEffect(() => {
     router.push('/end');
     resetCounter();
     localStorage.setItem("counter", "0");
+    localStorage.setItem('submissionComplete', 'true');
+    localStorage.removeItem('currentIntentIdx');
+    localStorage.removeItem('classificationIntents');
+    localStorage.removeItem('rankedIntents');
   }
 
   // Calculate progress
@@ -369,7 +379,7 @@ useEffect(() => {
                   For each intent:
                 </p>
                 <ul className="list-disc pl-5 text-blue-900 mb-2">
-                  <li>Please answer the questions about how often and how important this intent is for you.</li>
+                  <li>Please answer the questions about how often you listen with this intent and how important this intent is for you.</li>
                   <li>Select adjectives that, for you, describe songs for this intent.</li>
                   <li>Drag and drop songs that fit this intent into the box.</li>
                   <li>You can use the genre, history, or search boxes to find songs.</li>
