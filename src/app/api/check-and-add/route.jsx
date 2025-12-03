@@ -104,18 +104,14 @@ export async function POST(req) {
     let existingSongMaps;
     try {
       existingSongMaps = await preloadExistingSongs(songs);
-      console.log(
-        `DEBUG: Preloaded ${existingSongMaps.existingByTrackId.size} songs by track_id and ${existingSongMaps.existingByNameArtist.size} songs by name/artist`
-      );
+      //console.log(`DEBUG: Preloaded ${existingSongMaps.existingByTrackId.size} songs by track_id and ${existingSongMaps.existingByNameArtist.size} songs by name/artist`);
     } catch (preloadErr) {
       console.error("DEBUG: Failed to preload songs:", preloadErr);
       return NextResponse.json({ error: "Failed to check songs" }, { status: 500 });
     }
 
     for (const [index, song] of songs.entries()) {
-      console.log(
-        `DEBUG: Evaluating song #${index + 1} (${song.track_name} - ${song.artist_name}) with track_id ${song.track_id || "<missing>"}`
-      );
+      //console.log(`DEBUG: Evaluating song #${index + 1} (${song.track_name} - ${song.artist_name}) with track_id ${song.track_id || "<missing>"}`);
       const nameArtistKey = buildNameArtistKey(song.track_name, song.artist_name);
       const existingSong =
         (song.track_id && existingSongMaps.existingByTrackId.get(song.track_id)) ||
@@ -142,7 +138,7 @@ export async function POST(req) {
             }
           );
           //console.log(`DEBUG: Successfully added song with track_id ${song.track_id} to database.`);
-          console.log(`DEBUG: Inserted song ${song.track_name} (${song.track_id || "<no track_id>"})`);
+          //console.log(`DEBUG: Inserted song ${song.track_name} (${song.track_id || "<no track_id>"})`);
           newSongs.push(song);
         } catch (insertErr) {
           console.error(`DEBUG: Error inserting song with track_id ${song.track_id}:`, insertErr);
@@ -153,9 +149,7 @@ export async function POST(req) {
         //console.log(`Found existing song: ${song.track_name}. DB version has added_by_userdata: ${existingSong.added_by_userdata}`);
 
         // Check if the DATABASE record is an original entry.
-        console.log(
-          `DEBUG: Song already exists (${song.track_name}) with added_by_userdata=${existingSong.added_by_userdata}`
-        );
+        //console.log(`DEBUG: Song already exists (${song.track_name}) with added_by_userdata=${existingSong.added_by_userdata}`);
         if (existingSong.added_by_userdata === 'no' || existingSong.added_by_userdata === null) {
           const dbNameArtistKey = buildNameArtistKey(existingSong.track_name, existingSong.artist_name);
           const fallbackKey = nameArtistKey || existingSong.track_id || song.track_id;
@@ -170,7 +164,7 @@ export async function POST(req) {
 
     const existingTrackIds_originalDB = Array.from(originalLastFmTrackIds.values());
     //console.log("New songs added to the database:", newSongs);
-    console.log("Original DB track IDs found:", existingTrackIds_originalDB);
+    //console.log("Original DB track IDs found:", existingTrackIds_originalDB);
 
     return NextResponse.json({ 
       message: "Songs checked and added successfully", 
