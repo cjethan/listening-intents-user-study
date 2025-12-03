@@ -379,8 +379,8 @@ export function DragAndDrop({ setDropItems }) {
             });
 
             setBox2FullHistory(parsed);
-            setBox2Items(parsed.slice(0, 100));
-            setFilteredBox2Items(parsed.slice(0, 100));
+            setBox2Items(parsed.slice(0, 300));
+            setFilteredBox2Items(parsed.slice(0, 300));
           } catch {
             setBox2FullHistory([]);
             setBox2Items([]);
@@ -763,7 +763,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         } finally {
           setIsSearching(false); // Stop loading spinner
         }
-      }, 300);
+      }, 200);
     } else {
       setSearchResults([]);
     }
