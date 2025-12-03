@@ -763,7 +763,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
         } finally {
           setIsSearching(false); // Stop loading spinner
         }
-      }, 200);
+      }, 300);
     } else {
       setSearchResults([]);
     }
@@ -861,7 +861,7 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
                     duration_ms: 0,
                     genres: [],
                     image: "/default-cover.png",
-                    added_by_userdata: "by_add_song",
+                    added_by_userdata: 2,
                     };
 
                     setSearchResults((prev) => [...prev, newSong]);
@@ -990,7 +990,7 @@ function NotFoundAddSongButton({ setSearchResults }) {
                 duration_ms: 0,
                 genres: [],
                 image: "/default-cover.png",
-                added_by_userdata: "by_add_song",
+                added_by_userdata: 2,
               };
 
               setSearchResults((prev) => [newSong, ...prev]);
