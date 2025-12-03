@@ -30,7 +30,7 @@ async function preloadExistingSongs(songs) {
 
   if (trackIds.length > 0) {
     const placeholders = trackIds.map((_, idx) => `$${idx + 1}`).join(", ");
-    const query = `SELECT track_id, added_by_userdata FROM songs WHERE track_id IN (${placeholders})`;
+    const query = `SELECT track_id, track_name, artist_name, added_by_userdata FROM songs WHERE track_id IN (${placeholders})`;
     const existingTracks = await sequelize.query(query, {
       bind: trackIds,
       type: sequelize.QueryTypes.SELECT,
@@ -99,7 +99,7 @@ export async function POST(req) {
 
     console.log(`DEBUG: Number of songs received: ${songs.length}`);
     const newSongs = [];
-    const existingTrackIds_originalDB = [];
+    const originalLastFmTrackIds = new Map();
 
     let existingSongMaps;
     try {
@@ -157,11 +157,18 @@ export async function POST(req) {
           `DEBUG: Song already exists (${song.track_name}) with added_by_userdata=${existingSong.added_by_userdata}`
         );
         if (existingSong.added_by_userdata === 'no' || existingSong.added_by_userdata === null) {
-          existingTrackIds_originalDB.push(song.track_id);
+          const dbNameArtistKey = buildNameArtistKey(existingSong.track_name, existingSong.artist_name);
+          const fallbackKey = nameArtistKey || existingSong.track_id || song.track_id;
+          const dedupeKey = dbNameArtistKey || fallbackKey;
+          const lastFmId = song.track_id || existingSong.track_id;
+          if (dedupeKey && lastFmId && !originalLastFmTrackIds.has(dedupeKey)) {
+            originalLastFmTrackIds.set(dedupeKey, lastFmId);
+          }
         }
       }
     }
 
+    const existingTrackIds_originalDB = Array.from(originalLastFmTrackIds.values());
     //console.log("New songs added to the database:", newSongs);
     console.log("Original DB track IDs found:", existingTrackIds_originalDB);
 
