@@ -224,6 +224,12 @@ useEffect(() => {
         ? { user_id: updatedUserData.user_id, intents: updatedUserData.intents }
         : updatedUserData;
 
+      console.log('Attempting to save to DB:', { 
+        onlyIntent, 
+        userId: updatedUserData.user_id,
+        intentCount: Object.keys(updatedUserData.intents || {}).length 
+      });
+
       const response = await fetch('/api/results', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -231,112 +237,154 @@ useEffect(() => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save user results');
+        const errorText = await response.text();
+        console.error('API response not OK:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorBody: errorText
+        });
+        throw new Error(`Failed to save user results: ${response.status} ${response.statusText}`);
       }
-      return await response.json();
+      const result = await response.json();
+      console.log('Successfully saved to DB:', result);
+      return result;
     } catch (error) {
-      console.error('Error saving to DB:', error);
+      console.error('Error in saveToDB:', error);
+      console.error('Failed payload context:', {
+        userId: updatedUserData?.user_id,
+        onlyIntent,
+        hasIntents: !!updatedUserData?.intents,
+        intentCount: Object.keys(updatedUserData?.intents || {}).length
+      });
       throw error;
     }
   }
 
   async function handleNext() {
-    const updatedCounter = counter + 1;
-    const currentIntents = userData?.intents || {};
+    try {
+      const updatedCounter = counter + 1;
+      const currentIntents = userData?.intents || {};
 
-    const newIntent = {
-      intent_id: currentIntent?.intent_id || "",
-      intent_name: currentIntent?.intent_name || "",
-      how_often: howOften || 0,
-      how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
-      songs: dropItems.map((song) => ({
-        track_id: song.track_id,
-        track_uri: song.track_uri,
-        track_name: song.track_name,
-        artist_name: song.artist_name,
-        album_name: song.album_name,
-        album_uri: song.album_uri,
-        duration_ms: song.duration_ms,
-        artist_uri: song.artist_uri,
-        genres: song.genres || [],
-        image: song.image || "/default-cover.png",
-      })),
-    };
+      const newIntent = {
+        intent_id: currentIntent?.intent_id || "",
+        intent_name: currentIntent?.intent_name || "",
+        how_often: howOften || 0,
+        how_imp: howImp || 0,
+        adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
+        songs: dropItems.map((song) => ({
+          track_id: song.track_id,
+          track_uri: song.track_uri,
+          track_name: song.track_name,
+          artist_name: song.artist_name,
+          album_name: song.album_name,
+          album_uri: song.album_uri,
+          duration_ms: song.duration_ms,
+          artist_uri: song.artist_uri,
+          genres: song.genres || [],
+          image: song.image || "/default-cover.png",
+        })),
+      };
 
-    const updatedUserData = {
-      ...userData,
-      intents: {
-        ...currentIntents,
-        [newIntent.intent_id]: newIntent,
-      },
-    };
+      const updatedUserData = {
+        ...userData,
+        intents: {
+          ...currentIntents,
+          [newIntent.intent_id]: newIntent,
+        },
+      };
 
-    localStorage.setItem("userData", JSON.stringify(updatedUserData));
-    localStorage.setItem("counter", updatedCounter.toString());
+      localStorage.setItem("userData", JSON.stringify(updatedUserData));
+      localStorage.setItem("counter", updatedCounter.toString());
 
-    // Save user info only once, then only save intents
-    if (!userInfoSavedRef.current) {
-      await saveToDB(updatedUserData, false);
-      userInfoSavedRef.current = true;
-    } else {
-      await saveToDB(updatedUserData, true);
-    }
+      // Save user info only once, then only save intents
+      if (!userInfoSavedRef.current) {
+        await saveToDB(updatedUserData, false);
+        userInfoSavedRef.current = true;
+      } else {
+        await saveToDB(updatedUserData, true);
+      }
 
-    if (currentIntentIdx < classificationIntents.length - 1) {
-      setCurrentIntentIdx(currentIntentIdx + 1);
-      const nextIdx = currentIntentIdx + 1;
-      localStorage.setItem('currentIntentIdx', nextIdx.toString());
-      window.location.reload();
-    } else {
-      localStorage.removeItem('currentIntentIdx');
-      window.location.reload();
+      if (currentIntentIdx < classificationIntents.length - 1) {
+        setCurrentIntentIdx(currentIntentIdx + 1);
+        const nextIdx = currentIntentIdx + 1;
+        localStorage.setItem('currentIntentIdx', nextIdx.toString());
+        window.location.reload();
+      } else {
+        localStorage.removeItem('currentIntentIdx');
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error in handleNext - Failed to proceed to next intent:', error);
+      console.error('Context:', {
+        currentIntentIdx,
+        intentId: currentIntent?.intent_id,
+        intentName: currentIntent?.intent_name,
+        userId: userData?.user_id,
+        howOften,
+        howImp,
+        adjectivesCount: adjectives.length,
+        songsCount: dropItems.length
+      });
+      setErrorMessage('An error occurred while saving. Please try again or contact support if the issue persists.');
+      setTimeout(() => setErrorMessage(null), 5000);
     }
   }
 
   async function handleSaveToDB() {
-    const currentIntents = userData?.intents || {};
+    try {
+      const currentIntents = userData?.intents || {};
 
-    const newIntent = {
-      intent_id: currentIntent?.intent_id ?? "",
-      intent_name: currentIntent?.intent_name || "",
-      how_often: howOften || 0,
-      how_imp: howImp || 0,
-      adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
-      songs: dropItems.map((song) => ({
-        track_id: song.track_id,
-        track_uri: song.track_uri,
-        track_name: song.track_name,
-        artist_name: song.artist_name,
-        album_name: song.album_name,
-        album_uri: song.album_uri,
-        duration_ms: song.duration_ms,
-        artist_uri: song.artist_uri,
-        genres: song.genres || [],
-        image: song.image || "/default-cover.png",
-      })),
-    };
+      const newIntent = {
+        intent_id: currentIntent?.intent_id ?? "",
+        intent_name: currentIntent?.intent_name || "",
+        how_often: howOften || 0,
+        how_imp: howImp || 0,
+        adjectives: adjectives.map((adj) => (adj as any).value.toLowerCase()),
+        songs: dropItems.map((song) => ({
+          track_id: song.track_id,
+          track_uri: song.track_uri,
+          track_name: song.track_name,
+          artist_name: song.artist_name,
+          album_name: song.album_name,
+          album_uri: song.album_uri,
+          duration_ms: song.duration_ms,
+          artist_uri: song.artist_uri,
+          genres: song.genres || [],
+          image: song.image || "/default-cover.png",
+        })),
+      };
 
-    const updatedUserData = {
-      ...userData,
-      intents: {
-        ...currentIntents,
-        [newIntent.intent_id]: newIntent,
-      },
-    };
+      const updatedUserData = {
+        ...userData,
+        intents: {
+          ...currentIntents,
+          [newIntent.intent_id]: newIntent,
+        },
+      };
 
-    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+      localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-    // Always save everything on submit
-    await saveToDB(updatedUserData, false);
+      // Always save everything on submit
+      await saveToDB(updatedUserData, false);
 
-    router.push('/end');
-    resetCounter();
-    localStorage.setItem("counter", "0");
-    localStorage.setItem('submissionComplete', 'true');
-    localStorage.removeItem('currentIntentIdx');
-    localStorage.removeItem('classificationIntents');
-    localStorage.removeItem('rankedIntents');
+      router.push('/end');
+      resetCounter();
+      localStorage.setItem("counter", "0");
+      localStorage.setItem('submissionComplete', 'true');
+      localStorage.removeItem('currentIntentIdx');
+      localStorage.removeItem('classificationIntents');
+      localStorage.removeItem('rankedIntents');
+    } catch (error) {
+      console.error('Error in handleSaveToDB - Failed to submit final results:', error);
+      console.error('Context:', {
+        userId: userData?.user_id,
+        totalIntents: Object.keys(userData?.intents || {}).length,
+        lastIntentId: currentIntent?.intent_id,
+        lastIntentName: currentIntent?.intent_name
+      });
+      setErrorMessage('Failed to submit your results. Please try again or contact support if the error persists.');
+      setTimeout(() => setErrorMessage(null), 5000);
+    }
   }
 
   // Calculate progress
