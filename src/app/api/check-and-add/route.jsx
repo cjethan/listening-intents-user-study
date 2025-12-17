@@ -26,7 +26,7 @@ async function preloadExistingSongs(songs) {
       .map((song) => song.track_id)
       .filter((trackId) => typeof trackId === "string" && trackId.trim().length > 0)
   )];
-  console.log(`DEBUG: Unique track_id candidates: ${trackIds.length}`);
+  //console.log(`DEBUG: Unique track_id candidates: ${trackIds.length}`);
 
   if (trackIds.length > 0) {
     const placeholders = trackIds.map((_, idx) => `$${idx + 1}`).join(", ");
@@ -35,7 +35,7 @@ async function preloadExistingSongs(songs) {
       bind: trackIds,
       type: sequelize.QueryTypes.SELECT,
     });
-    console.log(`DEBUG: Existing songs matched by track_id: ${existingTracks.length}`);
+    //console.log(`DEBUG: Existing songs matched by track_id: ${existingTracks.length}`);
 
     for (const row of existingTracks) {
       existingByTrackId.set(row.track_id, row);
@@ -53,7 +53,7 @@ async function preloadExistingSongs(songs) {
     const [trackNameNormalized, artistNameNormalized] = key.split(NAME_ARTIST_SEPARATOR);
     uniquePairs.push({ key, trackNameNormalized, artistNameNormalized });
   }
-  console.log(`DEBUG: Unique track_name/artist pairs: ${uniquePairs.length}`);
+  //console.log(`DEBUG: Unique track_name/artist pairs: ${uniquePairs.length}`);
 
   if (uniquePairs.length > 0) {
     const conditions = uniquePairs.map((_, idx) => {
@@ -85,7 +85,7 @@ async function preloadExistingSongs(songs) {
 }
 
 export async function POST(req) {
-  console.log("DEBUG: Received POST request to /api/check-and-add");
+  //console.log("DEBUG: Received POST request to /api/check-and-add");
   try {
     const body = await req.json();
     //console.log("DEBUG: Parsed request body:", body);
