@@ -508,7 +508,7 @@ export function DragAndDrop({ setDropItems }) {
   // Box 2 search: filter through the full listening history
   useEffect(() => {
     if (!box2SearchQuery.trim()) {
-      setFilteredBox2Items(box2FullHistory.slice(0, 100));
+      setFilteredBox2Items(box2FullHistory.slice(0, 200));
       return;
     }
     const query = box2SearchQuery.trim().toLowerCase();
