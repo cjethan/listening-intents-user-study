@@ -162,7 +162,9 @@ export default function UserInfo() {
       }
 
       // Map user input to enum values
-      const playInstrumentEnum = playsInstrument.toLowerCase();
+      const playInstrumentEnum = playsInstrument === 'I used to, but not anymore' 
+        ? 'used_to' 
+        : playsInstrument.toLowerCase();
       const formalEducationEnum = formalEducation
         .toLowerCase()
         .replace('yes, ongoing', 'ongoing')
