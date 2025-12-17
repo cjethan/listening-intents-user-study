@@ -40,7 +40,10 @@ async function fetchRandomSongsByGenre(genre, limit = 10) {
 
       // Helper to fetch album image from Last.fm
       async function getLastFmImage(artist, track) {
-        if (!artist || !track) return "/default-cover.png";
+        // Temporarily disabled - just return default cover
+        return "/default-cover.png";
+        
+        /* if (!artist || !track) return "/default-cover.png";
         const url = `https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(
           artist
         )}&track=${encodeURIComponent(track)}&format=json`;
@@ -56,7 +59,7 @@ async function fetchRandomSongsByGenre(genre, limit = 10) {
             : "/default-cover.png";
         } catch {
           return "/default-cover.png";
-        }
+        } */
       }
 
       // Enrich each song with its album image from Last.fm
