@@ -508,7 +508,7 @@ export function DragAndDrop({ setDropItems }) {
   // Box 2 search: filter through the full listening history
   useEffect(() => {
     if (!box2SearchQuery.trim()) {
-      setFilteredBox2Items(box2FullHistory.slice(0, 100));
+      setFilteredBox2Items(box2FullHistory.slice(0, 200));
       return;
     }
     const query = box2SearchQuery.trim().toLowerCase();
@@ -584,7 +584,7 @@ export function DragAndDrop({ setDropItems }) {
     const { active } = event;
     const itemId = active?.id;
     if (!itemId) return;
-    const allItems = [...box1Items, ...filteredBox2Items, ...box3Items, ...localDropItems, ...searchResults];
+    const allItems = [...box1Items, ...box2Items, ...box3Items, ...localDropItems, ...searchResults];
     const draggedItem = allItems.find((item) => item.track_id === itemId);
     if (!draggedItem) return;
     setActiveItem(draggedItem);
