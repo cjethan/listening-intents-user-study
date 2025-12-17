@@ -382,8 +382,8 @@ export function DragAndDrop({ setDropItems }) {
             });
 
             setBox2FullHistory(parsed);
-            setBox2Items(parsed.slice(0, 300));
-            setFilteredBox2Items(parsed.slice(0, 300));
+            setBox2Items(parsed);
+            setFilteredBox2Items(parsed);
           } catch {
             setBox2FullHistory([]);
             setBox2Items([]);
