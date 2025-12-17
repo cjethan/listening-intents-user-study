@@ -29,7 +29,7 @@ UserResult.init({
     allowNull: false,
   },
   play_instrument: {
-    type: DataTypes.ENUM('yes', 'ongoing', 'no'),
+    type: DataTypes.ENUM('yes', 'used_to', 'no'),
     allowNull: false,
   },
   formal_education: {
