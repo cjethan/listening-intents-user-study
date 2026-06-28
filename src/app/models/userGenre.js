@@ -1,12 +1,12 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+import { sequelize } from '../utils/database';
 
 class UserGenre extends Model {}
 
 UserGenre.init({
   user_id: {
     type: DataTypes.STRING,
-    primaryKey: true, // Part of the composite primary key
+    primaryKey: true,
     references: {
       model: 'user_results',
       key: 'user_id',
@@ -15,7 +15,7 @@ UserGenre.init({
   },
   genre_id: {
     type: DataTypes.INTEGER,
-    primaryKey: true, // Part of the composite primary key
+    primaryKey: true,
     references: {
       model: 'genres',
       key: 'id',
@@ -26,7 +26,7 @@ UserGenre.init({
   sequelize,
   modelName: 'UserGenre',
   tableName: 'user_genres',
-  timestamps: false, // Disable automatic timestamps
+  timestamps: false,
 });
 
 export default UserGenre;

@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -35,7 +35,9 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/api/songs.js",
-    "src/app/api/check-and-add/route.jsx"
+    "src/app/api/check-and-add/route.jsx",
+    "src/app/page.tsx",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

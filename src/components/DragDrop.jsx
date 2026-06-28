@@ -392,7 +392,6 @@ export function DragAndDrop({ setDropItems }) {
         return;
       }
 
-      // Otherwise, fetch from Last.fm API (capped to 1000 tracks)
       const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
       const user = lastfmUsername;
       const limit = 300; // max per page
@@ -474,18 +473,10 @@ export function DragAndDrop({ setDropItems }) {
           uniqueTracks.sort((a, b) => {
             const aIsOriginal = originalDbTrackIds.has(a.track_id);
             const bIsOriginal = originalDbTrackIds.has(b.track_id);
-            //const aInDb = allExistingTrackIds.has(a.track_id);
-            //const bInDb = allExistingTrackIds.has(b.track_id);
 
-            // Priority 1: Original DB songs
             if (aIsOriginal && !bIsOriginal) return -1;
             if (!aIsOriginal && bIsOriginal) return 1;
 
-            // Priority 2: Other songs that exist in the DB
-            //if (aInDb && !bInDb) return -1;
-            //if (!aInDb && bInDb) return 1;
-
-            // Otherwise, keep original order (most recent)
             return 0;
           });
         }

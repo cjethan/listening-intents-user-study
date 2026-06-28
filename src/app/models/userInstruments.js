@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+import { sequelize } from '../utils/database';
 
 class UserInstrument extends Model {}
 
@@ -11,7 +11,7 @@ UserInstrument.init({
       key: 'user_id',
     },
     allowNull: false,
-    primaryKey: true, // Part of the composite primary key
+    primaryKey: true,
   },
   instrument_id: {
     type: DataTypes.INTEGER,
@@ -20,7 +20,7 @@ UserInstrument.init({
       key: 'id',
     },
     allowNull: false,
-    primaryKey: true, // Part of the composite primary key
+    primaryKey: true,
   }
 }, {
   sequelize,

@@ -36,24 +36,19 @@ export async function POST(request) {
       last_fm_id
     } = body;
 
-    // Check if the user_id already exists
     const existingUser = await UserResult.findOne({ where: { user_id } });
 
-    // If user does not exist, create user and all info
     if (!existingUser) {
       console.log("User does not exist. Proceeding with creation...");
 
-      // Validate formal_education field
       const validFormalEducation = ['yes', 'ongoing', 'no'];
       if (!validFormalEducation.includes(formal_education)) {
         console.error(`Invalid value for formal_education: ${formal_education}`);
         return NextResponse.json({ error: `Invalid value for formal_education: ${formal_education}` }, { status: 400 });
       }
 
-      // Map empty string for instruments_played_years to null
       const instruments_played_years_mapped = instruments_played_years === "" ? null : instruments_played_years;
 
-      // Save user data, now including age, gender, nationality
       const newUser = await UserResult.create({
         user_id,
         prolific_id,
@@ -68,7 +63,6 @@ export async function POST(request) {
         last_fm_id
       });
 
-      // Save instruments and associate with the user
       if (instruments_played && instruments_played.length > 0) {
         for (const instrumentName of instruments_played) {
           const [instrument] = await Instrument.findOrCreate({
@@ -81,7 +75,6 @@ export async function POST(request) {
         }
       }
 
-      // Save genres and associate with the user
       if (genres && genres.length > 0) {
         for (const genreName of genres) {
           const [genre] = await Genre.findOrCreate({ where: { name: genreName } });
@@ -90,11 +83,9 @@ export async function POST(request) {
       }
     }
 
-    // Always save new intents and their data (even if user exists)
     for (const key in intents) {
       const intent = intents[key];
 
-      // Check if this intent already exists for this user (avoid duplicates)
       const existingIntent = await Intent.findOne({
         where: { user_id: user_id, name: intent.intent_name }
       });
@@ -103,7 +94,6 @@ export async function POST(request) {
         continue;
       }
 
-      // Save the intent
       const newIntent = await Intent.create({
         user_id: user_id,
         name: intent.intent_name,
@@ -111,7 +101,6 @@ export async function POST(request) {
         how_imp: intent.how_imp,
       });
 
-      // Save songs for this intent
       for (const song of intent.songs) {
         const newIntentSong = await IntentSong.create({
           intent_id: newIntent.id,
@@ -126,7 +115,6 @@ export async function POST(request) {
           duration_ms: song.duration_ms,
         });
 
-        // Save genres for this song
         for (const genreName of song.genres) {
           const [genre] = await Genre.findOrCreate({ where: { name: genreName } });
           await IntentSongGenre.create({
@@ -136,7 +124,6 @@ export async function POST(request) {
         }
       }
 
-      // Save adjectives for this intent
       for (const adjective of intent.adjectives) {
         const [adjectiveRecord] = await Adjective.findOrCreate({
           where: { word: adjective },

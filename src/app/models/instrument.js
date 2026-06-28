@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+import { sequelize } from '../utils/database';
 
 class Instrument extends Model {}
 

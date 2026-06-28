@@ -9,7 +9,6 @@ import UserInstrument from './userInstruments.js';
 import IntentAdjective from './intentAdjectives.js';
 import IntentSongGenre from './intentSongGenres.js';
 
-// Associations
 UserResult.hasMany(UserGenre, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 UserResult.hasMany(UserInstrument, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 UserResult.hasMany(Intent, { foreignKey: 'user_id', onDelete: 'CASCADE' });

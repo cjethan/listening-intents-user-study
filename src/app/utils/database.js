@@ -1,11 +1,11 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
-import pg from "pg"; // Import the pg module for PostgreSQL
+import pg from "pg";
 
 dotenv.config();
 
 if (!process.env.POSTGRESQL_URI) {
-  throw new Error("POSTGRESQL_URI is not defined in the environment variables."); // Ensure this variable is set
+  throw new Error("POSTGRESQL_URI is not defined in the environment variables.");
 }
 
 const sequelize = new Sequelize(process.env.POSTGRESQL_URI, {
@@ -18,7 +18,7 @@ const sequelize = new Sequelize(process.env.POSTGRESQL_URI, {
   try {
     await sequelize.authenticate();
     console.log("Connection has been established successfully.");
-    await sequelize.sync({ alter: true }); // Synchronize models
+    await sequelize.sync({ alter: true });
   } catch (error) {
     console.error("Unable to connect to the database:", error);
   }

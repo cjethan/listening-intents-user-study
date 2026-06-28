@@ -135,12 +135,10 @@ useEffect(() => {
     fetchSongs();
   }, []);
 
-  // Replace all usage of randomIntent with the next intent from the top 10 ranked intents
   const [classificationIntents, setClassificationIntents] = useState<string[]>([]);
   const [currentIntentIdx, setCurrentIntentIdx] = useState(() => {
     if (typeof window !== 'undefined') {
       const idx = localStorage.getItem('currentIntentIdx');
-      //console.log('DEBUG: currentIntentIdx from localStorage:', idx);
       return idx ? parseInt(idx, 10) : 0;
     }
     return 0;
@@ -158,7 +156,6 @@ useEffect(() => {
   const [currentIntent, setCurrentIntent] = useState<Intent | null>(null);
 
   useEffect(() => {
-    // fetch intent data for the current intent id
     async function fetchIntentById(intentId: string) {
       if (intentId === undefined || intentId === null || intentId === "") {
         return;
@@ -214,10 +211,8 @@ useEffect(() => {
     }
   }
 
-  // Track if user info has been saved already
   const userInfoSavedRef = useRef(false);
 
-  // Save user info and current intent to DB
   async function saveToDB(updatedUserData: any, onlyIntent: boolean = false) {
     try {
       const payload = onlyIntent
@@ -250,12 +245,6 @@ useEffect(() => {
       return result;
     } catch (error) {
       console.error('Error in saveToDB:', error);
-      console.error('Failed payload context:', {
-        userId: updatedUserData?.user_id,
-        onlyIntent,
-        hasIntents: !!updatedUserData?.intents,
-        intentCount: Object.keys(updatedUserData?.intents || {}).length
-      });
       throw error;
     }
   }
@@ -296,7 +285,6 @@ useEffect(() => {
       localStorage.setItem("userData", JSON.stringify(updatedUserData));
       localStorage.setItem("counter", updatedCounter.toString());
 
-      // Save user info only once, then only save intents
       if (!userInfoSavedRef.current) {
         await saveToDB(updatedUserData, false);
         userInfoSavedRef.current = true;
@@ -314,18 +302,8 @@ useEffect(() => {
         window.location.reload();
       }
     } catch (error) {
-      console.error('Error in handleNext - Failed to proceed to next intent:', error);
-      console.error('Context:', {
-        currentIntentIdx,
-        intentId: currentIntent?.intent_id,
-        intentName: currentIntent?.intent_name,
-        userId: userData?.user_id,
-        howOften,
-        howImp,
-        adjectivesCount: adjectives.length,
-        songsCount: dropItems.length
-      });
-      setErrorMessage('An error occurred while saving. Please try again or contact support if the issue persists.');
+      console.error('Error in handleNext. Failed to proceed to next intent:', error);
+      setErrorMessage('An error occurred while saving.');
       setTimeout(() => setErrorMessage(null), 5000);
     }
   }
@@ -364,7 +342,6 @@ useEffect(() => {
 
       localStorage.setItem("userData", JSON.stringify(updatedUserData));
 
-      // Always save everything on submit
       await saveToDB(updatedUserData, false);
 
       router.push('/end');
@@ -376,22 +353,15 @@ useEffect(() => {
       localStorage.removeItem('rankedIntents');
     } catch (error) {
       console.error('Error in handleSaveToDB - Failed to submit final results:', error);
-      console.error('Context:', {
-        userId: userData?.user_id,
-        totalIntents: Object.keys(userData?.intents || {}).length,
-        lastIntentId: currentIntent?.intent_id,
-        lastIntentName: currentIntent?.intent_name
-      });
       setErrorMessage('Failed to submit your results. Please try again or contact support if the error persists.');
       setTimeout(() => setErrorMessage(null), 5000);
     }
   }
 
-  // Calculate progress
   const totalIntents = classificationIntents.length || 0;
   const progress =
     totalIntents === 0
-      ? 0 // Default to 0% while loading
+      ? 0
       : Math.min(((currentIntentIdx + 1) / totalIntents) * 100, 100);
 
   return (

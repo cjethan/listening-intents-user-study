@@ -38,7 +38,6 @@ export default function RankIntentsPage() {
       return;
     }
 
-    // Drag from unranked to ranked
     if (result.source.droppableId === 'unranked' && result.destination.droppableId === 'ranked') {
       const item = unranked[result.source.index];
       const newUnranked = Array.from(unranked);
@@ -48,9 +47,8 @@ export default function RankIntentsPage() {
       setUnranked(newUnranked);
       setRanked(newRanked);
     }
-    // Drag from unranked to discarded
     else if (result.source.droppableId === 'unranked' && result.destination.droppableId === 'discarded') {
-      if (discarded.length >= 20) return; // Limit discard box to 20
+      if (discarded.length >= 20) return;
       const item = unranked[result.source.index];
       const newUnranked = Array.from(unranked);
       newUnranked.splice(result.source.index, 1);
@@ -59,14 +57,12 @@ export default function RankIntentsPage() {
       setUnranked(newUnranked);
       setDiscarded(newDiscarded);
     }
-    // Reorder ranked
     else if (result.source.droppableId === 'ranked' && result.destination.droppableId === 'ranked') {
       const newRanked = Array.from(ranked);
       const [removed] = newRanked.splice(result.source.index, 1);
       newRanked.splice(result.destination.index, 0, removed);
       setRanked(newRanked);
     }
-    // Move back from ranked to unranked
     else if (result.source.droppableId === 'ranked' && result.destination.droppableId === 'unranked') {
       const item = ranked[result.source.index];
       const newRanked = Array.from(ranked);
@@ -76,7 +72,6 @@ export default function RankIntentsPage() {
       setRanked(newRanked);
       setUnranked(newUnranked);
     }
-    // Move from ranked to discarded
     else if (result.source.droppableId === 'ranked' && result.destination.droppableId === 'discarded') {
       if (discarded.length >= 20) return;
       const item = ranked[result.source.index];
@@ -87,7 +82,6 @@ export default function RankIntentsPage() {
       setRanked(newRanked);
       setDiscarded(newDiscarded);
     }
-    // Move from discarded to ranked
     else if (result.source.droppableId === 'discarded' && result.destination.droppableId === 'ranked') {
       const item = discarded[result.source.index];
       const newDiscarded = Array.from(discarded);
@@ -97,7 +91,6 @@ export default function RankIntentsPage() {
       setDiscarded(newDiscarded);
       setRanked(newRanked);
     }
-    // Move from discarded to unranked
     else if (result.source.droppableId === 'discarded' && result.destination.droppableId === 'unranked') {
       const item = discarded[result.source.index];
       const newDiscarded = Array.from(discarded);
@@ -107,7 +100,6 @@ export default function RankIntentsPage() {
       setDiscarded(newDiscarded);
       setUnranked(newUnranked);
     }
-    // Reorder discarded
     else if (result.source.droppableId === 'discarded' && result.destination.droppableId === 'discarded') {
       const newDiscarded = Array.from(discarded);
       const [removed] = newDiscarded.splice(result.source.index, 1);

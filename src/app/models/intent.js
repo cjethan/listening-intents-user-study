@@ -1,6 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
-import UserResult from './results'; // Import UserResult for association
+import { sequelize } from '../utils/database';
+import UserResult from './results';
 
 class Intent extends Model {}
 
@@ -17,7 +17,7 @@ Intent.init({
       model: 'user_results', // Reference the user_results table
       key: 'user_id',
     },
-    onDelete: 'CASCADE', // Ensure intents are deleted if the user is deleted
+    onDelete: 'CASCADE',
   },
   name: {
     type: DataTypes.STRING,
@@ -35,10 +35,9 @@ Intent.init({
   sequelize,
   modelName: 'Intent',
   tableName: 'intents',
-  timestamps: false, // Disable automatic timestamps
+  timestamps: false,
 });
 
-// Define association with UserResult
 Intent.belongsTo(UserResult, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 
 export default Intent;

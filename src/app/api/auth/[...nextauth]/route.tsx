@@ -3,9 +3,9 @@
 */
 import NextAuth from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
-import { JWT } from "next-auth/jwt"; // Import the JWT type
+import { JWT } from "next-auth/jwt";
 
-async function refreshAccessToken(token: JWT) { // Add type for token
+async function refreshAccessToken(token: JWT) {
     try {
         const url = "https://accounts.spotify.com/api/token";
         const response = await fetch(url, {
@@ -59,17 +59,17 @@ const handler = NextAuth({
         async jwt({ token, account }) {
             if (account) {
                 token.accessToken = account.access_token;
-                token.accessTokenExpires = Date.now() + (account.expires_in as number) * 1000; // Explicitly cast to number
+                token.accessTokenExpires = Date.now() + (account.expires_in as number) * 1000;
                 token.refreshToken = account.refresh_token;
             }
 
-            if (Date.now() < (token.accessTokenExpires as number)) { // Explicitly cast to number
+            if (Date.now() < (token.accessTokenExpires as number)) {
                 return token;
             }
 
             return await refreshAccessToken(token);
         },
-        async session({ session, token }: {session: any, token: JWT}) { // Explicitly type session and token
+        async session({ session, token }: {session: any, token: JWT}) {
             session.accessToken = token.accessToken;
             session.error = token.error;
             return session;
