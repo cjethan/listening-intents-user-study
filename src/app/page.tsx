@@ -32,7 +32,6 @@ type Intent = {
 
 // Placeholder for fetching album images (replace with Last.fm or your own logic)
 async function fetchAlbumImagePlaceholder(trackId: string): Promise<string> {
-  // TODO: Replace with Last.fm or your own API call
   return "/default-cover.png";
 }
 
