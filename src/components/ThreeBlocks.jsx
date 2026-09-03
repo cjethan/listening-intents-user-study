@@ -13,7 +13,6 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
   const [musicHoursPerDay, setMusicHoursPerDay] = useState(undefined);
   const [useSongs, setUseSongs] = useState(false);
 
-  // Get daily music hours from localStorage userData
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userData = localStorage.getItem("userData");
@@ -34,12 +33,10 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
     }
   }, []);
 
-  // If musicHoursPerDay is undefined, return null or a loading spinner
   if (musicHoursPerDay === undefined) {
     return null;
   }
 
-  // Build dynamic choices for "How often" based on musicHoursPerDay and switch
   const getHowOftenOptions = () => {
     const percentages = [0.05, 0.15, 0.3, 0.6];
     const hours = Number(musicHoursPerDay) || 1;
@@ -64,7 +61,6 @@ const ThreeBlocks = ({ randomIntent, setHowOften, setHowImp, setAdjectives }) =>
         return `${formatMinutes(minuteValue)} per day`;
       }
     });
-    // Add a "more than" option at the end
     let lastMinute = totalMinutes * percentages[percentages.length - 1];
     let lastSong = Math.round(totalSongs * percentages[percentages.length - 1]);
     options.push(

@@ -2,11 +2,9 @@ export async function loadAllIntents() {
   // Use absolute URL for server-side fetch, relative for client-side
   let url = '';
   if (typeof window === 'undefined') {
-    // On server, construct absolute URL
     const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     url = `${base}/intent_data_new_titles_v02.json`;
   } else {
-    // On client
     url = '/intent_data_new_titles_v02.json';
   }
   const response = await fetch(url);

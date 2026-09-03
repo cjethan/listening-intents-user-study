@@ -1,12 +1,11 @@
 /*
-* Check if the user's songs (top songs, most recent songs) are already in the database, if not, add them.
+* Check if the user's songs are already in the database, if not, add them.
 */
 import { NextResponse } from "next/server";
 import { sequelize } from "@/app/utils/database";
 
 const NAME_ARTIST_SEPARATOR = "__@@__";
 const normalize = (value = "") => (typeof value === "string" ? value.trim().toLowerCase() : "");
-// Deterministic key for matching songs by name/artist regardless of casing/whitespace.
 const buildNameArtistKey = (trackName = "", artistName = "") => {
   const normalizedTrackName = normalize(trackName);
   const normalizedArtistName = normalize(artistName);
@@ -16,7 +15,7 @@ const buildNameArtistKey = (trackName = "", artistName = "") => {
   return `${normalizedTrackName}${NAME_ARTIST_SEPARATOR}${normalizedArtistName}`;
 };
 
-// Preload existing songs in as few queries as possible to avoid per-song DB lookups.
+// Preload existing songs in as few queries as possible to avoid per-song DB lookups
 async function preloadExistingSongs(songs) {
   const existingByTrackId = new Map();
   const existingByNameArtist = new Map();
@@ -26,7 +25,6 @@ async function preloadExistingSongs(songs) {
       .map((song) => song.track_id)
       .filter((trackId) => typeof trackId === "string" && trackId.trim().length > 0)
   )];
-  //console.log(`DEBUG: Unique track_id candidates: ${trackIds.length}`);
 
   if (trackIds.length > 0) {
     const placeholders = trackIds.map((_, idx) => `$${idx + 1}`).join(", ");
@@ -35,7 +33,6 @@ async function preloadExistingSongs(songs) {
       bind: trackIds,
       type: sequelize.QueryTypes.SELECT,
     });
-    //console.log(`DEBUG: Existing songs matched by track_id: ${existingTracks.length}`);
 
     for (const row of existingTracks) {
       existingByTrackId.set(row.track_id, row);
@@ -53,7 +50,6 @@ async function preloadExistingSongs(songs) {
     const [trackNameNormalized, artistNameNormalized] = key.split(NAME_ARTIST_SEPARATOR);
     uniquePairs.push({ key, trackNameNormalized, artistNameNormalized });
   }
-  //console.log(`DEBUG: Unique track_name/artist pairs: ${uniquePairs.length}`);
 
   if (uniquePairs.length > 0) {
     const conditions = uniquePairs.map((_, idx) => {
@@ -71,7 +67,6 @@ async function preloadExistingSongs(songs) {
       bind,
       type: sequelize.QueryTypes.SELECT,
     });
-    console.log(`DEBUG: Existing songs matched by name/artist: ${existingNames.length}`);
 
     for (const row of existingNames) {
       const key = buildNameArtistKey(row.track_name, row.artist_name);
@@ -85,40 +80,32 @@ async function preloadExistingSongs(songs) {
 }
 
 export async function POST(req) {
-  //console.log("DEBUG: Received POST request to /api/check-and-add");
   try {
     const body = await req.json();
-    //console.log("DEBUG: Parsed request body:", body);
 
     const { songs } = body;
 
     if (!Array.isArray(songs)) {
-      console.error("DEBUG: Invalid data format - songs is not an array:", songs);
       return NextResponse.json({ error: "Invalid data format" }, { status: 400 });
     }
 
-    console.log(`DEBUG: Number of songs received: ${songs.length}`);
     const newSongs = [];
     const originalLastFmTrackIds = new Map();
 
     let existingSongMaps;
     try {
       existingSongMaps = await preloadExistingSongs(songs);
-      //console.log(`DEBUG: Preloaded ${existingSongMaps.existingByTrackId.size} songs by track_id and ${existingSongMaps.existingByNameArtist.size} songs by name/artist`);
     } catch (preloadErr) {
-      console.error("DEBUG: Failed to preload songs:", preloadErr);
       return NextResponse.json({ error: "Failed to check songs" }, { status: 500 });
     }
 
     for (const [index, song] of songs.entries()) {
-      //console.log(`DEBUG: Evaluating song #${index + 1} (${song.track_name} - ${song.artist_name}) with track_id ${song.track_id || "<missing>"}`);
       const nameArtistKey = buildNameArtistKey(song.track_name, song.artist_name);
       const existingSong =
         (song.track_id && existingSongMaps.existingByTrackId.get(song.track_id)) ||
         existingSongMaps.existingByNameArtist.get(nameArtistKey);
 
       if (!existingSong) {
-        //console.log(`DEBUG: Song with track_id ${song.track_id} does not exist. Adding to database.`);
         try {
           await sequelize.query(
             `INSERT INTO songs (track_id, track_name, artist_name, track_uri, artist_uri, album_uri, duration_ms, album_name, added_by_userdata)
@@ -137,19 +124,11 @@ export async function POST(req) {
               ],
             }
           );
-          //console.log(`DEBUG: Successfully added song with track_id ${song.track_id} to database.`);
-          //console.log(`DEBUG: Inserted song ${song.track_name} (${song.track_id || "<no track_id>"})`);
           newSongs.push(song);
         } catch (insertErr) {
-          console.error(`DEBUG: Error inserting song with track_id ${song.track_id}:`, insertErr);
+          console.error(`Error inserting song with track_id ${song.track_id}:`, insertErr);
         }
       } else {
-        // The song already exists in the database.
-        // Log the `added_by_userdata` from the DATABASE record (`existingSong`).
-        //console.log(`Found existing song: ${song.track_name}. DB version has added_by_userdata: ${existingSong.added_by_userdata}`);
-
-        // Check if the DATABASE record is an original entry.
-        //console.log(`DEBUG: Song already exists (${song.track_name}) with added_by_userdata=${existingSong.added_by_userdata}`);
         if (existingSong.added_by_userdata === 'no' || existingSong.added_by_userdata === null) {
           const dbNameArtistKey = buildNameArtistKey(existingSong.track_name, existingSong.artist_name);
           const fallbackKey = nameArtistKey || existingSong.track_id || song.track_id;
@@ -163,10 +142,8 @@ export async function POST(req) {
     }
 
     const existingTrackIds_originalDB = Array.from(originalLastFmTrackIds.values());
-    //console.log("New songs added to the database:", newSongs);
-    //console.log("Original DB track IDs found:", existingTrackIds_originalDB);
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Songs checked and added successfully", 
       newSongs,
       existingTrackIds_originalDB 

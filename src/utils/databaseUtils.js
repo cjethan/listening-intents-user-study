@@ -22,7 +22,6 @@ export async function checkSongsAndExtractGenres(songs) {
     const genres = songsWithGenres.flatMap((song) => song.genres);
     console.log("Extracted genres:", genres);
 
-    // Calculate the most frequent genres
     const genreFrequency = genres.reduce((acc, genre) => {
       acc[genre] = (acc[genre] || 0) + 1;
       return acc;
@@ -31,7 +30,6 @@ export async function checkSongsAndExtractGenres(songs) {
     const mostFrequentGenres = sortedGenres.map(([genre]) => genre);
     console.log("Most frequent genres:", mostFrequentGenres);
 
-    // Filter for unique genres
     const uniqueGenres = [...new Set(genres)];
     console.log("Unique genres:", uniqueGenres);
 

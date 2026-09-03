@@ -1,6 +1,6 @@
 'use client';
 /*
-* todo Page to collect user information
+* Page to collect user information
 */
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,6 @@ import countryList from 'react-select-country-list';
 
 export default function UserInfo() {
   const [userId, setUserId] = useState('');
-  // const [prolificId, setProlificId] = useState(''); todo include when using prolific
   const [lastfmUsername, setLastfmUsername] = useState('');
   const [genres, setGenres] = useState<string[]>([]);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -22,10 +21,9 @@ export default function UserInfo() {
   const [yearsPlayed, setYearsPlayed] = useState('');
   const [formalEducation, setFormalEducation] = useState('');
   const [musicProduction, setMusicProduction] = useState('');
-  const [musicHours, setMusicHours] = useState(6); // Default to average value
+  const [musicHours, setMusicHours] = useState(6);
   const [verifying, setVerifying] = useState(false);
 
-  // New fields
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
   const [nationality, setNationality] = useState('');
@@ -39,15 +37,13 @@ export default function UserInfo() {
       const isAuthenticated = localStorage.getItem('isAuthenticated');
 
       if (!consentGiven) {
-        router.replace('/consent'); // Redirect to the consent page if consent is not given
+        router.replace('/consent');
         return;
       }
 
-      // Generate a random user ID
       const uniqueId = uuidv4();
       setUserId(uniqueId);
 
-      // Fetch genres from the file
       fetch('/all_genres.txt')
         .then((response) => response.text())
         .then((data) => {
@@ -57,7 +53,6 @@ export default function UserInfo() {
     }
   }, [router]);
 
-  // Helper for react-select options
   const genreOptions = genres.map((g) => ({ value: g, label: g }));
 
   const genderOptions = [
@@ -69,14 +64,12 @@ export default function UserInfo() {
     { value: 'Prefer not to say', label: 'Prefer not to say' },
   ];
 
-  // Get country options from react-select-country-list
   const nationalityOptions = [
     { value: '', label: 'Select your nationality', isDisabled: true },
     ...countryList().getData(),
     { value: 'Other', label: 'Other' }
   ];
 
-  // Handler for react-select
   function handleGenreSelect(selected: any) {
     setSelectedGenres(selected ? selected.map((opt: any) => opt.value) : []);
     setError('');
@@ -93,7 +86,6 @@ export default function UserInfo() {
     setError('');
     setVerifying(true);
 
-    // Verify Last.fm username
     const apiKey = process.env.NEXT_PUBLIC_LASTFM_API_KEY;
     const url = `https://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURIComponent(lastfmUsername)}&api_key=${apiKey}&format=json`;
 
@@ -107,12 +99,6 @@ export default function UserInfo() {
         return;
       }
 
-      // Validation for required fields
-      /*
-      if (!prolificId.trim()) {
-        setError('Prolific ID is required.');
-        return;
-      }*/
       if (!age.trim()) {
         setError('Please enter your age.');
         return;
@@ -161,8 +147,7 @@ export default function UserInfo() {
         return;
       }
 
-      // Map user input to enum values
-      const playInstrumentEnum = playsInstrument === 'I used to, but not anymore' 
+      const playInstrumentEnum = playsInstrument === 'I used to, but not anymore'
         ? 'used_to' 
         : playsInstrument.toLowerCase();
       const formalEducationEnum = formalEducation
@@ -171,22 +156,14 @@ export default function UserInfo() {
         .replace('yes, completed', 'yes');
       const composeMusicEnum = musicProduction
         .toLowerCase()
-        .replace('yes, regularly', 'yes')
-        .replace('occasionally', 'occasionally')
-        .replace('no', 'no');
+        .replace('yes, regularly', 'yes');
       const instrumentsPlayedYearsEnum = yearsPlayed
         ? yearsPlayed
             .toLowerCase()
-            .replace('less than 1 year', 'less than 1 year')
-            .replace('1-2 years', '1-2 years')
-            .replace('3-5 years', '3-5 years')
-            .replace('6-10 years', '6-10 years')
-            .replace('more than 10 years', 'more than 10 years')
-        : null; // Map empty string to null
+        : null;
 
       const existingUserData = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('userData') || '{}') : {};
       const prolificId = existingUserData.prolific_id || '';
-      //console.log("Prolific ID retrieved from localStorage:", prolificId);
 
       const userData = {
         user_id: userId,
@@ -202,14 +179,14 @@ export default function UserInfo() {
         formal_education: formalEducationEnum,
         compose_music: composeMusicEnum,
         hours_listening_daily: musicHours,
-        intents: {}, // Placeholder for intents
+        intents: {},
       };
 
       setUserData(userData);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('userData', JSON.stringify(userData)); // Persist user data
+        localStorage.setItem('userData', JSON.stringify(userData));
       }
-      router.push('/rank-intents'); // Redirect to the intent ranking page
+      router.push('/rank-intents');
     } catch (err) {
       setVerifying(false);
       setError("Could not verify your Last.fm username. Please double check your username and try again.");
@@ -220,18 +197,6 @@ export default function UserInfo() {
     <div className="p-8 bg-gradient-to-b from-gray-100 to-gray-50 min-h-screen flex flex-col items-center justify-center">
       <h1 className="text-5xl font-semibold text-gray-800 mb-10 tracking-tight">Tell us about yourself</h1>
       <form onSubmit={handleSubmit} className="space-y-8 bg-white p-12 rounded-2xl shadow-2xl w-full max-w-3xl">
-        {/* todo include when using prolific
-        <div>
-          <label className="block text-lg font-medium text-gray-800 mb-2">Prolific ID</label>
-          <input
-            type="text"
-            value={prolificId}
-            onChange={(e) => setProlificId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:outline-none transition-all"
-            placeholder="Enter your Prolific ID"
-            required
-          />
-        </div>*/}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Last.fm Username</label>
           <input
@@ -243,7 +208,6 @@ export default function UserInfo() {
             required
           />
         </div>
-        {/* New fields for age, gender, nationality */}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Age</label>
           <input
@@ -281,7 +245,6 @@ export default function UserInfo() {
             isSearchable
           />
         </div>
-        {/* End new fields */}
         <div>
           <label className="block text-lg font-medium text-gray-800 mb-2">Please select music genres that you listen to (at least 3)</label>
           <Select

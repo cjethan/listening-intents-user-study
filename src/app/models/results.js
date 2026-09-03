@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // Ensure this path is correct
+import { sequelize } from '../utils/database';
 
 class UserResult extends Model {}
 
@@ -52,10 +52,10 @@ UserResult.init({
       '6-10 years',
       'more than 10 years'
     ),
-    allowNull: true, // Allow null values
+    allowNull: true,
   }
 }, {
-  sequelize, // Ensure the sequelize instance is passed here
+  sequelize,
   modelName: 'UserResult',
   tableName: 'user_results',
   timestamps: false,

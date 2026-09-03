@@ -10,7 +10,7 @@ export default function ConsentForm() {
     if (typeof window !== 'undefined') {
       const consentGiven = localStorage.getItem('consentGiven');
       if (consentGiven === 'true') {
-        router.push('/prolific-id'); // Redirect to the prolific ID page if consent is already given
+        router.push('/prolific-id');
       }
     }
   }, [router]);
@@ -20,7 +20,7 @@ export default function ConsentForm() {
       localStorage.clear();
       localStorage.setItem('consentGiven', 'true');
     }
-    router.push('/prolific-id'); // Redirect to the prolific ID page
+    router.push('/prolific-id');
   };
 
   return (

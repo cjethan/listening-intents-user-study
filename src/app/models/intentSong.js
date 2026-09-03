@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+import { sequelize } from '../utils/database';
 
 class IntentSong extends Model {}
 
@@ -13,7 +13,7 @@ IntentSong.init({
     allowNull: false,
   },
   intent_name: {
-    type: DataTypes.STRING, // Add intent_name field
+    type: DataTypes.STRING,
     allowNull: false,
   },
   track_id: DataTypes.STRING,

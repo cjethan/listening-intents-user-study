@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../utils/database'; // assuming your sequelize instance
+import { sequelize } from '../utils/database';
 
 class Genre extends Model {}
 
@@ -18,7 +18,7 @@ Genre.init({
   sequelize,
   modelName: 'Genre',
   tableName: 'genres',
-  timestamps: false, // Disable automatic timestamps
+  timestamps: false,
 });
 
 export default Genre;
