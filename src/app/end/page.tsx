@@ -12,7 +12,7 @@ export default function EndPage() {
       <div className="mt-8 text-center text-gray-500">
         <p>
           If you have any questions, please contact us at:<br />
-          <span className="font-semibold">[removed]</span>
+          <span className="font-semibold">[contact removed for publication]</span>
         </p>
       </div>
     </div>
