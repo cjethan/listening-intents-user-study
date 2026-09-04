@@ -4,7 +4,6 @@ import { DndContext, useDraggable, useDroppable, DragOverlay } from "@dnd-kit/co
 import ReactSelect from "react-select";
 
 async function checkAndAddToDatabase(songs) {
-  //console.log("Checking and adding songs to the database...");
   try {
     const response = await fetch("/api/check-and-add", {
       method: "POST",
@@ -15,7 +14,6 @@ async function checkAndAddToDatabase(songs) {
     });
 
     const responseData = await response.json();
-    //console.log("Response from check-and-add API:", responseData);
     return responseData; // Return the response which should contain info about existing songs
   } catch (error) {
     //console.error("Error checking/adding songs to the database:", error);
@@ -98,12 +96,10 @@ export function DragAndDrop({ setDropItems }) {
     const fetchSongs = async () => {
       try {
           setBox1Loading(true); // Start loading
-          //console.log("Fetching songs for Box 1...");
           // Retrieve genres from localStorage
           if (typeof window !== 'undefined') {
             const userData = JSON.parse(localStorage.getItem("userData"));
             const genres = userData?.genres || [];
-            //console.log(`Retrieved genres from localStorage: ${genres}`);
 
             // Fetch songs for all genres in parallel
             const genrePromises = genres.map((genre) =>
@@ -113,8 +109,6 @@ export function DragAndDrop({ setDropItems }) {
 
             // Flatten and limit the total number of songs
             const allSongs = songsByGenre.flat().slice(0, 100); // Limit to 100 songs
-            //console.log(`Fetched ${allSongs.length} songs in total.`);
-            //console.log("Songs by genre:", allSongs);
 
             // Display all fetched songs without shuffling
             setBox1Items(allSongs);
@@ -168,7 +162,6 @@ export function DragAndDrop({ setDropItems }) {
 
           const recentData = await recentRes.json();
           const top3mData = await top3mRes.json();
-          console.log("Top 3m tracks from Last.fm 1:", top3mData);
           const topOverallData = await topOverallRes.json();
 
           const recentTracks = Array.isArray(recentData?.recenttracks?.track)
@@ -269,8 +262,6 @@ export function DragAndDrop({ setDropItems }) {
           const top3mTracks = (await Promise.all(top3mTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
           const topOverallTracks = (await Promise.all(topOverallTracksRaw.map(enrichTrackWithAlbum))).filter(Boolean);
 
-          console.log("Top 3 months tracks from Last.fm:", top3mTracks);
-          console.log("Top overall tracks from Last.fm:", topOverallTracks);
 
           // Combine and deduplicate by artist+track_name
           const allTracks = [...recentTracks, ...top3mTracks, ...topOverallTracks];
@@ -286,15 +277,12 @@ export function DragAndDrop({ setDropItems }) {
           }
 
           localStorage.setItem("lastfmTopSongs", JSON.stringify(uniqueTracks));
-          console.log("Combined Last.fm tracks:", uniqueTracks);
           setBox2Items(uniqueTracks);
           setFilteredBox2Items(uniqueTracks);  
           
           // Check songs against the database to get their status
-          console.log("Checking and adding songs to the database...");
           const checkData = await checkAndAddToDatabase(uniqueTracks);
           const existingTrackIds = new Set(checkData?.existingTrackIds || []);
-          console.log("Songs successfully checked and added to the database.");
 
           // Sort uniqueTracks: songs in the database first, with original DB songs prioritized
           uniqueTracks.sort((a, b) => {
@@ -313,10 +301,8 @@ export function DragAndDrop({ setDropItems }) {
           });
 
           localStorage.setItem("lastfmTopSongs", JSON.stringify(uniqueTracks));
-          console.log("Combined Last.fm tracks:", uniqueTracks);
           setBox2Items(uniqueTracks);
           setFilteredBox2Items(uniqueTracks); 
-          console.log("TOP SONGS") 
 
         } catch (error) {
           setBox2Items([]);
@@ -326,7 +312,6 @@ export function DragAndDrop({ setDropItems }) {
       } else {
         // Not first intent, or already fetched: load from localStorage
         const stored = localStorage.getItem("lastfmTopSongs");
-        console.log("Loading Last.fm top songs from localStorage");
         if (stored) {
           try {
             const parsed = JSON.parse(stored);
@@ -450,7 +435,6 @@ export function DragAndDrop({ setDropItems }) {
           .slice(0, maxTracks);
 
         // log first 10 tracks
-        //console.log("Fetched Last.fm listening history tracks:", allTracks.slice(0, 10));
 
         // Deduplicate by track_id
         const seen = new Set();
@@ -485,7 +469,6 @@ export function DragAndDrop({ setDropItems }) {
         setBox2FullHistory(uniqueTracks);
         setBox2Items(uniqueTracks);           // Show all 1000 by default
         setFilteredBox2Items(uniqueTracks); // Initially, filtered items are all items
-        //console.log("FULL HISTORY")
       } catch (error) {
         setBox2FullHistory([]);
         setBox2Items([]);
@@ -867,7 +850,6 @@ function DraggableBox({ id, items, title, setSearchResults, searchResults, isSea
                         },
                         body: JSON.stringify({ songs: [newSong] }),
                       });
-                      console.log("Custom song added to the database:", newSong);
                     } catch (error) {
                       console.error("Error adding custom song to the database:", error);
                     }

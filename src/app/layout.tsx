@@ -1,11 +1,9 @@
 'use client';
 
 import { Geist, Geist_Mono } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import "./globals.css";
-import { Providers } from "@/lib/providers/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +40,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <Providers>{children}</Providers>
-        </SessionProvider>
+        {children}
       </body>
     </html>
   );

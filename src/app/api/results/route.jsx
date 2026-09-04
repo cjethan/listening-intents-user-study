@@ -14,10 +14,8 @@ import Adjective from "../../models/adjective";
 import IntentSongGenre from "../../models/intentSongGenres";
 
 export async function POST(request) {
-  console.log("POST /api/results called");
   try {
     const body = await request.json();
-    console.log("Request body parsed:", body);
 
     const {
       user_id,
@@ -39,7 +37,6 @@ export async function POST(request) {
     const existingUser = await UserResult.findOne({ where: { user_id } });
 
     if (!existingUser) {
-      console.log("User does not exist. Proceeding with creation...");
 
       const validFormalEducation = ['yes', 'ongoing', 'no'];
       if (!validFormalEducation.includes(formal_education)) {
@@ -90,7 +87,6 @@ export async function POST(request) {
         where: { user_id: user_id, name: intent.intent_name }
       });
       if (existingIntent) {
-        console.log(`Intent "${intent.intent_name}" for user_id ${user_id} already exists. Skipping.`);
         continue;
       }
 
@@ -135,7 +131,6 @@ export async function POST(request) {
       }
     }
 
-    console.log("All data saved successfully");
     return NextResponse.json({ message: "User, genres, instruments, and new intents saved successfully!" }, { status: 201 });
   } catch (error) {
     console.error("Error saving user, genres, instruments, or intents:", error);

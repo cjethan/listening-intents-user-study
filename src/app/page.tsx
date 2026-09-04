@@ -218,11 +218,6 @@ useEffect(() => {
         ? { user_id: updatedUserData.user_id, intents: updatedUserData.intents }
         : updatedUserData;
 
-      console.log('Attempting to save to DB:', { 
-        onlyIntent, 
-        userId: updatedUserData.user_id,
-        intentCount: Object.keys(updatedUserData.intents || {}).length 
-      });
 
       const response = await fetch('/api/results', {
         method: 'POST',
@@ -240,7 +235,6 @@ useEffect(() => {
         throw new Error(`Failed to save user results: ${response.status} ${response.statusText}`);
       }
       const result = await response.json();
-      console.log('Successfully saved to DB:', result);
       return result;
     } catch (error) {
       console.error('Error in saveToDB:', error);

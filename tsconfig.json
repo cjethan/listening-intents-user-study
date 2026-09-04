@@ -34,7 +34,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/api/songs.js",
     "src/app/api/check-and-add/route.jsx",
     "src/app/page.tsx",
     ".next/dev/types/**/*.ts"

@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_USER: intent
-      POSTGRES_PASSWORD: [removed]
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: intentdb
     ports:
       - "5432:5432" #localhost:5432 todo oder weg?

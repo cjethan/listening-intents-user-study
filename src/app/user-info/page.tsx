@@ -34,7 +34,6 @@ export default function UserInfo() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const consentGiven = localStorage.getItem('consentGiven');
-      const isAuthenticated = localStorage.getItem('isAuthenticated');
 
       if (!consentGiven) {
         router.replace('/consent');
